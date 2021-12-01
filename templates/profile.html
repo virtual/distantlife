@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+    <dl class="list-inline">
+        <dt>Username:</dt>
+        <dd>{{ userinfo.username }} <small>(ID: {{ userinfo.id }})</small></dd>
+        <dt>Cash:</dt>
+        <dd>{{ userinfo.cash | usd }}</dd>
+    </dl>
+
+    <form action="/profile" method="post">
+        <fieldset>
+            <legend>Change password</legend>
+            <div class="form-group">
+                <input class="form-control" name="password" placeholder="Password" type="password">
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="confirmation" placeholder="Confirm Password" type="password">
+            </div>
+            <button class="btn btn-primary" type="submit">Update</button>
+        </fieldset>
+    </form>
+{% endblock %}

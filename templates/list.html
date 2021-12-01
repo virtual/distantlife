@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+
+{% block title %}
+    List
+{% endblock %}
+
+{% block main %}
+
+
+<h1>List</h1>
+
+<dl class="list-inline">
+    <dt>Available Cash</dt>
+    <dd>{{ usd(usercash) }}</dd>
+    <dt>Stock Value</dt>
+    <dd>{{ usd(total) }}</dd>
+    <dt>Total Value:</dt>
+    <dd>{{usd(total + usercash)}}</dd>
+</dl>
+
+    {% if (transactions|length) > 0 %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Stock</th>
+                <th>Shares</th>
+                <th>Price per Share</th>
+                <th>Total Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- TODO: Loop through the database entries to display them in this table -->
+            {% for transaction in transactions %}
+            {% set pps = lookup(transaction.symbol) %}
+            <tr>
+                <td>{{ transaction.name }} ({{ transaction.symbol.upper() }})</td>
+                <td>{{ transaction.count }}</td>
+                <td>{{ usd(pps['price']) }}</td>
+                <td>{{ usd(transaction.count * pps['price']) }}</td>
+            </tr>
+            {% endfor %}
+
+             <tr class="row-total">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ usd(total) }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+    {% else %}
+
+        <p>No history</p>
+    {% endif %}
+
+{% endblock %}

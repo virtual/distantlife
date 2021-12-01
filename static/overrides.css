@@ -1,0 +1,4 @@
+/* additional styles not implemented on fed-projects/04 */
+.layout-secondary {
+  flex-grow: 1;
+}
