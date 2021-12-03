@@ -50,7 +50,7 @@ def login():
         elif not request.form.get("password"):
             return apology("must provide password", 403)
         rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
         session["user_id"] = rows[0]["id"]
         return redirect("/")
@@ -81,8 +81,8 @@ def signup():
             return apology("must confirm password", 400)
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         if len(rows) != 1:
-            lastrow = db.execute("INSERT INTO users(username, hash, cash) VALUES (?, ?, ?)",
-                                 username, generate_password_hash(password), 10000)
+            lastrow = db.execute("INSERT INTO users(username, password, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                                 username, generate_password_hash(password))
 
             session["user_id"] = lastrow
             return redirect("/")
@@ -110,13 +110,13 @@ def profile():
         elif not password2:
             return apology("must confirm password", 400)
 
-        rows = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])
+        rows = db.execute("SELECT password FROM users WHERE id = ?", session["user_id"])
 
-        if (check_password_hash(rows[0]["hash"], password)):
+        if (check_password_hash(rows[0]["password"], password)):
             return apology("password cannot be the same as existing password", 400)
 
         else:
-            db.execute("UPDATE users SET hash = ? WHERE id = ?",
+            db.execute("UPDATE users SET password = ? WHERE id = ?",
                        generate_password_hash(password), session["user_id"])
 
         return redirect("/")
