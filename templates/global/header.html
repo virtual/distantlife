@@ -1,0 +1,41 @@
+<header class="header">
+  <div class="container">
+    <div class="menu-container">
+      <div class="menu-logo">
+        <h1><a class="logo" href="/"><img src="/static/distantlife-logo.svg" height="28" width="140"
+              alt="Distant Life" /></a></h1>
+        <button aria-label="Menu" id="menubutton" aria-expanded="false" aria-controls="siteMenu">
+          <span class="fal fa-bars"></span>
+          <span class="sr-only">menu</span>
+        </button>
+      </div>
+      <nav id="siteMenu" role="menu" aria-labelledby="menubutton">
+        <ul class="list-unstyled list-inline">
+          {% if session.user_id %}
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">My Pets</a></li>
+          <li><a href="#">Train</a></li>
+          <li><a href="#">Explore</a></li>
+          {% endif %}
+        </ul>
+
+        <ul class="list-unstyled list-inline">
+          {% if session.user_id %}
+            <li class="menu-user"><a href="#">Virtual 
+              <img alt="" src="https://www.satinflame.com/img/icons/apple-touch-icon.png" width="34" height="34" class="rounded-circle">
+            </a></li>
+            <li><a href="#">
+              <span class="fal fa-cog"></span>
+              <span class="sr-only">settings</span>
+            </a></li>
+          {% else %}
+            <li><a href="/signup">Sign Up</a></li>
+            <li><a href="/login">Login</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+
+</header>

@@ -7,7 +7,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, login_required, usd
 
 app = Flask(__name__)
 
@@ -31,27 +31,13 @@ Session(app)
 
 db = SQL("sqlite:///distantlife.db")
 
-if not os.environ.get("API_KEY"):
-    raise RuntimeError("API_KEY not set")
-
 
 @app.route("/")
 @login_required
 def index():
-    """Show portfolio of stocks"""
+    """dashboard page"""
 
-    rows = db.execute("SELECT cash FROM users where id = ?", session["user_id"])
-    usercash = rows[0]['cash']
-
-    rows = db.execute(
-        "SELECT stocks.symbol as symbol, stocks.name as name, SUM(portfolio.count) as count, users.cash as cash FROM portfolio JOIN stocks ON portfolio.stock_id = stocks.id JOIN users ON users.id = portfolio.user_id WHERE user_id = ? GROUP BY stock_id", session["user_id"])
-
-    total = 0
-    for row in rows:
-        pps = lookup(row['symbol'])
-        total += row['count'] * pps["price"]
-
-    return render_template("list.html", transactions=rows, lookup=lookup, usd=usd, total=total, usercash=usercash)
+    return render_template("list.html")
 
 
 @app.route("/login", methods=["GET", "POST"])

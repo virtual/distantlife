@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'global/head.html' %}
+<body class="text-gray-900 font-sans antialiased">
+  {% include 'global/header.html' %}
+  <div class="main-container">
+    <main class="main container py-5">
+      {% include 'global/alert.html' %}
+      {% block main %}{% endblock %}
+    </main>
+  </div>
+
+  {% include 'global/footer.html' %}
+</body>
+</html>
