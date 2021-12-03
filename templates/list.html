@@ -8,8 +8,41 @@
 {% block main %}
 
 
-<h1>List</h1>
+<h1>My Pets</h1>
 
- <p>lalala</p>
+ 
+{% if (pets_owned|length) > 0 %}
+  
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Img</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- TODO: Loop through the database entries to display them in this table -->
+        {% for pets in pets_owned %}
+        <tr>
+            <td>{{ pets.pet_id }}</td>
+            <td><img src="/static/{{ pets.imgsrc }}" alt="" />
+            <br/>
+            <p>{{ pets.name }}</p>
+            </td>
+        </tr>
+        {% endfor %}
+
+
+    </tbody>
+</table>
+</form>
+
+{% else %}
+
+    <p>No pets</p>
+{% endif %}
+
+
+<p class="text-center"><a class="btn btn-primary" href="/adopt">Adopt a pet</a></p>
 
 {% endblock %}

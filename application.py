@@ -36,8 +36,17 @@ db = SQL("sqlite:///distantlife.db")
 @login_required
 def index():
     """dashboard page"""
+    pets_owned = db.execute("SELECT * FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id WHERE owner_id = ?", session["user_id"])
+    if len(pets_owned) < 1:
+        return apology("no pets", 403)
+    return render_template("list.html", pets_owned=pets_owned)
 
-    return render_template("list.html")
+@app.route("/pets")
+@login_required
+def pets():
+    """dashboard page"""
+    pets_owned = db.execute("SELECT * FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id WHERE owner_id = ?", session["user_id"])
+    return render_template("list.html", pets_owned=pets_owned)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -56,6 +65,7 @@ def login():
         return redirect("/")
     else:
         return render_template("login.html")
+
 
 
 @app.route("/logout")
@@ -127,6 +137,38 @@ def profile():
             return render_template("profile.html", userinfo=rows[0], usd=usd)
 
     return apology("error accessing profile", 400)
+
+
+
+@app.route("/adopt", methods=["GET", "POST"])
+@login_required
+def adopt():
+    if request.method == "POST":
+      # did they buy a pet?
+        if not request.form.get("pet_type"):
+            return apology("must choose pet type", 403)
+
+        # create pet
+        lastrow = db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                                 request.form.get("pet_type"), "Unnamed Pet", 0)
+
+        # add owner to pet
+        db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
+                                 session["user_id"], lastrow)
+
+        # rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        # if len(rows) != 1:
+        #     return apology("adoption failed", 403)
+        # session["user_id"] = rows[0]["id"]
+        return redirect("/")
+    else:
+          
+        rows = db.execute("SELECT * FROM pet_types")
+        if len(rows) < 1:
+            return apology("no pets", 403)
+        return render_template("adopt.html", pet_types=rows)
+
+
 
 def errorhandler(e):
     """Handle error"""
