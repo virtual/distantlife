@@ -52,7 +52,7 @@ def pets():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-    session.clear()
+    # session.clear()
     if request.method == "POST":
         if not request.form.get("username"):
             return apology("must provide username", 403)
