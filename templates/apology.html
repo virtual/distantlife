@@ -1,9 +1,19 @@
-{% extends "layout.html" %}
+{% extends "layout-1col.html" %}
 
 {% block title %}
-    Apology
+  Error
 {% endblock %}
 
 {% block main %}
-    <img alt="{{ top }}" class="border" src="http://memegen.link/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?alt=https://i.imgur.com/CsCgN7Ll.png" title="{{ top }}">
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
+    <p class="text-center">
+      <span class=" fad fa-transporter-empty icon-xxl"></span>
+      <span class="sr-only">transporter-empty</span>
+    </p>
+    <p class="text-center lead"><strong>Error {{ code }}</strong><br/> {{ message }}</p>
+    <p class="text-center mt-5"><a class="btn btn-primary" onclick="goBack()">Go Back</a></p>
 {% endblock %}

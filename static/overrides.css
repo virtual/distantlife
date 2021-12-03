@@ -2,3 +2,6 @@
 .layout-secondary {
   flex-grow: 1;
 }
+.icon-xxl {
+  font-size: 60px;
+}
