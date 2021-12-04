@@ -24,10 +24,15 @@
             <li class="menu-user"><a href="#">Virtual 
               <img alt="" src="https://www.satinflame.com/img/icons/apple-touch-icon.png" width="34" height="34" class="rounded-circle">
             </a></li>
-            <li><a href="#">
+            <li class="has-dropdown"><a class="hide-md" href="#" aria-haspopup="true">
               <span class="fal fa-cog"></span>
               <span class="sr-only">settings</span>
-            </a></li>
+            </a>
+              <ul class="dropdown" aria-label="submenu">
+                <li><a href="#">Settings</a></li>
+                <li><a href="/logout">Logout</a></li>
+              </ul>
+            </li>
           {% else %}
             <li><a href="/signup">Sign Up</a></li>
             <li><a href="/login">Login</a></li>
