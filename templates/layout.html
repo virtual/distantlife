@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   {% set title_s %}{% block title %}{% endblock %}{% endset %}
+  {% if session.username %}
+    {% set username %}{{ session['username'] }}{% endset %}
+  {% endif %}
+  {% if session.user_id %}
+    {% set user_id %}{{ session['user_id'] }}{% endset %}
+  {% endif %}
+  
   {% include 'global/head.html' %}
 <body class="text-gray-900 font-sans antialiased">
 

@@ -27,6 +27,7 @@ CREATE TABLE `users` (
   `last_login` timestamp,
   `preferred_lang` integer,
   `learning_lang` integer,
+  `active_pet_id` integer,
   PRIMARY KEY(id)
 );
 CREATE UNIQUE INDEX username ON users (username);
@@ -51,6 +52,7 @@ CREATE TABLE `pet_types` (
   `id` integer,
   `imgsrc` varchar(255),
   `pet_type` varchar(255),
+  `exp_required` integer,
   PRIMARY KEY(id)
 );
 

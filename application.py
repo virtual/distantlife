@@ -49,7 +49,8 @@ def index():
 @login_required
 def pets():
     """dashboard page"""
-    pets_owned = db.execute("SELECT * FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id WHERE owner_id = ?", session["user_id"])
+    # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.active_pet_id = pets.id WHERE owner_id = ?", session["user_id"])
+    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session["user_id"])
     return render_template("list.html", pets_owned=pets_owned)
 
 
@@ -66,6 +67,7 @@ def login():
         if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
         session["user_id"] = rows[0]["id"]
+        session["username"] = request.form.get("username")
         return redirect("/")
     else:
         return render_template("login.html")
@@ -99,6 +101,7 @@ def signup():
                                  username, generate_password_hash(password))
 
             session["user_id"] = lastrow
+            session["username"] = username
             return redirect("/")
         else:
             return apology("username already taken", 400)
@@ -153,17 +156,16 @@ def adopt():
             return apology("must choose pet type", 403)
 
         # create pet
-        lastrow = db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+        petid = db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
                                  request.form.get("pet_type"), "Unnamed Pet", 0)
 
         # add owner to pet
         db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
-                                 session["user_id"], lastrow)
-
-        # rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
-        # if len(rows) != 1:
-        #     return apology("adoption failed", 403)
-        # session["user_id"] = rows[0]["id"]
+                                 session["user_id"], petid)
+        
+        # set as user's active pet
+        db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
+                                 petid, session["user_id"])
         return redirect("/")
     else:
           
@@ -171,7 +173,6 @@ def adopt():
         if len(rows) < 1:
             return apology("no pets", 403)
         return render_template("adopt.html", pet_types=rows)
-
 
 
 def errorhandler(e):
