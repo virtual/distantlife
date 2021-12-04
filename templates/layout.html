@@ -7,12 +7,6 @@
   {% if session.user_id %}
     {% set user_id %}{{ session['user_id'] }}{% endset %}
   {% endif %}
-
-  {%
-  set my_data = 'cookie'
-  %}
-
-  
   {% include 'global/head.html' %}
 <body class="text-gray-900 font-sans antialiased">
 

@@ -2,7 +2,7 @@
   <div class="container">
     <div class="menu-container">
       <div class="menu-logo">
-        <h1><a class="logo" href="/"><img src="/static/distantlife-logo.svg" height="28" width="140"
+        <h1><a class="logo" href="/"><img src="{{ url_for('static', filename='distantlife-logo.svg') }}" height="28" width="140"
               alt="Distant Life" /></a></h1>
         <button aria-label="Menu" id="menubutton" aria-expanded="false" aria-controls="siteMenu">
           <span class="fal fa-bars"></span>
@@ -14,7 +14,7 @@
           {% if session.user_id %}
           <li><a href="/">Dashboard</a></li>
           <li><a href="/pets">My Pets</a></li>
-          <li><a href="#">Train</a></li>
+          <li><a href="/train">Train</a></li>
           <li><a href="#">Explore</a></li>
           {% endif %}
         </ul>

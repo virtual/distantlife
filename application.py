@@ -51,6 +51,15 @@ def pets():
     return render_template("list.html", pets_owned=pets_owned)
 
 
+@app.route("/train")
+@login_required
+def train():
+    """training page"""
+    # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.active_pet_id = pets.id WHERE owner_id = ?", session["user_id"])
+    # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session["user_id"])
+    return render_template("train.html")
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""

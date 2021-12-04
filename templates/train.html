@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Train
+{% endblock %}
+
+{% block main %}
+<header><h1>{{title_s}}</h1></header>
+
+<table class="table-responsive-stack">
+  <thead>
+    <tr>
+      <th class="table-icon">
+        <span class="fal fa-check-circle"></span>
+        <span class="sr-only">complete</span>
+      </th>
+      <th>Word Set</th>
+      <th>Learned</th>
+      <th><span class="sr-only">Icon</span></th>
+   </tr>
+  </thead>
+  <tbody>
+     <tr>
+        <td class="table-icon">
+          <span class="fal fa-check-circle"></span>
+          <span class="sr-only">complete</span>
+        </td>
+        <td><a href="#">Grocery Run</a></td>
+        <td>15/15</td>
+        <td><img src="{{ url_for('static', filename='/sets/004-vegetables2.png') }}" alt="vegetables"></td>
+     </tr>
+     <tr>
+        <td class="table-icon">
+          <span class="fal fa-circle"></span>
+          <span class="sr-only">incomplete</span>
+        </td>
+        <td><a href="#">Travel Time</a></td>
+        <td>0/15</td>
+        <td><img src="{{ url_for('static', filename='/sets/016-pickup1.png') }}" alt="pickup"></td>
+     </tr>
+  </tbody>
+</table>
+{% endblock %}
