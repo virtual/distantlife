@@ -5,13 +5,13 @@
     
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />
   </p>
-  <h3>{{session["active_pet"]["name"]}}</h3>
+  <h3>{{session["active_pet"]["name"]}} <small>({{session["active_pet"]["id"]}})</small></h3>
   <p>{{session["active_pet"]["type"]}}</p>
   
 
-  <p class="text-small-caps mb-0">Exp: {{session["active_pet"]["exp"]}}</p>
-  <div class="progressbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-    <span class="filled" style="width: 0%;"></span>
+  <p class="text-small-caps mb-0">Level {{ session["active_pet"]["exp"] // 100 }} | Exp: {{ session["active_pet"]["exp"] % 100 }}/100 </p>
+  <div class="progressbar" role="progressbar" aria-valuenow="{{ session['active_pet']['exp'] % 100 }}" aria-valuemin="0" aria-valuemax="100">
+    <span class="filled" style="width: {{ session['active_pet']['exp'] % 100 }}%;"></span>
     <span class="sr-only">{{session["active_pet"]["exp"]}}</span>
   </div>
   {% endif %}

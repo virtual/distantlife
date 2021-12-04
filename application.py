@@ -37,11 +37,7 @@ db = SQL("sqlite:///distantlife.db")
 def index():
     # """dashboard page"""
     if (session.get("user_id") is not None): 
-      print('logged in index')
-      pets_owned = db.execute("SELECT * FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id WHERE owner_id = ?", session["user_id"])
-      if len(pets_owned) < 1:
-          return apology("no pets", 403)
-      return render_template("list.html", pets_owned=pets_owned)
+      return render_template("dashboard.html")
     else:
       return render_template("index.html")
       
