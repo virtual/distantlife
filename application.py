@@ -1,17 +1,18 @@
 import os
 
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, usd
+from helpers import apology, login_required, usd, set_active_pet_in_session
 
 app = Flask(__name__)
 
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
 
 
 @app.after_request
@@ -68,6 +69,7 @@ def login():
             return apology("invalid username and/or password", 403)
         session["user_id"] = rows[0]["id"]
         session["username"] = request.form.get("username")
+        set_active_pet_in_session(session["user_id"])
         return redirect("/")
     else:
         return render_template("login.html")
@@ -166,6 +168,8 @@ def adopt():
         # set as user's active pet
         db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
                                  petid, session["user_id"])
+        set_active_pet_in_session(session["user_id"])
+                                         
         return redirect("/")
     else:
           
