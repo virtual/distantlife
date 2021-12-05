@@ -20,24 +20,22 @@
    </tr>
   </thead>
   <tbody>
-     <tr>
-        <td class="table-icon">
-          <span class="fal fa-check-circle"></span>
-          <span class="sr-only">complete</span>
-        </td>
-        <td><a href="#">Grocery Run</a></td>
-        <td>15/15</td>
-        <td><img src="{{ url_for('static', filename='/sets/004-vegetables2.png') }}" alt="vegetables"></td>
-     </tr>
+    {% for set in sets %}
      <tr>
         <td class="table-icon">
           <span class="fal fa-circle"></span>
           <span class="sr-only">incomplete</span>
         </td>
-        <td><a href="#">Travel Time</a></td>
-        <td>0/15</td>
-        <td><img src="{{ url_for('static', filename='/sets/016-pickup1.png') }}" alt="pickup"></td>
+        <td><a href="/train/set/{{set.id}}">{{set.set_name}}</a></td>
+        <td>15/15</td>
+        <td><img src="{{ url_for('static', filename=set.imgsrc) }}" alt="{{set.set_name}}"></td>
      </tr>
+     {% endfor %}
   </tbody>
 </table>
+<ul>
+{% for word in words %}
+  <li>{{word.wordstr}} {{ word.type}}</li>
+{% endfor %}
+</ul>
 {% endblock %}

@@ -164,3 +164,58 @@ INSERT INTO `pet_types` (imgsrc, pet_type) values ('/pets/pet-gorilla.png', 'Gor
 
 -- notes
 -- pet needs active flag
+
+INSERT INTO languages (charcode, dir, name) VALUES ('en', 'ltr', 'English');
+INSERT INTO languages (charcode, dir, name) VALUES ('he', 'rtl', 'עברית');
+
+
+
+
+CREATE TABLE `word_set_words` (
+  `id` integer,
+  `word_set_id` id,
+  `word_id` id,
+  PRIMARY KEY(id)
+);
+
+INSERT INTO word_sets (imgsrc, set_name) VALUES ("/sets/fruits.png", "פרי");
+
+INSERT INTO word_type (type) VALUES ("noun");
+
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (2, 1, "Tapuch","תפוח");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (2, 1, "Afarsek","אפרסק");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (2, 1, "Shezif","שזיפ");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (2, 1, "Mango","מנגו");
+
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (1, 1);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (1, 2);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (1, 3);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (1, 4);
+
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (1, 1, "a-pl", "Apple");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (1, 1, "peech", "Peach");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (1, 1, "pluhm", "Plum");
+INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (1, 1, "mang-go", "Mango");
+
+INSERT INTO word_sets (imgsrc, set_name) VALUES ("/sets/fruits.png", "Fruits");
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (2, 5);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (2, 6);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (2, 7);
+INSERT INTO word_set_words (word_set_id, word_id) VALUES (2, 8);
+
+-- en to he
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 5, 1);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 6, 2);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 7, 3);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 8, 4);
+
+SELECT words.wordstr, words.pronunciation, word_type.type FROM words 
+JOIN word_set_words ON word_set_words.word_id = words.id
+JOIN word_type ON words.type = word_type.id
+where word_set_words.word_set_id = 1;
+
+ALTER TABLE word_sets ADD COLUMN language_id integer;
+update word_sets set language_id = 2 WHERE id = 1;
+update word_sets set language_id = 1 WHERE id = 2;
+
+SELECT * FROM 
