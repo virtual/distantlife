@@ -18,10 +18,11 @@
 
     <div class="col-12">
       <img src="/static/{{ pets.imgsrc }}" alt="" />
-      <h2>{{ pets.name }} <small>{{ pets.id }}</small>
+      <h2>{{ pets.name }} 
         {% if pets.id == pets.active_pet_id %}
         <span class="badge badge-success">Active pet</span>
         {% endif %} </h2>
+        <p>{{ pets.pet_type }} <small>(#{{ pets.id }})</small></p>
         {{ progressbar((pets.exp)) }}
       </div>
     {% endfor %}

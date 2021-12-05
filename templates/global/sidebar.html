@@ -5,31 +5,10 @@
     
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />
   </p>
-  <h3>{{session["active_pet"]["name"]}} <small>({{session["active_pet"]["id"]}})</small></h3>
-  <p>{{session["active_pet"]["type"]}}</p>
+  <h3>{{session["active_pet"]["name"]}}</h3>
   
   {{ progressbar(session["active_pet"]["exp"]) }}
 
   {% endif %}
 
-  <div class="d-none">
-    <dl class="list-stats">
-      <dt>
-        <span class="fal fa-star"></span>
-        <span class="sr-only">star</span>
-      </dt>
-      <dd>10 words learned</dd>
-    </dl>
-    <dl class="list-stats">
-      <dt>
-        <span class="fal fa-coins"></span>
-        <span class="sr-only">coins</span>
-      </dt>
-      <dd>$13.00</dd>
-    </dl>
-    <h3>Latest Notifications:</h3>
-    <ul>
-      <li>Badge: Grocery Run</li>
-    </ul>
-  </div>
 </aside>

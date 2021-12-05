@@ -47,7 +47,7 @@ def index():
 def pets():
     """dashboard page"""
     # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.active_pet_id = pets.id WHERE owner_id = ?", session["user_id"])
-    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session["user_id"])
+    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session["user_id"])
     return render_template("list.html", pets_owned=pets_owned)
 
 
@@ -98,7 +98,7 @@ def quizset():
       if request.form.get("finished"):
         # process exp etc
         return redirect('/train')
-        
+
       elif request.form.get("set_id"):
         set_id = int(request.form.get('set_id'))
         page = 0
@@ -257,10 +257,12 @@ def adopt():
       # did they buy a pet?
         if not request.form.get("pet_type"):
             return apology("must choose pet type", 403)
+        pet_type_id = int(request.form.get("pet_type"))
+        petname = db.execute("SELECT pet_type FROM pet_types WHERE id = ?", pet_type_id)
 
-        # create pet
+        # create pet with default name as pet type
         petid = db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-                                 request.form.get("pet_type"), "Unnamed Pet", 0)
+                                 pet_type_id, petname[0]['pet_type'], 0)
 
         # add owner to pet
         db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
