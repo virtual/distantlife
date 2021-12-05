@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Train
+{% endblock %}
+
+{% block main %}
+
+ 
+
+  <header>
+    <div class="main-options">
+      <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      <div class="options">
+        <button class="btn-option">
+          <span class="fal fa-volume"></span>
+          <span class="sr-only">play audio</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <p class="text-lowercase d-none"><em>{{words[page].pronunciation}}</em></p>
+
+ 
+
+  <form class="form-quiz-container" method="post" action="/quiz/set/">
+    <input name="set_id" type="hidden" value="{{set_id}}" />
+    <input name="page" type="hidden" value="{{page+1}}" />
+  {% if not words[page+1] %}
+    <input name="finished" type="hidden" value="true" />
+  {% endif %}
+    <div class="form-quiz">
+      <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off">
+      <label class="btn btn-radio" for="option1">Checked</label>
+
+      <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off">
+      <label class="btn btn-radio btn-success" for="option2">Success</label>
+
+      <input type="radio" class="btn-check" name="options" id="option3" autocomplete="off">
+      <label class="btn btn-radio btn-error" for="option3">Error</label>
+
+      <input type="radio" class="btn-check" name="options" id="option4" autocomplete="off">
+      <label class="btn btn-radio" for="option4">Radio</label>
+    </div>
+    <button type="submit" class="btn-red">Skip</button>
+  </form>
+
+{% endblock %}

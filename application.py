@@ -89,6 +89,32 @@ def trainset():
     else:
       return redirect('/train')
 
+
+@app.route("/quiz/set/", methods=["GET", "POST"])
+@login_required
+def quizset():
+    """quiz set page"""
+    if request.method == "POST":
+      if request.form.get("finished"):
+        # process exp etc
+        return redirect('/train')
+        
+      elif request.form.get("set_id"):
+        set_id = int(request.form.get('set_id'))
+        page = 0
+        if request.form.get('page') is not None:
+          page = int(request.form.get('page'))
+        if set_id is not None:
+          words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", set_id)
+          set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
+          return render_template("quizset.html", words=words, set_info=set_info, page=page, set_id=set_id)
+      else:
+        return redirect('/train')
+    
+    # GET
+    else:
+      return redirect('/train')
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""

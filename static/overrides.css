@@ -23,3 +23,18 @@ select {
 .text-lowercase {
   text-transform: lowercase;
 }
+input[type=submit], button, select, option {
+  cursor: pointer;
+}
+body.dir-rtl .layout-secondary .pet-box img {
+  transform: scaleX(-1);
+}
+body.dir-rtl .menu-container li.has-dropdown ul.dropdown {
+  padding-right: 0;
+}
+@media (min-width: 992px) {
+  body.dir-rtl .menu-container li.has-dropdown ul.dropdown {
+    right: auto;
+    left: 0;
+  }
+}

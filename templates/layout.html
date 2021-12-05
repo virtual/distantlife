@@ -12,7 +12,14 @@
     {% set user_id %}{{ session['user_id'] }}{% endset %}
   {% endif %}
   {% include 'global/head.html' %}
-<body class="text-gray-900 font-sans antialiased">
+
+  {% if (session.get("language")) %}
+    <body class="text-gray-900 font-sans antialiased dir-{{session['language']['dir']}}">
+  {% else %}
+    <body class="text-gray-900 font-sans antialiased">
+  {% endif %}
+
+
 
   {% include 'global/header.html' %}
   <div class="layout-secondary">

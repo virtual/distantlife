@@ -16,6 +16,7 @@
       </th>
       <th>Word Set</th>
       <th>Learned</th>
+      <th>Options</th>
       <th><span class="sr-only">Icon</span></th>
    </tr>
   </thead>
@@ -26,9 +27,17 @@
           <span class="fal fa-circle"></span>
           <span class="sr-only">incomplete</span>
         </td>
-        <td><a href="/train/set/?s={{set.id}}"><strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
+        <td><a href="/train/set/?s={{set.id}}"> <strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
         <td>0/{{set.totalcount}}</td>
-        <td><img src="{{ url_for('static', filename=set.imgsrc) }}" alt="{{set.set_name}}"></td>
+        <td>
+          <form method="post" action="/quiz/set/">
+            <input name="set_id" type="hidden" value="{{set.id}}" />
+            <input type="submit" value="Quiz" />
+          </form>
+        </td>
+        <td>
+          <img src="{{ url_for('static', filename=set.imgsrc) }}" alt="{{set.set_name}}">
+        </td>
      </tr>
      {% endfor %}
   </tbody>
