@@ -20,3 +20,6 @@ select {
 .progressbar .filled {
   padding: 4px 0;
 }
+.text-lowercase {
+  text-transform: lowercase;
+}

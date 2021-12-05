@@ -26,16 +26,11 @@
           <span class="fal fa-circle"></span>
           <span class="sr-only">incomplete</span>
         </td>
-        <td><a href="/train/set/{{set.id}}">{{set.set_name}}</a></td>
-        <td>15/15</td>
+        <td><a href="/train/set/?s={{set.id}}"><strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
+        <td>0/{{set.totalcount}}</td>
         <td><img src="{{ url_for('static', filename=set.imgsrc) }}" alt="{{set.set_name}}"></td>
      </tr>
      {% endfor %}
   </tbody>
 </table>
-<ul>
-{% for word in words %}
-  <li>{{word.wordstr}} {{ word.type}}</li>
-{% endfor %}
-</ul>
 {% endblock %}

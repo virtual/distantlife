@@ -342,3 +342,28 @@ CREATE TABLE `word_set_words` (
   `word_id` id,
   PRIMARY KEY(id)
 );
+
+CREATE TABLE `word_images` (
+  `id` integer,
+  `imgsrc` varchar,
+  PRIMARY KEY(id)
+);
+
+insert into word_images (imgsrc) values ('/words/fruit/apple.png');
+insert into word_images (imgsrc) values ('/words/fruit/cherries.png');
+insert into word_images (imgsrc) values ('/words/fruit/plums_b.png');
+insert into word_images (imgsrc) values ('/words/fruit/tomato.png');
+insert into word_images (imgsrc) values ('/words/fruit/berries_05_b.png');
+insert into word_images (imgsrc) values ('/words/fruit/peach.png');
+insert into word_images (imgsrc) values ('/words/fruit/pomegranate.png');
+insert into word_images (imgsrc) values ('/words/fruit/watermelon.png');
+
+SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id
+JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = 1
+
+SELECT word_sets.id, words.wordstr, words.id, word_sets.imgsrc FROM word_sets
+JOIN words ON word_sets.set_name_word_id = words.id 
+WHERE word_sets.language_id = 2;
+
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 10, 9);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 9, 10);

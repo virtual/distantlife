@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Train
+{% endblock %}
+
+{% block main %}
+
+ 
+
+  <header>
+    <div class="main-options">
+      <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      <div class="options">
+        <button class="btn-option">
+          <span class="fal fa-volume"></span>
+          <span class="sr-only">play audio</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <p class="text-lowercase"><em>{{words[page].pronunciation}}</em></p>
+  <div class="text-center">
+    <p><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></p>
+  </div>
+{% if words[page+1] %}
+  <p class="text-center">
+    <a class="btn btn-primary" href="/train/set/?s={{tset}}&page={{page+1}}">Next</a>
+  </p>
+{% else %}
+  <p class="text-center">
+    <a class="btn btn-primary" href="/train">Complete lesson</a>
+  </p>
+{% endif %}
+
+
+{% endblock %}

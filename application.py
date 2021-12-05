@@ -55,10 +55,39 @@ def pets():
 @login_required
 def train():
     """training page"""
-    words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = 1")
-    sets = db.execute("SELECT id, set_name, imgsrc FROM word_sets WHERE language_id = 2")
-    return render_template("train.html", words=words, sets=sets)
+    # words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = 1")
+    setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
+    sets = []
+    for setinfo in setsqry:
+      # totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
+      translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ?)", setinfo['setnameid'], session['language']['preferred'])
 
+      totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
+      setinfo = {
+        "id": setinfo['id'],
+        "set_name": setinfo['wordstr'],
+        "imgsrc": setinfo['imgsrc'],
+        "totalcount": totalcount[0]['count'],
+        "translation": translation[0]['wordstr']
+      }
+      sets.append(setinfo)
+    
+    return render_template("train.html", sets=sets)
+
+@app.route("/train/set/")
+@login_required
+def trainset():
+    """training set page"""
+    tset = int(request.args.get('s'))
+    page = 0
+    if request.args.get('page') is not None:
+      page = int(request.args.get('page'))
+    if tset is not None:
+      words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", tset)
+      set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", tset)
+      return render_template("trainset.html", words=words, set_info=set_info, page=page, tset=tset)
+    else:
+      return redirect('/train')
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -105,8 +134,8 @@ def signup():
             return apology("must confirm password", 400)
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         if len(rows) != 1:
-            lastrow = db.execute("INSERT INTO users(username, password, created_at, preferred_lang, learning_lang) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)",
-                                 username, generate_password_hash(password), 1, 2)
+            lastrow = db.execute("INSERT INTO users(username, password, created_at, preferred_lang, learning_lang, roles) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?)",
+                                 username, generate_password_hash(password), 1, 2, 1)
 
             session["user_id"] = lastrow
             session["username"] = username
