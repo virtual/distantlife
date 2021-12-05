@@ -118,42 +118,21 @@ def signup():
         return render_template("signup.html")
 
 
-@app.route("/profile", methods=["GET", "POST"])
+@app.route("/about")
+def about():
+    """About page"""
+    return render_template("about.html")
+
+@app.route("/profile", methods=["GET"])
 @login_required
 def profile():
     """User Profile"""
-    if request.method == "POST":
+    userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
 
-        # password = request.form.get("password")
-        # password2 = request.form.get("confirmation")
+    language_options = db.execute("SELECT * FROM languages")
 
-        # if not password:
-        #     return apology("must provide password", 400)
-
-        # elif not (password == password2):
-        #     return apology("passwords must match", 400)
-
-        # elif not password2:
-        #     return apology("must confirm password", 400)
-
-        # rows = db.execute("SELECT password FROM users WHERE id = ?", session["user_id"])
-
-        # if (check_password_hash(rows[0]["password"], password)):
-        #     return apology("password cannot be the same as existing password", 400)
-
-        # else:
-        #     db.execute("UPDATE users SET password = ? WHERE id = ?",
-        #                generate_password_hash(password), session["user_id"])
-
-        return redirect("/")
-
-    else:
-        userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
-
-        language_options = db.execute("SELECT * FROM languages")
-
-        if (len(userinfo) > 0):
-            return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options)
+    if (len(userinfo) > 0):
+        return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options)
 
     return apology("error accessing profile", 400)
 

@@ -218,4 +218,127 @@ ALTER TABLE word_sets ADD COLUMN language_id integer;
 update word_sets set language_id = 2 WHERE id = 1;
 update word_sets set language_id = 1 WHERE id = 2;
 
-SELECT * FROM 
+
+UPDATE `pet_types` set imgsrc = '/pets/002-dragon.png', pet_type = 'Dragon', exp_required = 0 where id = 1;
+UPDATE `pet_types` set imgsrc = '/pets/004-ufo.png', pet_type = 'UFO', exp_required = 0 where id = 2;
+UPDATE `pet_types` set imgsrc = '/pets/005-robot.png', pet_type = 'Robot', exp_required = 0 where id = 3;
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/010-unicorn.png', 'Unicorn', 100);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/011-gnome.png', 'Gnome', 100);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/013-genie.png', 'Genie', 100);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/015-bigfoot.png', 'Bigfoot', 200);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/017-goblin.png', 'Goblin', 200);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/018-oni.png', 'Oni', 200);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/019-faun.png', 'Faun', 300);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/021-medusa.png', 'Medusa', 300);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/024-krampus.png', 'Krampus', 300);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/026-godzilla.png', 'Godzilla', 400);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/027-werewolf.png', 'Werewolf', 400);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/029-haunted.png', 'Haunted', 400);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/030-cyclops.png', 'Cyclops', 500);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/031-frog.png', 'Frog', 500);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/032-ogre.png', 'Ogre', 500);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/033-minotaur.png', 'Minotaur', 600);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/034-jackalope.png', 'Jackalope', 600);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/035-loch-ness-monster.png', 'Loch-ness Monster', 600);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/038-pegasus.png', 'Pegasus', 700);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/040-grim-reaper.png', 'Grim Reaper', 700);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/041-kraken.png', 'Kraken', 700);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/042-frankenstein.png', 'Frankenstein', 800);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/043-cerberus.png', 'Cerberus', 800);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/044-griffin.png', 'Griffin', 800);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/045-zombie.png', 'Zombie', 900);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/047-sphynx.png', 'Sphynx', 900);
+INSERT INTO `pet_types` (imgsrc, pet_type, exp_required) values ('/pets/048-centaur.png', 'Centaur', 900);
+
+
+-- updated table schema 2021/12/05
+CREATE TABLE `users` (
+  `id` integer,
+  `username` varchar(255) NOT NULL,
+  `full_name` varchar(255),
+  `password` hash,
+  `email` varchar(255),
+  `created_at` timestamp,
+  `last_login` timestamp,
+  `preferred_lang` integer,
+  `learning_lang` integer, `active_pet_id` integer,
+  PRIMARY KEY(id)
+);
+CREATE UNIQUE INDEX username ON users (username);
+CREATE TABLE `owners` (
+  `id` integer,
+  `owner_id` integer,
+  `pet_id` integer,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `pets` (
+  `id` integer,
+  `type` integer,
+  `name` varchar(255),
+  `created` timestamp,
+  `exp` integer,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `pet_types` (
+  `id` integer,
+  `imgsrc` varchar(255),
+  `pet_type` varchar(255), `exp_required` integer,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `word_sets` (
+  `id` integer,
+  `imgsrc` varchar(255), set_name varchar, language_id integer,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `words` (
+  `id` integer,
+  `wordstr` varchar(255),
+  `audiopath` varchar(255),
+  `language_id` integer,
+  `type` integer, pronunciation varchar,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `sets_learned` (
+  `id` integer,
+  `subject` varchar(255),
+  `user_id` integer,
+  `wordsets` integer,
+  `started` timestamp,
+  `completed` timestamp,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `words_learned` (
+  `id` integer,
+  `user_id` integer,
+  `word` integer,
+  `sets_learned_id` integer,
+  `learned` boolean,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `word_type` (
+  `id` integer,
+  `type` varchar(255),
+  PRIMARY KEY(id)
+);
+CREATE TABLE `word_translation` (
+  `id` integer,
+  `orig_lang` id,
+  `trans_lang` id,
+  `orig_word` id,
+  `trans_word` id,
+  PRIMARY KEY(id)
+);
+CREATE TABLE `languages` (
+  `id` integer,
+  `charcode` varchar(255),
+  `dir` varchar(255),
+  `name` varchar(255),
+  `bodyclass` varchar(255),
+  PRIMARY KEY(id)
+);
+CREATE TABLE `word_set_words` (
+  `id` integer,
+  `word_set_id` id,
+  `word_id` id,
+  PRIMARY KEY(id)
+);
