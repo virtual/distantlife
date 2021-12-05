@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+  {% if (session.get("language")) %}
+    <html lang="{{session['language']['charcode']}}" dir="{{session['language']['dir']}}">
+  {% else %}
+    <html lang="en">
+  {% endif %}
   {% set title_s %}{% block title %}{% endblock %}{% endset %}
   {% if session.username %}
     {% set username %}{{ session['username'] }}{% endset %}

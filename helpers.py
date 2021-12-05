@@ -44,3 +44,17 @@ def set_active_pet_in_session(user_id):
     }
     session["active_pet"] = active_pet
     return active_pet['id']
+
+def set_languages(user_id):
+  # set as user's active pet
+  language_info = db.execute("SELECT preferred_lang, learning_lang, dir, charcode FROM users JOIN languages ON users.preferred_lang = languages.id WHERE users.id = ?",
+                              user_id)
+  if (len(language_info) == 1):
+    language = {
+      "preferred": language_info[0]['preferred_lang'],
+      "learning": language_info[0]['learning_lang'],
+      "dir": language_info[0]['dir'],
+      "charcode": language_info[0]['charcode']
+    }
+    session["language"] = language
+    return True
