@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "./macros.html" import usedalot, progressbar, get_data with context %}
 
 
 {% block title %}
@@ -10,38 +11,24 @@
 
 <h1>My Pets</h1>
 
- 
+
 {% if (pets_owned|length) > 0 %}
-  
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>Img</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- TODO: Loop through the database entries to display them in this table -->
-        {% for pets in pets_owned %}
-        <tr>
-            <td>{{ pets.id }}</td>
-            <td><img src="/static/{{ pets.imgsrc }}" alt="" />
-            <br/>
-            <p>{{ pets.name }}
-              {% if pets.id == pets.active_pet_id %}
-              <span class="badge badge-success">Active pet</span>
-              {% endif %}
-            </p>
-            </td>
-        </tr>
-        {% endfor %}
+  <div class="col-list row">
+    {% for pets in pets_owned %}
 
+    <div class="col-12">
+      <img src="/static/{{ pets.imgsrc }}" alt="" />
+      <h2>{{ pets.name }} <small>{{ pets.id }}</small>
+        {% if pets.id == pets.active_pet_id %}
+        <span class="badge badge-success">Active pet</span>
+        {% endif %} </h2>
+        {{ progressbar((pets.exp)) }}
+      </div>
+    {% endfor %}
+  </div>
 
-    </tbody>
-</table>
-</form>
+  {% else %}
 
-{% else %}
 
     <p>No pets</p>
 {% endif %}

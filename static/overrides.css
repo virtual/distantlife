@@ -38,3 +38,7 @@ body.dir-rtl .menu-container li.has-dropdown ul.dropdown {
     left: 0;
   }
 }
+
+.col-list {
+  flex-wrap: wrap;
+}
