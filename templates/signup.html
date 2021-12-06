@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block main %}
+<div class="theme-inversed">
+  <p class="text-center">
+    <img alt="Distant Life" src="{{ url_for('static', filename='/logos/logo-light-blue.svg') }}" height="28" width="140"/>
+  </p>
+  <p style="max-width: 370px; margin: 0 auto;" class="text-center pb-3">
+    Sign up today to start your language-learning journey.
+  </p>
+</div>
     <form class="mx-auto centered" action="/signup" method="post">
       <div class="form-group">
         <label for="username">Username</label>

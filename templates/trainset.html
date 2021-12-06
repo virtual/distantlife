@@ -20,9 +20,16 @@
     </div>
   </header>
   <p class="text-lowercase"><em>{{words[page].pronunciation}}</em></p>
-  <div class="text-center">
-    <p><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></p>
-  </div>
+
+  <figure class="learn-word">
+    <div class="figure-img"><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></div>
+    <figcaption class="main-options">
+      <p>Tomato</p>
+      <p>1/15</p>
+    </figcaption>
+  </figure>
+
+
 {% if words[page+1] %}
   <p class="text-center">
     <a class="btn btn-primary" href="/train/set/?s={{tset}}&page={{page+1}}">Next</a>
