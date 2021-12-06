@@ -42,4 +42,10 @@
      {% endfor %}
   </tbody>
 </table>
+
+{% if role == 9 %}
+<p class="text-center">
+  <a class="btn btn-primary" href="/create/set/">Create new set</a>
+</p>
+{% endif %}
 {% endblock %}

@@ -7,7 +7,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, usd, set_active_pet_in_session, set_languages
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages
 
 app = Flask(__name__)
 
@@ -57,6 +57,8 @@ def train():
     """training page"""
     # words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = 1")
     setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
+    rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])
+    role = rolesqry[0]['roles']
     sets = []
     for setinfo in setsqry:
       # totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
@@ -72,7 +74,7 @@ def train():
       }
       sets.append(setinfo)
     
-    return render_template("train.html", sets=sets)
+    return render_template("train.html", sets=sets, role=role)
 
 @app.route("/train/set/")
 @login_required
@@ -114,6 +116,18 @@ def quizset():
     # GET
     else:
       return redirect('/train')
+
+
+@app.route("/create/set/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def createset():
+    """create set page admin"""
+    if request.method == "POST":
+      return render_template("createset.html")
+    else:
+      return render_template("createset.html")
+     
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
