@@ -7,13 +7,26 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from flask_babel import Babel 
 from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages
 
 app = Flask(__name__)
+babel = Babel(app)
 
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
+LANGUAGES = {
+    'en': 'English',
+    'he': 'Hebrew'
+}
+app.config['LANGUAGES'] = LANGUAGES
 
+# set localization for text keys
+@babel.localeselector
+def get_locale():
+    if (session.get("language") is not None): 
+      return session['language']['charcode']
+    return request.accept_languages.best_match(app.config['LANGUAGES'].keys())
 
 @app.after_request
 def after_request(response):

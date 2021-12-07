@@ -2,6 +2,7 @@ import os
 import requests
 import urllib.parse
 from cs50 import SQL
+# import locale
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -72,14 +73,16 @@ def set_active_pet_in_session(user_id):
 
 def set_languages(user_id):
   # set as user's active pet
-  language_info = db.execute("SELECT preferred_lang, learning_lang, dir, charcode FROM users JOIN languages ON users.preferred_lang = languages.id WHERE users.id = ?",
+  language_info = db.execute("SELECT preferred_lang, learning_lang, dir, charcode, localization FROM users JOIN languages ON users.preferred_lang = languages.id WHERE users.id = ?",
                               user_id)
   if (len(language_info) == 1):
     language = {
       "preferred": language_info[0]['preferred_lang'],
       "learning": language_info[0]['learning_lang'],
       "dir": language_info[0]['dir'],
-      "charcode": language_info[0]['charcode']
+      "charcode": language_info[0]['charcode'],
+      "localization": language_info[0]['localization']
     }
     session["language"] = language
+    # locale.setlocale(locale.LC_ALL, app_language)
     return True

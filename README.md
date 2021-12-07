@@ -18,6 +18,20 @@ export FLASK_ENV=development # enable autoreload
 flask run
 ```
 
+## Get translations
+
+```python
+pybabel extract -F babel.cfg -o messages.pot --input-dirs=.
+pybabel init -i messages.pot -d translations -l en
+pybabel init -i messages.pot -d translations -l he
+```
+
+## After translating
+
+```python
+pybabel compile -d translations
+```
+
 Visit http://127.0.0.1:5000/
 
 ## Resources 
