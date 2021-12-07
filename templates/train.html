@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Train
+{{ _('Train') }}
 {% endblock %}
 
 {% block main %}
@@ -12,12 +12,12 @@
     <tr>
       <th class="table-icon">
         <span class="fal fa-check-circle"></span>
-        <span class="sr-only">complete</span>
+        <span class="sr-only">{{ _('complete') }}</span>
       </th>
-      <th>Word Set</th>
-      <th>Learned</th>
-      <th>Options</th>
-      <th><span class="sr-only">Icon</span></th>
+      <th>{{ _('Word Set') }}</th>
+      <th>{{ _('Learned') }}</th>
+      <th>{{ _('Options') }}</th>
+      <th><span class="sr-only">{{ _('Icon') }}</span></th>
    </tr>
   </thead>
   <tbody>
@@ -32,7 +32,7 @@
         <td>
           <form method="post" action="/quiz/set/">
             <input name="set_id" type="hidden" value="{{set.id}}" />
-            <input type="submit" value="Quiz" />
+            <input type="submit" value="{{ _('Quiz') }}" />
           </form>
         </td>
         <td>
@@ -45,7 +45,7 @@
 
 {% if role == 9 %}
 <p class="text-center">
-  <a class="btn btn-primary" href="/create/set/">Create new set</a>
+  <a class="btn btn-primary" href="/create/set/">{{ _('Create new set') }}</a>
 </p>
 {% endif %}
 {% endblock %}

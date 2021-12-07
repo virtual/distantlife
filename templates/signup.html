@@ -1,7 +1,7 @@
 {% extends "layout-1col.html" %}
 
 {% block title %}
-    Sign Up
+{{ _('Sign Up') }}  
 {% endblock %}
 
 {% block main %}
@@ -10,23 +10,23 @@
     <img alt="Distant Life" src="{{ url_for('static', filename='/logos/logo-light-blue.svg') }}" height="28" width="140"/>
   </p>
   <p style="max-width: 370px; margin: 0 auto;" class="text-center pb-3">
-    Sign up today to start your language-learning journey.
+    {{ _('Sign up today to start your language-learning journey.') }}
   </p>
 </div>
     <form class="mx-auto centered" action="/signup" method="post">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">{{ _('Username') }}</label>
         <input required id="username" name="username" type="text" />
       </div> 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">{{ _('Password') }}</label>
         <input required id="password" name="password" type="password" />
       </div>
       <div class="form-group">
-        <label for="confirmation">Retype Password</label>
+        <label for="confirmation">{{ _('Retype Password') }}</label>
         <input required id="confirmation" name="confirmation" type="password" />
       </div>
        
-      <button type="submit">Sign Up</button>
+      <button type="submit">{{ _('Sign Up') }}</button>
     </form>
 {% endblock %}

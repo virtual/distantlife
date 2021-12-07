@@ -2,22 +2,22 @@
 
 
 {% block title %}
-    Adopt a Pet
+{{ _('Adopt a Pet') }} 
 {% endblock %}
 
 {% block main %}
 
 
-<h1>Adopt a pet</h1>
+<h1>{{ _('Adopt a Pet') }}</h1>
 
 {% if (pet_types|length) > 0 %}
   
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Type</th>
-                <th>Img</th>
-                <th>Adopt</th>
+                <th>{{ _('Type') }}</th>
+                <th>{{ _('Img') }}</th>
+                <th>{{ _('Adopt') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +29,7 @@
                 <td>
                   <form method="post" action="/adopt">
                     <input name="pet_type" type="hidden" value="{{pet_type.id}}" />
-                    <input type="submit" value="Adopt" />
+                    <input type="submit" value="{{ _('Adopt') }}" />
                 </form>
               </td>
             </tr>
@@ -40,8 +40,7 @@
     </table>
   </form>
     {% else %}
-
-        <p>No pets</p>
+      <p>{{ _('No pets') }}</p>
     {% endif %}
 
 {% endblock %}

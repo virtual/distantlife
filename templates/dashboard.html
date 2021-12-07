@@ -2,18 +2,15 @@
 
 
 {% block title %}
-    Dashboard
+{{ _('Dashboard') }}
 {% endblock %}
 
 {% block main %}
 
 
-<h1>Dashboard</h1>
+<h1>{{ _('Dashboard') }}</h1>
    <p>Mew</p>
-
-   <b>{{ gettext('Free Trial') }}</b>
-   <input type="submit" value="{{ gettext('Sign up') }}"/>
-
+ 
    <div class="d-none">
     <dl class="list-stats">
       <dt>
@@ -29,9 +26,9 @@
       </dt>
       <dd>$13.00</dd>
     </dl>
-    <h3>Latest Notifications:</h3>
+    <h3>{{ _('Latest Notifications') }}:</h3>
     <ul>
-      <li>Badge: Grocery Run</li>
+      <li>{{ _('Badge') }}: Grocery Run</li>
     </ul>
   </div>
 {% endblock %}

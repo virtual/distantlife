@@ -1,21 +1,21 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Profile
+{{ _('Profile') }}  
 {% endblock %}
 
 {% block main %}
     <dl class="list-inline">
-        <dt>Username:</dt>
-        <dd>{{ userinfo.username }} <small>(ID: {{ userinfo.id }})</small></dd>
+        <dt>{{ _('Username') }}:</dt>
+        <dd>{{ userinfo.username }} <small>({{ _('ID') }}: {{ userinfo.id }})</small></dd>
  
     </dl>
 
     <form class="mx-auto centered" action="/updatelanguage" method="post">
       <fieldset>
-          <legend>Learning Preferences</legend>
+          <legend>{{ _('Language Preferences') }}</legend>
           <div class="form-group">
-            <label for="orig_language">My native language is:</label>
+            <label for="orig_language">{{ _('My native language is') }}:</label>
             <select id="orig_language" name="orig_language">
               {% for lang in language_options %}
                 {% if lang.id == userinfo.preferred_lang %}
@@ -27,7 +27,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="learning_lang">I want to learn:</label>
+            <label for="learning_lang">{{ _('I want to learn') }}:</label>
             <select id="learning_lang" name="learning_lang">
               {% for lang in language_options %}
                 {% if lang.id == userinfo.learning_lang %}
@@ -38,22 +38,22 @@
               {% endfor %}
             </select>
           </div>
-          <button class="btn btn-primary" type="submit">Save Preferences</button>
+          <button class="btn btn-primary" type="submit">{{ _('Save Preferences') }}</button>
       </fieldset>
     </form>
 
     <form class="mx-auto centered" action="/updatepassword" method="post">
         <fieldset>
-            <legend>Change password</legend>
+            <legend>{{ _('Change password') }}</legend>
             <div class="form-group">
-              <label for="password">Password</label>
-              <input class="form-control" name="password" id="password" placeholder="Password" type="password">
+              <label for="password">{{ _('Password') }}</label>
+              <input class="form-control" name="password" id="password" placeholder="{{ _('Password') }}" type="password">
             </div>
             <div class="form-group">
-              <label for="confirmation">Retype Password</label>
-              <input class="form-control" name="confirmation" id="confirmation" placeholder="Confirm Password" type="password">
+              <label for="confirmation">{{ _('Retype Password') }}</label>
+              <input class="form-control" name="confirmation" id="confirmation" placeholder="{{ _('Retype Password') }}" type="password">
             </div>
-            <button class="btn btn-primary" type="submit">Update Password</button>
+            <button class="btn btn-primary" type="submit">{{ _('Update Password') }}</button>
         </fieldset>
     </form>
 {% endblock %}

@@ -6,7 +6,7 @@
 {% macro progressbar(exp) %}
 {% set level %}{{ (exp // 100) + 1 }}{% endset %}
 {% set percent %}{{ exp % 100 }}{% endset %}
-    <p class="text-small-caps mb-0">Level {{ level }} | Exp: {{ percent }}/100 </p>
+    <p class="text-small-caps mb-0">{{ _('Level') }} {{ level }} | {{ _('Experience') }}: {{ percent }}/100 </p>
     <div class="progressbar" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
       <span class="filled" style="width: {{ percent }}%;"></span>
       <span class="sr-only">{{percent}}</span>

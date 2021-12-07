@@ -6,15 +6,15 @@
               alt="Distant Life" /></a></h1>
         <button aria-label="Menu" id="menubutton" aria-expanded="false" aria-controls="siteMenu">
           <span class="fal fa-bars"></span>
-          <span class="sr-only">menu</span>
+          <span class="sr-only">{{ _('menu') }}</span>
         </button>
       </div>
       <nav id="siteMenu" role="menu" aria-labelledby="menubutton">
         <ul class="list-unstyled list-inline">
           {% if session.user_id %}
-          <li><a href="/">Dashboard</a></li>
-          <li><a href="/pets">My Pets</a></li>
-          <li><a href="/train">Train</a></li>
+          <li><a href="/">{{ _('Dashboard') }}</a></li>
+          <li><a href="/pets">{{ _('My Pets') }}</a></li>
+          <li><a href="/train">{{ _('Train') }}</a></li>
           {% endif %}
         </ul>
 
@@ -25,16 +25,16 @@
             </a></li>
             <li class="has-dropdown"><a class="hide-md" href="#" aria-haspopup="true">
               <span class="fal fa-cog"></span>
-              <span class="sr-only">settings</span>
+              <span class="sr-only">{{ _('settings') }}</span>
             </a>
               <ul class="dropdown" aria-label="submenu">
-                <li><a href="/profile">Settings</a></li>
-                <li><a href="/logout">Logout</a></li>
+                <li><a href="/profile">{{ _('Profile') }}</a></li>
+                <li><a href="/logout">{{ _('Logout') }}</a></li>
               </ul>
             </li>
           {% else %}
-            <li><a href="/signup">Sign Up</a></li>
-            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">{{ _('Sign Up') }}</a></li>
+            <li><a href="/login">{{ _('Login') }}</a></li>
           {% endif %}
         </ul>
       </nav>

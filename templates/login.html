@@ -1,19 +1,19 @@
 {% extends "layout-1col.html" %}
 
 {% block title %}
-    Log In
+{{ _('Log In') }}  
 {% endblock %}
 
 {% block main %}
     <form class="mx-auto centered" action="/login" method="post">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">{{ _('Username') }}</label>
         <input required id="username" name="username" type="text" />
       </div> 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">{{ _('Password') }}</label>
         <input required id="password" name="password" type="password" />
       </div>
-      <button type="submit">Log In</button>
+      <button type="submit">{{ _('Log In') }}</button>
     </form>
 {% endblock %}

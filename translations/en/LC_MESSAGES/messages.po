@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-06 18:46-0700\n"
-"PO-Revision-Date: 2021-12-06 19:06-0700\n"
+"POT-Creation-Date: 2021-12-06 20:13-0700\n"
+"PO-Revision-Date: 2021-12-06 20:16-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -18,10 +18,245 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: templates/dashboard.html:14
+#: templates/about.html:5 templates/about.html:11
+#: templates/global/footer.html:4
+msgid "About"
+msgstr "About"
+
+#: templates/adopt.html:5 templates/adopt.html:11
+msgid "Adopt a Pet"
+msgstr "Adopt a Pet"
+
+#: templates/adopt.html:18
+msgid "Type"
+msgstr "Type"
+
+#: templates/adopt.html:19
+msgid "Img"
+msgstr "Img"
+
+#: templates/adopt.html:20 templates/adopt.html:32
+msgid "Adopt"
+msgstr "Adopt"
+
+#: templates/adopt.html:43
+msgid "No pets"
+msgstr "No pets"
+
+#: templates/apology.html:17
+msgid "Error"
+msgstr "Error"
+
+#: templates/apology.html:18
+msgid "Go Back"
+msgstr "Go Back"
+
+#: templates/createset.html:4
+msgid "Admin"
+msgstr "Admin"
+
+#: templates/createset.html:11 templates/train.html:48
+msgid "Create new set"
+msgstr "Create new set"
+
+#: templates/dashboard.html:5 templates/dashboard.html:11
+#: templates/global/header.html:15
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: templates/dashboard.html:14 templates/index.html:7
 msgid "Free Trial"
-msgstr "english free trial"
+msgstr "Free Trial"
 
 #: templates/dashboard.html:15
 msgid "Sign up"
-msgstr "english sign up"
+msgstr "Sign up"
+
+#: templates/dashboard.html:32
+msgid "Latest Notifications"
+msgstr "Latest Notifications"
+
+#: templates/dashboard.html:34
+msgid "Badge"
+msgstr "Badge"
+
+#: templates/index.html:20
+msgid "Join for free!"
+msgstr "Join for free!"
+
+#: templates/index.html:21
+msgid ""
+"Distant Life combines virtual pet experience with interactive\n"
+"    language learning and practice, making your learning fun and exciting."
+msgstr ""
+"Distant Life combines virtual pet experience with interactive\n"
+"    language learning and practice, making your learning fun and exciting."
+
+#: templates/index.html:32
+msgid "Grow your family of pets as you learn more!"
+msgstr "Grow your family of pets as you learn more!"
+
+#: templates/index.html:34
+msgid ""
+"The more lessons you complete, the more points you earn toward purchasing"
+" additional pets, account upgrades,\n"
+"      and new lessons!"
+msgstr ""
+"The more lessons you complete, the more points you earn toward purchasing"
+" additional pets, account upgrades,\n"
+"      and new lessons!"
+
+#: templates/index.html:68
+msgid "Begin your language-learning journey today!"
+msgstr "Begin your language-learning journey today!"
+
+#: templates/index.html:69
+msgid "Get Started"
+msgstr "Get Started"
+
+#: templates/list.html:6
+msgid "List"
+msgstr "List"
+
+#: templates/login.html:4 templates/login.html:17
+msgid "Log In"
+msgstr "Log In"
+
+#: templates/login.html:10 templates/profile.html:9 templates/signup.html:18
+msgid "Username"
+msgstr "Username"
+
+#: templates/login.html:14 templates/profile.html:49 templates/profile.html:50
+#: templates/signup.html:22
+msgid "Password"
+msgstr "Password"
+
+#: templates/macros.html:9
+msgid "Level"
+msgstr "Level"
+
+#: templates/macros.html:9
+msgid "Experience"
+msgstr "Experience"
+
+#: templates/global/header.html:31 templates/profile.html:4
+msgid "Profile"
+msgstr "Profile"
+
+#: templates/profile.html:10
+msgid "ID"
+msgstr "ID"
+
+#: templates/profile.html:16
+msgid "Language Preferences"
+msgstr "Language Preferences"
+
+#: templates/profile.html:18
+msgid "My native language is"
+msgstr "My native language is"
+
+#: templates/profile.html:30
+msgid "I want to learn"
+msgstr "I want to learn"
+
+#: templates/profile.html:41
+msgid "Save Preferences"
+msgstr "Save Preferences"
+
+#: templates/profile.html:47
+msgid "Change password"
+msgstr "Change password"
+
+#: templates/profile.html:53 templates/profile.html:54 templates/signup.html:26
+msgid "Retype Password"
+msgstr "Retype Password"
+
+#: templates/profile.html:56
+msgid "Update Password"
+msgstr "Update Password"
+
+#: templates/quizset.html:17 templates/trainset.html:17
+msgid "play audio"
+msgstr "play audio"
+
+#: templates/quizset.html:45
+msgid "Skip"
+msgstr "Skip"
+
+#: templates/global/header.html:36 templates/signup.html:4
+#: templates/signup.html:30
+msgid "Sign Up"
+msgstr "Sign Up"
+
+#: templates/signup.html:13
+msgid "Sign up today to start your language-learning journey."
+msgstr "Sign up today to start your language-learning journey."
+
+#: templates/global/header.html:17 templates/train.html:4
+msgid "Train"
+msgstr "Train"
+
+#: templates/train.html:15
+msgid "complete"
+msgstr "complete"
+
+#: templates/train.html:17
+msgid "Word Set"
+msgstr "Word Set"
+
+#: templates/train.html:18
+msgid "Learned"
+msgstr "Learned"
+
+#: templates/train.html:19
+msgid "Options"
+msgstr "Options"
+
+#: templates/train.html:20
+msgid "Icon"
+msgstr "Icon"
+
+#: templates/train.html:35
+msgid "Quiz"
+msgstr "Quiz"
+
+#: templates/trainset.html:4
+msgid "Learn It"
+msgstr "Learn It"
+
+#: templates/trainset.html:35
+msgid "Next"
+msgstr "Next"
+
+#: templates/trainset.html:39
+msgid "Complete lesson"
+msgstr "Complete lesson"
+
+#: templates/global/breadcrumb.html:5
+msgid "Home"
+msgstr "Home"
+
+#: templates/global/footer.html:4
+msgid "Made with &hearts; by"
+msgstr "Made with &hearts; by"
+
+#: templates/global/header.html:9
+msgid "menu"
+msgstr "menu"
+
+#: templates/global/header.html:16
+msgid "My Pets"
+msgstr "My Pets"
+
+#: templates/global/header.html:28
+msgid "settings"
+msgstr "settings"
+
+#: templates/global/header.html:32
+msgid "Logout"
+msgstr "Logout"
+
+#: templates/global/header.html:37
+msgid "Login"
+msgstr "Login"
+
