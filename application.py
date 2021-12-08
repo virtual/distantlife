@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel 
 from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages
+from fileparser import save_words
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -20,6 +21,9 @@ LANGUAGES = {
     'he': 'Hebrew'
 }
 app.config['LANGUAGES'] = LANGUAGES
+
+save_words("en-to-he-fruits.csv")
+
 
 # set localization for text keys
 @babel.localeselector
@@ -44,6 +48,9 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 db = SQL("sqlite:///distantlife.db")
+
+
+
 
 
 @app.route("/")
