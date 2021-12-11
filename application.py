@@ -21,9 +21,6 @@ LANGUAGES = {
 }
 app.config['LANGUAGES'] = LANGUAGES
 
-# save_words("en-to-he-fruits.csv")
-
-
 # set localization for text keys
 @babel.localeselector
 def get_locale():
@@ -37,6 +34,13 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+
+UPLOAD_FOLDER = 'static/files'
+app.config['UPLOAD_FOLDER'] =  UPLOAD_FOLDER
+
+
 
 
 app.jinja_env.filters["usd"] = usd
@@ -85,7 +89,8 @@ def trainset():
     if request.args.get('page') is not None:
       page = int(request.args.get('page'))
     if tset is not None:
-      words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", tset)
+      # words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", tset)
+      words = get_words_by_set_id(tset)
       set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", tset)
       return render_template("trainset.html", words=words, set_info=set_info, page=page, tset=tset)
     else:
@@ -175,8 +180,6 @@ def delete_word():
           # delete word from word_sets
             deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?", 
                         request.form.get("word_id"), request.form.get("word_set_id"))
-
-            print(deleteqry)
             if (deleteqry > 0): 
               flash('delete successful')
     return redirect("/edit/set")
@@ -258,6 +261,35 @@ def profile():
         return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options)
 
     return apology("error accessing profile", 400)
+
+
+@app.route("/uploadwordset", methods=["GET", "POST"])
+@login_required
+@admin_required
+def uploadFiles():
+  if request.method == "POST":
+    uploaded_file = request.files['file']
+
+    if request.form.get("word_set_id"):
+      word_set_id = request.form.get("word_set_id")
+
+      if uploaded_file.filename != '':
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+        # set the file path
+        uploaded_file.save(file_path)
+        # save the file
+        print(file_path)
+        num_words = save_words(file_path, word_set_id)
+        flash(str(num_words) + " words added to word set")
+        # Delete file from static after parsing
+        if os.path.exists(file_path):
+          os.remove(file_path)
+        return redirect("/edit/set/?set_id=" + word_set_id)
+    return redirect("/")
+  else:
+    return redirect("/")
+
+
 
 
 @app.route("/updatelanguage", methods=["GET", "POST"])

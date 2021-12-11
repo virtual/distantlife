@@ -115,7 +115,10 @@ def get_set_by_id(set_id):
   return setsqry[0]
 
 def get_words_by_set_id(set_id):
-  words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", set_id)  
+  # words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", set_id)  
+
+  words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = ?", set_id)  
+
   return words
 
 def get_role():

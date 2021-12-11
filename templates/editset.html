@@ -22,7 +22,8 @@
       {% for word in words %}
        <tr>
           <td> 
-            <strong>{{word.wordstr}} {{word.id}}</strong>
+            <strong>{{word.wordstr}} </strong>
+            <small>({{word.id}})</small>
           </td>
           <td class="form-options">
             <form method="get" action="/edit/word/?word_id={{word.id}}">
@@ -45,5 +46,18 @@
        {% endfor %}
     </tbody>
   </table>
+
+  <form class="mx-auto centered" action="/uploadwordset" method="post" enctype="multipart/form-data">
+    <fieldset>
+      <legend>Upload words via CSV</legend>
+      <input name="word_set_id" type="hidden" value="{{set_info.id}}" />
+      <div class="form-group">
+        <label for="setname">{{ _('Set Name') }}</label>
+        <input type="file" name="file">
+      </div> 
+      
+    </fieldset>
+    <button type="submit">{{ _('Upload') }}</button>
+  </form>
  
 {% endblock %}

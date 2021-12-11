@@ -14,3 +14,12 @@ td.form-options form {
 .btn-danger {
   background-color: #d95a01;
 }
+input {
+  color: rgb(5, 5, 23)
+}
+.alert-info {
+  padding: 8px;
+  background-color: #3BBDEE;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}

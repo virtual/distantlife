@@ -11,21 +11,25 @@
   <header>
     <div class="main-options">
       <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      {% if (words[page].audiosrc) %}
       <div class="options">
         <button class="btn-option">
           <span class="fal fa-volume"></span>
           <span class="sr-only">{{ _('play audio') }}</span>
         </button>
       </div>
+      {% endif %}
     </div>
   </header>
   <p class="text-lowercase"><em>{{words[page].pronunciation}}</em></p>
 
   <figure class="learn-word">
+    {% if (words[page].imgsrc) %}
     <div class="figure-img"><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></div>
+    {% endif %}
     <figcaption class="main-options">
-      <p>Tomato</p>
-      <p>1/15</p>
+      <p>translation</p>
+      <p>{{page + 1}}/?</p>
     </figcaption>
   </figure>
 

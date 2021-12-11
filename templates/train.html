@@ -8,12 +8,14 @@
 <header>
   <div class="main-options">
     <h1>{{title_s}}</h1>
+    {% if role == 9 %}
     <div class="options">
       <a href="/edit/set/" class="btn-option">
         <span class="fal fa-cog"></span>
         <span class="sr-only">{{ _('settings') }}</span>
       </a>
     </div>
+    {% endif %}
   </div>
 </header>
 
