@@ -1,6 +1,6 @@
 import os
 from cs50 import SQL
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -162,6 +162,26 @@ def createset():
       userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
       return render_template("createset.html", language_options=language_options, userinfo=userinfo[0])
      
+
+@app.route("/delete/word_set_word/", methods=["POST"])
+@login_required
+@admin_required
+def delete_word():
+    """deletes word from word set only """
+
+    if request.method == "POST":
+        if request.form.get('word_id') is not None:
+          if request.form.get('word_set_id') is not None:
+          # delete word from word_sets
+            deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?", 
+                        request.form.get("word_id"), request.form.get("word_set_id"))
+
+            print(deleteqry)
+            if (deleteqry > 0): 
+              flash('delete successful')
+    return redirect("/edit/set")
+
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

@@ -34,6 +34,7 @@
             </form>
             <form method="post" action="/delete/word_set_word/">
               <input name="word_id" type="hidden" value="{{word.id}}" />
+              <input name="word_set_id" type="hidden" value="{{set_info.id}}" />
               <button onclick="return confirm('Remove?')" title="{{ _('Remove word from set') }}" class="btn btn-danger" type="submit" value="{{ _('Delete') }}">
                 <span class="fal fa-trash"></span>
                 <span class="sr-only">{{ _('Delete') }}</span>

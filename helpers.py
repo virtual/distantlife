@@ -35,18 +35,12 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         roles = db.execute("SELECT roles FROM users WHERE id = ?", session["user_id"])
-        print(roles[0]['roles'])
-        print(len(roles))
         if len(roles) != 1 :
           return apology("invalid user id", 403)
         else:
           if (int(roles[0]['roles']) != 9):
-            # admin
-            return redirect("/train")
-          else:
-            print('admin')
-
-        # if session.get("user_id") is None:
+            # Not Admin
+            return redirect("/")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -109,7 +103,7 @@ def get_sets():
 def get_set_by_id(set_id):
   """
     Returns set information for a specific word set 
-    
+
     :param int set_id: word set ID
     :returns: 
         - id - word set ID
