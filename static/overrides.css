@@ -1,1 +1,16 @@
 /* additional styles not implemented on fed-projects/04 */
+/* $alert-success: #5DDB6D !default;
+$alert-info: #3BBDEE !default;
+$alert-warning: #EDDE43 !default;
+$alert-danger: #E48850 !default; */
+td.form-options form {
+  display: inline-block;
+  width: auto;
+  margin-top: 0;
+}
+.btn.btn-secondary {
+  background-color: rgba(5, 5, 23, .5)
+}
+.btn-danger {
+  background-color: #d95a01;
+}

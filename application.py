@@ -1,5 +1,4 @@
 import os
-
 from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
@@ -8,7 +7,7 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel 
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role
 from fileparser import save_words
 
 app = Flask(__name__)
@@ -50,9 +49,6 @@ Session(app)
 db = SQL("sqlite:///distantlife.db")
 
 
-
-
-
 @app.route("/")
 def index():
     # """dashboard page"""
@@ -75,24 +71,8 @@ def pets():
 @login_required
 def train():
     """training page"""
-    # words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = 1")
-    setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
-    rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])
-    role = rolesqry[0]['roles']
-    sets = []
-    for setinfo in setsqry:
-      # totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
-      translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ?)", setinfo['setnameid'], session['language']['preferred'])
-
-      totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
-      setinfo = {
-        "id": setinfo['id'],
-        "set_name": setinfo['wordstr'],
-        "imgsrc": setinfo['imgsrc'],
-        "totalcount": totalcount[0]['count'],
-        "translation": translation[0]['wordstr']
-      }
-      sets.append(setinfo)
+    role = get_role()
+    sets = get_sets()
     
     return render_template("train.html", sets=sets, role=role)
 
@@ -113,30 +93,20 @@ def trainset():
 
 
 @app.route("/edit/set/")
-@admin_required
 @login_required
-def edit():
+@admin_required
+def edit_set():
     """edit set page"""
-     # words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = 1")
-    setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
-    rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])
-    role = rolesqry[0]['roles']
-    sets = []
-    for setinfo in setsqry:
-      # totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
-      translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ?)", setinfo['setnameid'], session['language']['preferred'])
-
-      totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
-      setinfo = {
-        "id": setinfo['id'],
-        "set_name": setinfo['wordstr'],
-        "imgsrc": setinfo['imgsrc'],
-        "totalcount": totalcount[0]['count'],
-        "translation": translation[0]['wordstr']
-      }
-      sets.append(setinfo)
+    role = get_role()
+    if request.args.get('set_id') is not None:
+      set_id = int(request.args.get('set_id'))
+      set_info = get_set_by_id(set_id)
+      words = get_words_by_set_id(set_id)
+      return render_template("editset.html", set_info=set_info, role=role, words=words)
+    else:
+      sets = get_sets()
+      return render_template("editsets.html", sets=sets, role=role)
     
-    return render_template("editsets.html", sets=sets, role=role)
 
 
 @app.route("/quiz/set/", methods=["GET", "POST"])
@@ -154,7 +124,7 @@ def quizset():
         if request.form.get('page') is not None:
           page = int(request.form.get('page'))
         if set_id is not None:
-          words = db.execute("SELECT words.wordstr, words.pronunciation, word_type.type, word_images.imgsrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id JOIN word_images ON words.imgsrc_id = word_images.id where word_set_words.word_set_id = ?", set_id)
+          words = get_words_by_set_id(int(set_id))
           set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
           return render_template("quizset.html", words=words, set_info=set_info, page=page, set_id=set_id)
       else:
@@ -185,8 +155,8 @@ def createset():
 
             preferred_wordid = "INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)", preferred_lang, 1, '', plang_setname
             print(preferred_wordid)
-        
-        return render_template("editsets.html")
+            sets = get_sets()
+        return render_template("editsets.html", sets=sets)
     else:
       language_options = db.execute("SELECT * FROM languages")
       userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
