@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ _('Edit Sets') }}
+{% endblock %}
+
+{% block main %}
+<header>
+  <div class="main-options">
+    <h1>{{title_s}}</h1>
+  </div>
+</header>
+
+<table class="table-responsive-stack">
+  <thead>
+    <tr>
+      <th class="table-img"><span class="sr-only">{{ _('Icon') }}</span></th>
+      <th>{{ _('Word Set') }}</th>
+      <th>{{ _('Count') }}</th>
+      <th>{{ _('Options') }}</th>
+   </tr>
+  </thead>
+  <tbody>
+    {% for set in sets %}
+     <tr>
+       <td>
+         <img src="{{ url_for('static', filename=set.imgsrc) }}" alt="{{set.set_name}}">
+       </td>
+        <td><a href="/edit/set/?s={{set.id}}"> 
+          <strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
+        <td>{{set.totalcount}} words</td>
+        <td>
+          <form method="get" action="/edit/set/?s={{set.id}}">
+            <input name="set_id" type="hidden" value="{{set.id}}" />
+            <button class="btn btn-secondary" type="submit" value="{{ _('Edit') }}">
+              <span class="fal fa-pencil"></span>
+              <span class="sr-only">edit</span>
+            </button>
+          </form>
+        </td>
+       
+     </tr>
+     {% endfor %}
+  </tbody>
+</table>
+
+{% if role == 9 %}
+<p class="text-center">
+  <a class="btn btn-primary" href="/create/set/">{{ _('Create new set') }}</a>
+</p>
+{% endif %}
+{% endblock %}

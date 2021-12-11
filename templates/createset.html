@@ -7,7 +7,45 @@
 {% block main %}
 <header><h1>{{title_s}}</h1></header>
 
-<form>
+<form class="mx-auto centered" action="/create/set/" method="post">
+  <fieldset>
+    <legend>Word set shown in: (translated language)</legend>
+    <div class="form-group">
+      <label for="setname">{{ _('Set Name') }}</label>
+      <input required id="setname" name="setname" type="text" />
+    </div> 
+    <div class="form-group">
+      <label for="learning_lang">{{ _('Language') }}:</label>
+      <select id="learning_lang" name="learning_lang">
+        {% for lang in language_options %}
+          {% if lang.id == userinfo.learning_lang %}
+          <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
+          {% else %}
+            <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Help text shown in: (native language)</legend>
+    <div class="form-group">
+      <label for="plang_setname">{{ _('Set Name') }}</label>
+      <input required id="plang_setname" name="plang_setname" type="text" />
+    </div> 
+    <div class="form-group">
+      <label for="preferred_lang">{{ _('Language') }}:</label>
+      <select id="preferred_lang" name="preferred_lang">
+        {% for lang in language_options %}
+          {% if lang.id == userinfo.preferred_lang %}
+            <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
+          {% else %}
+            <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  </fieldset>
   <button>{{ _('Create new set') }}</button>
 </form>
 {% endblock %}

@@ -5,7 +5,17 @@
 {% endblock %}
 
 {% block main %}
-<header><h1>{{title_s}}</h1></header>
+<header>
+  <div class="main-options">
+    <h1>{{title_s}}</h1>
+    <div class="options">
+      <a href="/edit/set/" class="btn-option">
+        <span class="fal fa-cog"></span>
+        <span class="sr-only">{{ _('settings') }}</span>
+      </a>
+    </div>
+  </div>
+</header>
 
 <table class="table-responsive-stack">
   <thead>

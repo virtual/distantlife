@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ _('Learn It') }}
+{% endblock %}
+
+{% block main %}
+
+ 
+
+  <header>
+    <div class="main-options">
+      <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      <div class="options">
+        <button class="btn-option">
+          <span class="fal fa-volume"></span>
+          <span class="sr-only">{{ _('play audio') }}</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <p class="text-lowercase"><em>{{words[page].pronunciation}}</em></p>
+
+  <figure class="learn-word">
+    <div class="figure-img"><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></div>
+    <figcaption class="main-options">
+      <p>Tomato</p>
+      <p>1/15</p>
+    </figcaption>
+  </figure>
+
+
+{% if words[page+1] %}
+  <p class="text-center">
+    <a class="btn btn-primary" href="/train/set/?s={{tset}}&page={{page+1}}">{{ _('Next') }}</a>
+  </p>
+{% else %}
+  <p class="text-center">
+    <a class="btn btn-primary" href="/train">{{ _('Complete lesson') }}</a>
+  </p>
+{% endif %}
+
+
+{% endblock %}
