@@ -131,7 +131,16 @@ def quizset():
         if set_id is not None:
           words = get_words_by_set_id(int(set_id))
           set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
-          return render_template("quizset.html", words=words, set_info=set_info, page=page, set_id=set_id)
+
+          word_options = [
+            {'word': 'Peach', 'data': 'error', 'translation': 'אפרסק'},
+            {'word': 'Apple', 'data': 'success', 'translation': 'תפוח'},
+            {'word': 'Plum', 'data': 'error', 'translation': 'שזיפ'},
+            {'word': 'Mango', 'data': 'error', 'translation': 'מנגו'},
+          ]
+
+
+          return render_template("quizset.html", words=words, word_options=word_options, set_info=set_info, page=page, set_id=set_id)
       else:
         return redirect('/train')
     

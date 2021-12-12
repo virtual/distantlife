@@ -32,19 +32,48 @@
     <input name="finished" type="hidden" value="true" />
   {% endif %}
     <div class="form-quiz">
-      <input type="radio" class="btn-check" name="options" id="option1" autocomplete="off">
+
+      {% for opt in word_options %}
+        <input data-type={{opt.data}} data-index={{loop.index}} value="{{opt.word}}" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option{{loop.index}}" autocomplete="off">
+        <label class="btn btn-radio" for="option{{loop.index}}">{{opt.word}}</label>
+      {% endfor %}
+
+      <!-- <input value="{{words[page].id}}a" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option1" autocomplete="off">
       <label class="btn btn-radio" for="option1">Checked</label>
 
-      <input type="radio" class="btn-check" name="options" id="option2" autocomplete="off">
+      <input value="{{words[page].id}}b" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option2" autocomplete="off">
       <label class="btn btn-radio btn-success" for="option2">Success</label>
 
-      <input type="radio" class="btn-check" name="options" id="option3" autocomplete="off">
+      <input value="{{words[page].id}}c" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option3" autocomplete="off">
       <label class="btn btn-radio btn-error" for="option3">Error</label>
 
-      <input type="radio" class="btn-check" name="options" id="option4" autocomplete="off">
-      <label class="btn btn-radio" for="option4">Radio</label>
+      <input value="{{words[page].id}}d" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option4" autocomplete="off">
+      <label class="btn btn-radio" for="option4">Radio</label> -->
     </div>
-    <button type="submit" class="btn-red">{{ _('Skip') }}</button>
+    <div id="result"></div>
+    <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('Continue') }}</button>
+    <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('Skip') }}</button>
   </form>
+
+  <script>
+    function displayRadioValue() {
+        var ele = document.getElementsByName('wordchoice');
+          
+        for(i = 0; i < ele.length; i++) {
+            if(ele[i].checked) {
+                document.getElementById("result").innerHTML
+                      = "wordchoice: "+ele[i].value;
+                // console.log(ele[i].nextSibling.nextSibling)
+                datatype = ele[i].dataset.type;
+                ((ele[i].nextSibling).nextSibling).classList.add('btn-'+datatype);
+
+            }
+            // Disable ability to change choice after selection
+            ele[i].disabled = true;                    
+        }
+        (document.getElementById("buttonSkip")).style.display = "none";
+        (document.getElementById("buttonContinue")).style.display = "inline-block";
+    }
+  </script>
 
 {% endblock %}
