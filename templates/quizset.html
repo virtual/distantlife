@@ -11,12 +11,14 @@
   <header>
     <div class="main-options">
       <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      {% if (words[page].audiosrc) %}
       <div class="options">
         <button class="btn-option">
           <span class="fal fa-volume"></span>
           <span class="sr-only">{{ _('play audio') }}</span>
         </button>
       </div>
+      {% endif %}
     </div>
   </header>
   <p class="text-lowercase d-none"><em>{{words[page].pronunciation}}</em></p>

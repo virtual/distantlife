@@ -155,11 +155,24 @@ def createset():
             preferred_lang = request.form.get('preferred_lang')
 
             # Sets will usually be a noun
-            learning_wordid = "INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)", learning_lang, 1, '', setname
-            print(learning_wordid)
+            learning_wordid = db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)", 
+                learning_lang, 1, '', setname)
 
-            preferred_wordid = "INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)", preferred_lang, 1, '', plang_setname
-            print(preferred_wordid)
+            preferred_wordid = db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)", 
+                preferred_lang, 1, '', plang_setname)
+
+            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)", 
+                preferred_lang, learning_lang, preferred_wordid, learning_wordid)
+            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)", 
+                learning_lang, preferred_lang, learning_wordid, preferred_wordid)
+
+            # TODO Set a default image here
+            insert_word_set = db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)", 
+                "/sets/fruits.png", learning_wordid, learning_lang)
+            if (insert_word_set > 0):
+              flash("New set created: " + setname)
+            else:
+              flash("Error creating new set")
             sets = get_sets()
         return render_template("editsets.html", sets=sets)
     else:
