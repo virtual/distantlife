@@ -23,3 +23,9 @@ input {
   border-radius: 4px;
   margin-bottom: 20px;
 }
+.secondary-main h1 {
+  font-size: 24px;
+}
+h1 .badge {
+  top: -3px;
+}

@@ -81,20 +81,34 @@ def set_languages(user_id):
     # locale.setlocale(locale.LC_ALL, app_language)
     return True
 
+
+def get_word_translation(word_id, orig_lang='', trans_lang=''):
+  """Given word_id, returns translated word in original (native) language"""
+  if (orig_lang == ''):
+    orig_lang = session['language']['preferred']
+  if (trans_lang == ''):
+    trans_lang = session['language']['learning']
+
+  print("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ? AND word_translation.orig_lang = ?)", 
+  word_id, orig_lang, trans_lang)
+
+  translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ? AND word_translation.orig_lang = ?)", 
+  word_id, orig_lang, trans_lang)
+  
+  return translation[0]['wordstr']
+
 def get_sets():
   setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
   sets = []
   for setinfo in setsqry:
-    # totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
-    translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ?)", setinfo['setnameid'], session['language']['preferred'])
-
+    translation = get_word_translation(int(setinfo['setnameid']))
     totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
     setinfo = {
       "id": setinfo['id'],
       "set_name": setinfo['wordstr'],
       "imgsrc": setinfo['imgsrc'],
       "totalcount": totalcount[0]['count'],
-      "translation": translation[0]['wordstr']
+      "translation": translation
     }
     sets.append(setinfo)
   return sets
@@ -120,6 +134,7 @@ def get_words_by_set_id(set_id):
   words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = ?", set_id)  
 
   return words
+
 
 def get_role():
   rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])

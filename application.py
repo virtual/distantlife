@@ -1,4 +1,5 @@
 import os
+import random
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -7,7 +8,7 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel 
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation
 from fileparser import save_words
 
 app = Flask(__name__)
@@ -132,13 +133,23 @@ def quizset():
           words = get_words_by_set_id(int(set_id))
           set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
 
-          word_options = [
-            {'word': 'Peach', 'data': 'error', 'translation': 'אפרסק'},
-            {'word': 'Apple', 'data': 'success', 'translation': 'תפוח'},
-            {'word': 'Plum', 'data': 'error', 'translation': 'שזיפ'},
-            {'word': 'Mango', 'data': 'error', 'translation': 'מנגו'},
-          ]
+          # print(words[page])
+          activeword = words[page]
+          
+          # print(words[page]['id'])
 
+          # Erroing
+          # translatedword = get_word_translation(words[page]['id'], 1, 2)
+
+          # print(translatedword)
+          word_options = [
+            {'word': "Apple", 'data': 'success', 'translation': activeword['wordstr']}
+          ]
+          word_options.append({'word': 'Peach', 'data': 'error', 'translation': 'אפרסק'})
+          word_options.append({'word': 'Plum', 'data': 'error', 'translation': 'שזיפ'})
+          word_options.append({'word': 'Mango', 'data': 'error', 'translation': 'מנגו'})
+          
+          random.shuffle(word_options)
 
           return render_template("quizset.html", words=words, word_options=word_options, set_info=set_info, page=page, set_id=set_id)
       else:
