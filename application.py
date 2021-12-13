@@ -8,7 +8,7 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel 
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience
 from fileparser import save_words
 
 app = Flask(__name__)
@@ -120,13 +120,24 @@ def edit_set():
 def quizset():
     """quiz set page"""
     if request.method == "POST":
+
+      experience = 0
+      if request.form.get('experience') is not None:
+        experience = int(request.form.get('experience'))
+
       if request.form.get("finished"):
         # process exp etc
+        if (experience > 0):
+          # Add experience to active pet
+          update_experience(experience)
+          flash("Gained " + str(experience) + " experience!")
         return redirect('/train')
 
       elif request.form.get("set_id"):
         set_id = int(request.form.get('set_id'))
         page = 0
+        
+
         if request.form.get('page') is not None:
           page = int(request.form.get('page'))
         if set_id is not None:
@@ -158,7 +169,7 @@ def quizset():
           })
           random.shuffle(word_options)
 
-          return render_template("quizset.html", words=words, word_options=word_options, set_info=set_info, page=page, set_id=set_id)
+          return render_template("quizset.html", words=words, word_options=word_options, set_info=set_info, page=page, set_id=set_id, experience=experience)
       else:
         return redirect('/train')
     

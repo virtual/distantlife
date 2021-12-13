@@ -98,9 +98,6 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
   if (trans_lang == ''):
     trans_lang = session['language']['learning']
 
-  print("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ? AND word_translation.orig_lang = ?)", 
-  word_id, orig_lang, trans_lang)
-
   translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ? AND word_translation.orig_lang = ?)", 
   word_id, orig_lang, trans_lang)
   
@@ -149,3 +146,17 @@ def get_role():
   rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])
   role = rolesqry[0]['roles']
   return role
+
+
+def update_experience(amount):
+  activepetqry = db.execute("SELECT active_pet_id FROM users WHERE id =  ?", session['user_id'])
+  active_pet_id = int(activepetqry[0]['active_pet_id'])
+  expqry = db.execute("SELECT exp FROM pets WHERE id =  ?", active_pet_id)
+  exp = int(expqry[0]['exp']) + int(amount)
+
+  updateqry = db.execute("UPDATE pets SET exp = ? WHERE id = ?", exp, active_pet_id)    
+  if (updateqry > 0):
+    session["active_pet"]["exp"] = exp
+    return exp
+  else:
+    return 0

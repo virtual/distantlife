@@ -6,8 +6,6 @@
 
 {% block main %}
 
- 
-
   <header>
     <div class="main-options">
       <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
@@ -23,8 +21,6 @@
   </header>
   <p class="text-lowercase d-none"><em>{{words[page].pronunciation}}</em></p>
 
- 
-
   <form class="form-quiz-container" method="post" action="/quiz/set/">
     <input name="set_id" type="hidden" value="{{set_id}}" />
     <input name="page" type="hidden" value="{{page+1}}" />
@@ -38,19 +34,8 @@
         <label class="btn btn-radio" for="option{{loop.index}}">{{opt.word}}</label>
       {% endfor %}
 
-      <!-- <input value="{{words[page].id}}a" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option1" autocomplete="off">
-      <label class="btn btn-radio" for="option1">Checked</label>
-
-      <input value="{{words[page].id}}b" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option2" autocomplete="off">
-      <label class="btn btn-radio btn-success" for="option2">Success</label>
-
-      <input value="{{words[page].id}}c" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option3" autocomplete="off">
-      <label class="btn btn-radio btn-error" for="option3">Error</label>
-
-      <input value="{{words[page].id}}d" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option4" autocomplete="off">
-      <label class="btn btn-radio" for="option4">Radio</label> -->
     </div>
-    <div id="result"></div>
+    <input type="hidden" id="experience" name="experience" value={{experience}} />
     <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('Continue') }}</button>
     <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('Skip') }}</button>
   </form>
@@ -61,12 +46,11 @@
           
         for(i = 0; i < ele.length; i++) {
             if(ele[i].checked) {
-                // document.getElementById("result").innerHTML
-                //       = "wordchoice: "+ele[i].value;
-                // console.log(ele[i].nextSibling.nextSibling)
                 datatype = ele[i].dataset.type;
                 ((ele[i].nextSibling).nextSibling).classList.add('btn-'+datatype);
-
+                if (datatype == "success") {
+                  document.getElementById("experience").value = parseInt(document.getElementById("experience").value) + 1;
+                }
             }
             // Disable ability to change choice after selection
             ele[i].disabled = true;                    
