@@ -83,7 +83,16 @@ def set_languages(user_id):
 
 
 def get_word_translation(word_id, orig_lang='', trans_lang=''):
-  """Given word_id, returns translated word in original (native) language"""
+  """
+  Given word_id, returns translated word in original (native) language
+  
+    :param int word_id - word ID in translated language
+    :param int orig_lang - the language to return the given word in
+    :param int trans_lang - the language the word is in
+    :returns: 
+        - string - word translated into orig_lang
+  """
+
   if (orig_lang == ''):
     orig_lang = session['language']['preferred']
   if (trans_lang == ''):

@@ -61,8 +61,8 @@
           
         for(i = 0; i < ele.length; i++) {
             if(ele[i].checked) {
-                document.getElementById("result").innerHTML
-                      = "wordchoice: "+ele[i].value;
+                // document.getElementById("result").innerHTML
+                //       = "wordchoice: "+ele[i].value;
                 // console.log(ele[i].nextSibling.nextSibling)
                 datatype = ele[i].dataset.type;
                 ((ele[i].nextSibling).nextSibling).classList.add('btn-'+datatype);

@@ -133,22 +133,29 @@ def quizset():
           words = get_words_by_set_id(int(set_id))
           set_info = db.execute("SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
 
-          # print(words[page])
           activeword = words[page]
-          
-          # print(words[page]['id'])
+          word_options = []
+          # Pull alternate word choices
+          for w in words:
+            # Don't duplicate answer word
+            if w['id'] != activeword['id']:
+              word_options.append({
+                'word': get_word_translation(w['id']), 
+                'data': 'error', 
+                'translation': w['wordstr']
+              })
 
-          # Erroing
-          # translatedword = get_word_translation(words[page]['id'], 1, 2)
+          # Shuffle and limit alternate answers to 3
+          random.shuffle(word_options)
+          if (len(word_options) > 3):
+            word_options = word_options[0:3]
 
-          # print(translatedword)
-          word_options = [
-            {'word': "Apple", 'data': 'success', 'translation': activeword['wordstr']}
-          ]
-          word_options.append({'word': 'Peach', 'data': 'error', 'translation': 'אפרסק'})
-          word_options.append({'word': 'Plum', 'data': 'error', 'translation': 'שזיפ'})
-          word_options.append({'word': 'Mango', 'data': 'error', 'translation': 'מנגו'})
-          
+          # Add correct answer to the array of answers
+          word_options.append({
+            'word': get_word_translation(activeword['id']), 
+            'data': 'success', 
+            'translation': activeword['wordstr']
+          })
           random.shuffle(word_options)
 
           return render_template("quizset.html", words=words, word_options=word_options, set_info=set_info, page=page, set_id=set_id)

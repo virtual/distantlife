@@ -367,3 +367,10 @@ WHERE word_sets.language_id = 2;
 
 INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (1, 2, 10, 9);
 INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 9, 10);
+
+
+-- he to en missing
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 1, 5);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 2, 6);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 3, 7);
+INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 4, 8);
