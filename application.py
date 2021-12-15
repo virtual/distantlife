@@ -108,7 +108,9 @@ def edit_set():
       set_id = int(request.args.get('set_id'))
       set_info = get_set_by_id(set_id)
       words = get_words_by_set_id(set_id)
-      return render_template("editset.html", set_info=set_info, role=role, words=words)
+
+      sets = get_sets(session['language']['learning'], session['language']['preferred'])
+      return render_template("editset.html", set_info=set_info, role=role, words=words, sets=sets)
     else:
       sets = get_sets()
       return render_template("editsets.html", sets=sets, role=role)
@@ -207,8 +209,14 @@ def createset():
             # TODO Set a default image here
             insert_word_set = db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)", 
                 "/sets/fruits.png", learning_wordid, learning_lang)
+            insert_word_set_orig = db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)", 
+                "/sets/fruits.png", preferred_wordid, preferred_lang)
+
             if (insert_word_set > 0):
               flash("New set created: " + setname)
+            if (insert_word_set_orig > 0):
+              flash("New set created: " + plang_setname)
+
             else:
               flash("Error creating new set")
             sets = get_sets()
@@ -324,13 +332,21 @@ def uploadFiles():
     if request.form.get("word_set_id"):
       word_set_id = request.form.get("word_set_id")
 
+
+
       if uploaded_file.filename != '':
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
         # set the file path
         uploaded_file.save(file_path)
         # save the file
         print(file_path)
-        num_words = save_words(file_path, word_set_id)
+
+
+        if request.form.get("additional_set"):
+          orig_set_id = request.form.get("additional_set")
+          num_words = save_words(file_path, word_set_id, orig_set_id)
+        else:
+          num_words = save_words(file_path, word_set_id)
         flash(str(num_words) + " words added to word set")
         # Delete file from static after parsing
         if os.path.exists(file_path):

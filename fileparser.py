@@ -6,7 +6,7 @@ db = SQL("sqlite:///distantlife.db")
 
 
 # Open the CSV file and read its contents into memory
-def save_words(csvf, word_set_id):
+def save_words(csvf, word_set_id, orig_set_id = ''):
   words = []
   headings = []
 
@@ -61,6 +61,11 @@ def save_words(csvf, word_set_id):
 
       db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)", 
             word_set_id, new_translated_word_id)
+
+      # if orig_set_id is set
+      if (orig_set_id != ''):
+        db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)", 
+            int(orig_set_id), new_orig_word_id)
       
       # insert orig and its translation equivalent
       db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)", 

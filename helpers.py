@@ -103,11 +103,15 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
   
   return translation[0]['wordstr']
 
-def get_sets():
-  setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", session['language']['learning'])
+def get_sets(language_id = '', trans_lang=''):
+  if (trans_lang == ''):
+    trans_lang = session['language']['learning']
+  if (language_id == ''):
+    language_id = session['language']['preferred']
+  setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", trans_lang)
   sets = []
   for setinfo in setsqry:
-    translation = get_word_translation(int(setinfo['setnameid']))
+    translation = get_word_translation(int(setinfo['setnameid']), language_id, trans_lang)
     totalcount = db.execute("select count(*) as count from word_set_words where word_set_id =  ?", setinfo['id'])
     setinfo = {
       "id": setinfo['id'],

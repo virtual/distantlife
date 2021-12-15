@@ -51,9 +51,23 @@
     <fieldset>
       <legend>Upload words via CSV</legend>
       <input name="word_set_id" type="hidden" value="{{set_info.id}}" />
+
+
+
+      
       <div class="form-group">
-        <label for="setname">{{ _('Set Name') }}</label>
+        <label for="setname">Add second column (tranlsation) to {{set_info.wordstr}} (#{{set_info.id}}) </label>
         <input type="file" name="file">
+      </div> 
+
+      <div class="form-group">
+        <label for="additional_set">Add first column to additional set: </label>
+        <select id="additional_set" name="additional_set">
+          <option>---------</option>
+            {% for set in sets %}
+              <option value="{{set.id}}">{{set.set_name}} (#{{set.id}})</option>
+            {% endfor %}
+          </select>
       </div> 
       
     </fieldset>

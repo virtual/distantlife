@@ -1,31 +1,4 @@
 /* additional styles not implemented on fed-projects/04 */
-/* $alert-success: #5DDB6D !default;
-$alert-info: #3BBDEE !default;
-$alert-warning: #EDDE43 !default;
-$alert-danger: #E48850 !default; */
-td.form-options form {
-  display: inline-block;
-  width: auto;
-  margin-top: 0;
-}
-.btn.btn-secondary {
-  background-color: rgba(5, 5, 23, .5)
-}
-.btn-danger {
-  background-color: #d95a01;
-}
-input {
-  color: rgb(5, 5, 23)
-}
-.alert-info {
-  padding: 8px;
-  background-color: #3BBDEE;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-.secondary-main h1 {
-  font-size: 24px;
-}
-h1 .badge {
-  top: -3px;
+.d-inline {
+  display: inline !important;
 }
