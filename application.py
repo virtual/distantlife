@@ -448,6 +448,42 @@ def adopt():
         return render_template("adopt.html", pet_types=rows)
 
 
+
+@app.route("/abandon/")
+@login_required
+def abandon():
+    pet_id = int(request.args.get('id'))
+    
+    # Check that active pet is not the one being deleted
+    print("SELECT active_pet_id FROM users WHERE id = ?", session["user_id"])      
+    
+    # Delete pet from pet owners
+    # This ensures the current user owns the pet being abandoned
+    rows = db.execute("DELETE FROM owners WHERE owner_id = ? AND pet_id = ?", session["user_id"], pet_id)
+    if rows == 1:
+        db.execute("DELETE FROM pets WHERE id = ?", pet_id)
+    else:
+      return apology("Error abandoning pet", 403)        
+
+    # TODO
+    # If active pet is deleted pet, change a different pet to active pet
+    # db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
+    #                              petid, session["user_id"])
+    # set_active_pet_in_session(session["user_id"])
+    
+    return redirect('/pets')
+
+
+@app.route("/activate/")
+@login_required
+def activate():
+    pet_id = int(request.args.get('id'))
+    db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
+                                 pet_id, session["user_id"])
+    set_active_pet_in_session(session["user_id"])
+    return redirect('/pets')
+
+
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):

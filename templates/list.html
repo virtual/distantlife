@@ -14,16 +14,36 @@
 
 {% if (pets_owned|length) > 0 %}
   <div class="col-list row">
-    {% for pets in pets_owned %}
+    {% for pet in pets_owned %}
 
     <div class="col-12">
-      <img src="/static/{{ pets.imgsrc }}" alt="" />
-      <h2>{{ pets.name }} 
-        {% if pets.id == pets.active_pet_id %}
+      <img src="/static/{{ pet.imgsrc }}" alt="" />
+      <h2>{{ pet.name }} 
+        {% if pet.id == pet.active_pet_id %}
         <span class="badge badge-success">Active pet</span>
         {% endif %} </h2>
-        <p>{{ pets.pet_type }} <small>(#{{ pets.id }})</small></p>
-        {{ progressbar((pets.exp)) }}
+        <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
+        {{ progressbar((pet.exp)) }}
+
+        <ul class="element-options">
+          <li class="has-dropdown"><button class="btn-secondary" aria-haspopup="true">
+            Options
+          </button>
+            <ul class="dropdown" aria-label="submenu">
+              <li><a href="/activate/?id={{pet.id}}">Make Active Pet</a></li>
+              {% if (pet.exp) < 100 %}
+                <li><a class="disabled" href="#">Rename
+                  <span title="Pet renaming is available at level 2" class="fad fa-info-circle"></span>
+                  <span class="sr-only">info</span>
+                </a></li>
+              {% else %}
+                <li><a href="/pet/?id={{pet.id}}">Rename</a></li>
+              {% endif %}
+              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">Abandon</a></li>
+            </ul>
+          </li>
+        </ul>
+
       </div>
     {% endfor %}
   </div>

@@ -2,3 +2,18 @@
 .d-inline {
   display: inline !important;
 }
+.element-options {
+  padding-right: 0;
+}
+.element-options li.has-dropdown ul.dropdown {
+  position: absolute;
+  padding-right: 0;
+  z-index: 2;
+}
+.element-options li.has-dropdown ul.dropdown li a {
+  background-color: #4E84A5;
+}
+.element-options li.has-dropdown ul.dropdown li a.disabled {
+  opacity: 1;
+  color: rgba(255, 255, 255, .5)
+}
