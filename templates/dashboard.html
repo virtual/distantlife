@@ -7,28 +7,26 @@
 
 {% block main %}
 
-
-<h1>{{ _('Dashboard') }}</h1>
-   <p>Mew</p>
  
-   <div class="d-none">
-    <dl class="list-stats">
-      <dt>
-        <span class="fal fa-star"></span>
-        <span class="sr-only">star</span>
-      </dt>
-      <dd>10 words learned</dd>
-    </dl>
-    <dl class="list-stats">
-      <dt>
-        <span class="fal fa-coins"></span>
-        <span class="sr-only">coins</span>
-      </dt>
-      <dd>$13.00</dd>
-    </dl>
-    <h3>{{ _('Latest Notifications') }}:</h3>
-    <ul>
-      <li>{{ _('Badge') }}: Grocery Run</li>
-    </ul>
+<h2>{{ _('Latest Notifications') }}</h2>
+<div class="card">
+<p>No recent updates.</p>
+</div>
+<h2>{{ _('News') }}</h2>
+<div class="card">
+     <h3>December 15, 2021</h3>
+     <p>Added features:</p>
+     <ul>
+       <li>Change active pet</li>
+       <li>Abandon pet</li>
+     </ul>
   </div>
+
+  <div class="card">
+    <h3>December 14, 2021</h3>
+    <p>Added admin features:</p>
+    <ul>
+      <li>Add words to original & translated language quiz sets with one upload</li>
+    </ul>
+ </div>
 {% endblock %}

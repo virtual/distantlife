@@ -17,3 +17,15 @@
   opacity: 1;
   color: rgba(255, 255, 255, .5)
 }
+.card {
+  background-color: rgba(255, 255, 255, .1);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.card h3 {
+  color: #fff;
+}
+
+.p-title {
+  border-bottom: 1px dashed #99b6cb;
+}

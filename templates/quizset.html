@@ -8,7 +8,7 @@
 
   <header>
     <div class="main-options">
-      <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
+      <h1><span class="p-title" title="{{words[page].pronunciation}}">{{words[page].wordstr}}</span> <span class="badge badge-info">{{ words[page].type}}</span></h1>
       {% if (words[page].audiosrc) %}
       <div class="options">
         <button class="btn-option">
