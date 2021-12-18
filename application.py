@@ -15,7 +15,7 @@ from fileparser import save_words
 
 
 # default it runs on port 6379
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = redis.StrictRedis(host="0.0.0.0", port=6379, db=0)
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -27,6 +27,9 @@ LANGUAGES = {
     'he': 'Hebrew'
 }
 app.config['LANGUAGES'] = LANGUAGES
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
 
 # set localization for text keys
 @babel.localeselector
@@ -60,7 +63,7 @@ app.secret_key = 'DL_SESSION_KEY'
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis.from_url('redis://127.0.0.1:6379')
+app.config['SESSION_REDIS'] = redis.from_url('redis://0.0.0.0:6379')
 
 Session(app)
 
