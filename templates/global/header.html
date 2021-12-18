@@ -11,7 +11,7 @@
       </div>
       <nav id="siteMenu" role="menu" aria-labelledby="menubutton">
         <ul class="list-unstyled list-inline">
-          {% if session.user_id %}
+          {% if session.get("user_id") %}
           <li><a href="/">{{ _('Dashboard') }}</a></li>
           <li><a href="/pets">{{ _('My Pets') }}</a></li>
           <li><a href="/train">{{ _('Train') }}</a></li>

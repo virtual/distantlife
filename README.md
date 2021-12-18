@@ -4,7 +4,7 @@ A virtual pet site mixed with learning languages.
 
 ## Development
 
-```python
+```sh
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
@@ -12,10 +12,16 @@ export FLASK_APP=application
 export FLASK_ENV=development # enable autoreload
 ```
 
+```sh
+brew install redis
+# redis-cli shutdown
+```
+
 ## Running
 
-```python
-flask run
+```sh
+redis-server (one terminal)
+flask run (another terminal)
 ```
 
 ## Translations
