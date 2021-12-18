@@ -5,6 +5,12 @@ A virtual pet site mixed with learning languages.
 ## Development
 
 ```sh
+brew install redis
+```
+
+Enable virtual environment:
+
+```sh
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
@@ -12,16 +18,11 @@ export FLASK_APP=application
 export FLASK_ENV=development # enable autoreload
 ```
 
-```sh
-brew install redis
-# redis-cli shutdown
-```
-
 ## Running
 
 ```sh
-redis-server (one terminal)
-flask run (another terminal)
+redis-server # venv terminal #1
+flask run # terminal #2
 ```
 
 ## Translations
