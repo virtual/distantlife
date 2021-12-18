@@ -1,5 +1,7 @@
 import os
 import random
+import redis
+
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -8,8 +10,12 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel 
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int
 from fileparser import save_words
+
+
+# default it runs on port 6379
+r = redis.StrictRedis(host="0.0.0.0", port=6379, db=0)
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -22,11 +28,14 @@ LANGUAGES = {
 }
 app.config['LANGUAGES'] = LANGUAGES
 
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+
 # set localization for text keys
 @babel.localeselector
 def get_locale():
     if (session.get("language") is not None): 
-      return session['language']['charcode']
+      return session.get('language')['charcode']
     return request.accept_languages.best_match(app.config['LANGUAGES'].keys())
 
 @app.after_request
@@ -37,18 +46,25 @@ def after_request(response):
     return response
 
 
-
 UPLOAD_FOLDER = 'static/files'
 app.config['UPLOAD_FOLDER'] =  UPLOAD_FOLDER
-
-
-
 
 app.jinja_env.filters["usd"] = usd
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+
+# TODO
+# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
+# NOTE: The secret key is used to cryptographically-sign the cookies used for storing
+#       the session identifiesession.
+app.secret_key = 'DL_SESSION_KEY'
+
+# Configure Redis for storing the session data on the server-side
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url('redis://0.0.0.0:6379')
+
 Session(app)
 
 db = SQL("sqlite:///distantlife.db")
@@ -57,18 +73,18 @@ db = SQL("sqlite:///distantlife.db")
 @app.route("/")
 def index():
     # """dashboard page"""
-    if (session.get("user_id") is not None): 
+    if (session_get_int("user_id") is not None): 
+      print(session_get_int("user_id"))
       return render_template("dashboard.html")
     else:
       return render_template("index.html")
-      
 
 @app.route("/pets")
 @login_required
 def pets():
     """dashboard page"""
-    # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.active_pet_id = pets.id WHERE owner_id = ?", session["user_id"])
-    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session["user_id"])
+    # pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.active_pet_id = pets.id WHERE owner_id = ?", session_get_int("user_id"))
+    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session_get_int("user_id"))
     return render_template("list.html", pets_owned=pets_owned)
 
 
@@ -109,7 +125,7 @@ def edit_set():
       set_info = get_set_by_id(set_id)
       words = get_words_by_set_id(set_id)
 
-      sets = get_sets(session['language']['learning'], session['language']['preferred'])
+      sets = get_sets(session.get('language')['learning'], session.get('language')['preferred'])
       return render_template("editset.html", set_info=set_info, role=role, words=words, sets=sets)
     else:
       sets = get_sets()
@@ -223,7 +239,7 @@ def createset():
         return render_template("editsets.html", sets=sets)
     else:
       language_options = db.execute("SELECT * FROM languages")
-      userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
+      userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session_get_int("user_id"))
       return render_template("createset.html", language_options=language_options, userinfo=userinfo[0])
      
 
@@ -257,10 +273,12 @@ def login():
         rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
         if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
-        session["user_id"] = rows[0]["id"]
+        
+        session["user_id"] = int(rows[0]["id"])
         session["username"] = request.form.get("username")
-        set_active_pet_in_session(session["user_id"])
-        set_languages(session["user_id"]) 
+        
+        set_active_pet_in_session(session_get_int("user_id"))
+        set_languages(session_get_int("user_id")) 
         return redirect("/")
     else:
         return render_template("login.html")
@@ -271,6 +289,7 @@ def login():
 def logout():
     """Log user out"""
     session.clear()
+    r.flushdb()
     return redirect("/")
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -312,7 +331,7 @@ def about():
 @login_required
 def profile():
     """User Profile"""
-    userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session["user_id"])
+    userinfo = db.execute("SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session_get_int("user_id"))
 
     language_options = db.execute("SELECT * FROM languages")
 
@@ -371,14 +390,14 @@ def updatelanguage():
         if (preferred_lang == learning_lang):
             return apology("Preferred language and learning language cannot be the same :)", 400)
      
-        rows = db.execute("SELECT password FROM users WHERE id = ?", session["user_id"])
+        rows = db.execute("SELECT password FROM users WHERE id = ?", session_get_int("user_id"))
 
         db.execute("UPDATE users SET preferred_lang = ? WHERE id = ?",
-                    preferred_lang, session["user_id"])
+                    preferred_lang, session_get_int("user_id"))
         db.execute("UPDATE users SET learning_lang = ? WHERE id = ?",
-                    learning_lang, session["user_id"])
+                    learning_lang, session_get_int("user_id"))
 
-        set_languages(session["user_id"])
+        set_languages(session_get_int("user_id"))
 
         return redirect("/profile")
     else:
@@ -403,14 +422,14 @@ def updatepassword():
         elif not password2:
             return apology("must confirm password", 400)
 
-        rows = db.execute("SELECT password FROM users WHERE id = ?", session["user_id"])
+        rows = db.execute("SELECT password FROM users WHERE id = ?", session_get_int("user_id"))
 
         if (check_password_hash(rows[0]["password"], password)):
             return apology("password cannot be the same as existing password", 400)
 
         else:
             db.execute("UPDATE users SET password = ? WHERE id = ?",
-                       generate_password_hash(password), session["user_id"])
+                       generate_password_hash(password), session_get_int("user_id"))
 
         return redirect("/profile")
     else:
@@ -433,12 +452,12 @@ def adopt():
 
         # add owner to pet
         db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
-                                 session["user_id"], petid)
+                                 session_get_int("user_id"), petid)
         
         # set as user's active pet
         db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-                                 petid, session["user_id"])
-        set_active_pet_in_session(session["user_id"])
+                                 petid, session_get_int("user_id"))
+        set_active_pet_in_session(session_get_int("user_id"))
         return redirect("/")
     else:
           
@@ -455,11 +474,11 @@ def abandon():
     pet_id = int(request.args.get('id'))
     
     # Check that active pet is not the one being deleted
-    print("SELECT active_pet_id FROM users WHERE id = ?", session["user_id"])      
+    print("SELECT active_pet_id FROM users WHERE id = ?", session_get_int("user_id"))      
     
     # Delete pet from pet owners
     # This ensures the current user owns the pet being abandoned
-    rows = db.execute("DELETE FROM owners WHERE owner_id = ? AND pet_id = ?", session["user_id"], pet_id)
+    rows = db.execute("DELETE FROM owners WHERE owner_id = ? AND pet_id = ?", session_get_int("user_id"), pet_id)
     if rows == 1:
         db.execute("DELETE FROM pets WHERE id = ?", pet_id)
     else:
@@ -468,8 +487,8 @@ def abandon():
     # TODO
     # If active pet is deleted pet, change a different pet to active pet
     # db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-    #                              petid, session["user_id"])
-    # set_active_pet_in_session(session["user_id"])
+    #                              petid, session_get_int("user_id"))
+    # set_active_pet_in_session(session_get_int("user_id"))
     
     return redirect('/pets')
 
@@ -479,9 +498,26 @@ def abandon():
 def activate():
     pet_id = int(request.args.get('id'))
     db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-                                 pet_id, session["user_id"])
-    set_active_pet_in_session(session["user_id"])
+                                 pet_id, session_get_int("user_id"))
+    set_active_pet_in_session(session_get_int("user_id"))
     return redirect('/pets')
+
+
+# # Redis Set
+# @app.route("/set/<string:key>/<string:value>")
+# def set(key, value):
+#     # if session.exists(key):
+#     #     pass
+#     session.set(key, value)
+#     return True
+
+# # Redis Get
+# @app.route("/get/<string:key>")
+# def get(key, value):
+#     if session.exists(key):
+#         return session.get(key)
+#     else:
+#         return None
 
 
 def errorhandler(e):

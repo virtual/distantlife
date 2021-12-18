@@ -1,7 +1,10 @@
 from cs50 import SQL
 import csv
+import redis
+# default it runs on port 6379
 
 db = SQL("sqlite:///distantlife.db")
+r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 
 

@@ -1,12 +1,15 @@
-import os
-import requests
-import urllib.parse
+# import os
+# import requests
+# import urllib.parse
 from cs50 import SQL
+import redis
 # import locale
 
-from flask import redirect, render_template, request, session
+from flask import redirect, render_template, session
 from functools import wraps
 db = SQL("sqlite:///distantlife.db")
+
+r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 def apology(message, code=400):
     """Render message as an apology to user."""
@@ -21,7 +24,9 @@ def login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
+        print("===============")
+        print(session_get_int("user_id"))
+        if session_get_int("user_id") is None:
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
@@ -34,7 +39,7 @@ def admin_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        roles = db.execute("SELECT roles FROM users WHERE id = ?", session["user_id"])
+        roles = db.execute("SELECT roles FROM users WHERE id = ?", session_get_int('user_id'))
         if len(roles) != 1 :
           return apology("invalid user id", 403)
         else:
@@ -94,9 +99,9 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
   """
 
   if (orig_lang == ''):
-    orig_lang = session['language']['preferred']
+    orig_lang = session.get('language')['preferred']
   if (trans_lang == ''):
-    trans_lang = session['language']['learning']
+    trans_lang = session.get('language')['learning']
 
   translation = db.execute("SELECT wordstr FROM words where id = (SELECT word_translation.trans_word FROM words JOIN word_translation ON word_translation.orig_word = words.id WHERE words.id = ? AND word_translation.trans_lang = ? AND word_translation.orig_lang = ?)", 
   word_id, orig_lang, trans_lang)
@@ -105,9 +110,9 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
 
 def get_sets(language_id = '', trans_lang=''):
   if (trans_lang == ''):
-    trans_lang = session['language']['learning']
+    trans_lang = session.get('language')['learning']
   if (language_id == ''):
-    language_id = session['language']['preferred']
+    language_id = session.get('language')['preferred']
   setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", trans_lang)
   sets = []
   for setinfo in setsqry:
@@ -135,7 +140,7 @@ def get_set_by_id(set_id):
         - setnameid - word ID of wordstr
         - imgsrc - image path for set cover image
   """
-  setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ? AND word_sets.id = ?", session['language']['learning'], set_id)
+  setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ? AND word_sets.id = ?", session.get('language')['learning'], set_id)
   return setsqry[0]
 
 def get_words_by_set_id(set_id):
@@ -147,20 +152,29 @@ def get_words_by_set_id(set_id):
 
 
 def get_role():
-  rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session['user_id'])
+  print('get_role')
+  # print(session_get_int('user_id'))
+  rolesqry = db.execute("SELECT roles FROM users WHERE id =  ?", session_get_int('user_id'))
+  print(rolesqry)
   role = rolesqry[0]['roles']
   return role
 
 
+def session_get_int(key): 
+  if session.get(key) is not None:
+    return int(session.get(key))
+  else:
+    return None
+
 def update_experience(amount):
-  activepetqry = db.execute("SELECT active_pet_id FROM users WHERE id =  ?", session['user_id'])
+  activepetqry = db.execute("SELECT active_pet_id FROM users WHERE id =  ?", session_get_int('user_id'))
   active_pet_id = int(activepetqry[0]['active_pet_id'])
   expqry = db.execute("SELECT exp FROM pets WHERE id =  ?", active_pet_id)
   exp = int(expqry[0]['exp']) + int(amount)
 
   updateqry = db.execute("UPDATE pets SET exp = ? WHERE id = ?", exp, active_pet_id)    
   if (updateqry > 0):
-    session["active_pet"]["exp"] = exp
+    session.get("active_pet")["exp"] = exp
     return exp
   else:
     return 0

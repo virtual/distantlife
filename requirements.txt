@@ -3,6 +3,8 @@ Flask
 Flask-Session
 Flask-Babel
 requests
+redis
+uwsgi
 
 # Heroku
 gunicorn
