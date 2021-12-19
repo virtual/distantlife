@@ -112,8 +112,8 @@ export FLASK_ENV=development # enable autoreload
 ## Running
 
 ```sh
-redis-server # venv terminal #1
-flask run # terminal #2
+redis-server # terminal #1
+flask run # terminal #2 (venv)
 ```
 
 ## Translations
