@@ -2,7 +2,9 @@
 
 ## 🍿 Video Demo
 
-TBD
+https://youtu.be/zrIuFmyARn8
+
+<br/>
 
 ![Distant Life](./static/logos/logo-light-blue.svg)
 
