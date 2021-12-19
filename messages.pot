@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-06 20:13-0700\n"
+"POT-Creation-Date: 2021-12-19 12:03-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,241 +20,291 @@ msgstr ""
 #: templates/about.html:5 templates/about.html:11
 #: templates/global/footer.html:4
 msgid "About"
-msgstr "About"
+msgstr ""
 
 #: templates/adopt.html:5 templates/adopt.html:11
 msgid "Adopt a Pet"
-msgstr "Adopt a Pet"
+msgstr ""
 
 #: templates/adopt.html:18
 msgid "Type"
-msgstr "Type"
+msgstr ""
 
 #: templates/adopt.html:19
-msgid "Img"
-msgstr "Img"
+msgid "Image"
+msgstr ""
 
-#: templates/adopt.html:20 templates/adopt.html:32
+#: templates/adopt.html:20 templates/adopt.html:31
 msgid "Adopt"
-msgstr "Adopt"
+msgstr ""
 
-#: templates/adopt.html:43
+#: templates/adopt.html:40
 msgid "No pets"
-msgstr "No pets"
+msgstr ""
 
-#: templates/apology.html:17
+#: templates/apology.html:4 templates/apology.html:17
 msgid "Error"
-msgstr "Error"
+msgstr ""
 
 #: templates/apology.html:18
 msgid "Go Back"
-msgstr "Go Back"
+msgstr ""
 
 #: templates/createset.html:4
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
-#: templates/createset.html:11 templates/train.html:48
+#: templates/createset.html:12
+msgid "Word set shown in: (translated language)"
+msgstr ""
+
+#: templates/createset.html:14 templates/createset.html:33
+msgid "Set Name"
+msgstr ""
+
+#: templates/createset.html:18 templates/createset.html:37
+msgid "Language"
+msgstr ""
+
+#: templates/createset.html:31
+msgid "Help text shown in: (native language)"
+msgstr ""
+
+#: templates/createset.html:49 templates/editsets.html:49
 msgid "Create new set"
-msgstr "Create new set"
+msgstr ""
 
-#: templates/dashboard.html:5 templates/dashboard.html:11
-#: templates/global/header.html:15
+#: templates/dashboard.html:5 templates/global/header.html:15
 msgid "Dashboard"
-msgstr "Dashboard"
+msgstr ""
 
-#: templates/dashboard.html:14 templates/index.html:7
-msgid "Free Trial"
-msgstr "Free Trial"
+#: templates/dashboard.html:11
+msgid "Latest Notifications"
+msgstr ""
 
 #: templates/dashboard.html:15
-msgid "Sign up"
-msgstr "Sign up"
-
-#: templates/dashboard.html:32
-msgid "Latest Notifications"
-msgstr "Latest Notifications"
-
-#: templates/dashboard.html:34
-msgid "Badge"
-msgstr "Badge"
-
-#: templates/index.html:20
-msgid "Join for free!"
-msgstr "Join for free!"
-
-#: templates/index.html:21
-msgid ""
-"Distant Life combines virtual pet experience with interactive\n"
-"    language learning and practice, making your learning fun and exciting."
+msgid "News"
 msgstr ""
-"Distant Life combines virtual pet experience with interactive\n"
-"    language learning and practice, making your learning fun and exciting."
 
-#: templates/index.html:32
-msgid "Grow your family of pets as you learn more!"
-msgstr "Grow your family of pets as you learn more!"
-
-#: templates/index.html:34
-msgid ""
-"The more lessons you complete, the more points you earn toward purchasing"
-" additional pets, account upgrades,\n"
-"      and new lessons!"
+#: templates/editset.html:4 templates/editset.html:10
+msgid "Edit Set"
 msgstr ""
-"The more lessons you complete, the more points you earn toward purchasing"
-" additional pets, account upgrades,\n"
-"      and new lessons!"
 
-#: templates/index.html:68
-msgid "Begin your language-learning journey today!"
-msgstr "Begin your language-learning journey today!"
+#: templates/editset.html:17
+msgid "Word"
+msgstr ""
 
-#: templates/index.html:69
-msgid "Get Started"
-msgstr "Get Started"
+#: templates/editset.html:18 templates/editsets.html:20 templates/list.html:30
+#: templates/train.html:31
+msgid "Options"
+msgstr ""
+
+#: templates/editset.html:31 templates/editset.html:33
+#: templates/editsets.html:35 templates/editsets.html:37
+#: templates/petedit.html:5
+msgid "Edit"
+msgstr ""
+
+#: templates/editset.html:39
+msgid "Remove word from set"
+msgstr ""
+
+#: templates/editset.html:39 templates/editset.html:41
+msgid "Delete"
+msgstr ""
+
+#: templates/editset.html:74
+msgid "Upload"
+msgstr ""
+
+#: templates/editsets.html:4
+msgid "Edit Sets"
+msgstr ""
+
+#: templates/editsets.html:17 templates/train.html:32
+msgid "Icon"
+msgstr ""
+
+#: templates/editsets.html:18 templates/train.html:29
+msgid "Word Set"
+msgstr ""
+
+#: templates/editsets.html:19
+msgid "Count"
+msgstr ""
+
+#: templates/global/breadcrumb.html:5 templates/index.html:7
+msgid "Home"
+msgstr ""
 
 #: templates/list.html:6
 msgid "List"
-msgstr "List"
+msgstr ""
+
+#: templates/global/header.html:16 templates/list.html:12
+msgid "My Pets"
+msgstr ""
+
+#: templates/list.html:23 templates/petedit.html:14
+msgid "Active pet"
+msgstr ""
+
+#: templates/list.html:33 templates/petedit.html:41
+msgid "Make Active Pet"
+msgstr ""
+
+#: templates/list.html:35 templates/list.html:40 templates/petedit.html:30
+#: templates/petedit.html:31
+msgid "Rename"
+msgstr ""
+
+#: templates/list.html:42 templates/petedit.html:43
+msgid "Abandon"
+msgstr ""
 
 #: templates/login.html:4 templates/login.html:17
 msgid "Log In"
-msgstr "Log In"
+msgstr ""
 
 #: templates/login.html:10 templates/profile.html:9 templates/signup.html:18
 msgid "Username"
-msgstr "Username"
+msgstr ""
 
-#: templates/login.html:14 templates/profile.html:49 templates/profile.html:50
+#: templates/login.html:14 templates/profile.html:48 templates/profile.html:49
 #: templates/signup.html:22
 msgid "Password"
-msgstr "Password"
+msgstr ""
 
-#: templates/macros.html:9
+#: templates/macros.html:4
 msgid "Level"
-msgstr "Level"
+msgstr ""
 
-#: templates/macros.html:9
+#: templates/macros.html:4
 msgid "Experience"
-msgstr "Experience"
+msgstr ""
+
+#: templates/petedit.html:22
+msgid "Created"
+msgstr ""
+
+#: templates/petedit.html:28
+msgid "Update Pet"
+msgstr ""
+
+#: templates/petedit.html:34
+msgid "Change Name"
+msgstr ""
+
+#: templates/petedit.html:49
+msgid "You do not have a pet with that ID"
+msgstr ""
 
 #: templates/global/header.html:31 templates/profile.html:4
 msgid "Profile"
-msgstr "Profile"
+msgstr ""
 
 #: templates/profile.html:10
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
-#: templates/profile.html:16
+#: templates/profile.html:15
 msgid "Language Preferences"
-msgstr "Language Preferences"
+msgstr ""
 
-#: templates/profile.html:18
+#: templates/profile.html:17
 msgid "My native language is"
-msgstr "My native language is"
+msgstr ""
 
-#: templates/profile.html:30
+#: templates/profile.html:29
 msgid "I want to learn"
-msgstr "I want to learn"
+msgstr ""
 
-#: templates/profile.html:41
+#: templates/profile.html:40
 msgid "Save Preferences"
-msgstr "Save Preferences"
+msgstr ""
 
-#: templates/profile.html:47
+#: templates/profile.html:46
 msgid "Change password"
-msgstr "Change password"
+msgstr ""
 
-#: templates/profile.html:53 templates/profile.html:54 templates/signup.html:26
+#: templates/profile.html:52 templates/profile.html:53 templates/signup.html:26
 msgid "Retype Password"
-msgstr "Retype Password"
+msgstr ""
 
-#: templates/profile.html:56
+#: templates/profile.html:55
 msgid "Update Password"
-msgstr "Update Password"
+msgstr ""
 
-#: templates/quizset.html:17 templates/trainset.html:17
+#: templates/global/header.html:17 templates/quizset.html:4
+#: templates/train.html:4
+msgid "Train"
+msgstr ""
+
+#: templates/quizset.html:16 templates/trainset.html:16
 msgid "play audio"
-msgstr "play audio"
+msgstr ""
 
-#: templates/quizset.html:45
+#: templates/quizset.html:39
+msgid "Continue"
+msgstr ""
+
+#: templates/quizset.html:40
 msgid "Skip"
-msgstr "Skip"
+msgstr ""
 
 #: templates/global/header.html:36 templates/signup.html:4
 #: templates/signup.html:30
 msgid "Sign Up"
-msgstr "Sign Up"
+msgstr ""
 
 #: templates/signup.html:13
 msgid "Sign up today to start your language-learning journey."
-msgstr "Sign up today to start your language-learning journey."
+msgstr ""
 
-#: templates/global/header.html:17 templates/train.html:4
-msgid "Train"
-msgstr "Train"
+#: templates/global/header.html:28 templates/train.html:15
+msgid "settings"
+msgstr ""
 
-#: templates/train.html:15
+#: templates/train.html:27
 msgid "complete"
-msgstr "complete"
+msgstr ""
 
-#: templates/train.html:17
-msgid "Word Set"
-msgstr "Word Set"
+#: templates/train.html:30
+msgid "Words"
+msgstr ""
 
-#: templates/train.html:18
-msgid "Learned"
-msgstr "Learned"
+#: templates/train.html:40
+msgid "incomplete"
+msgstr ""
 
-#: templates/train.html:19
-msgid "Options"
-msgstr "Options"
-
-#: templates/train.html:20
-msgid "Icon"
-msgstr "Icon"
-
-#: templates/train.html:35
+#: templates/train.html:47
 msgid "Quiz"
-msgstr "Quiz"
+msgstr ""
 
 #: templates/trainset.html:4
 msgid "Learn It"
-msgstr "Learn It"
+msgstr ""
 
-#: templates/trainset.html:35
+#: templates/trainset.html:37
 msgid "Next"
-msgstr "Next"
+msgstr ""
 
-#: templates/trainset.html:39
+#: templates/trainset.html:41
 msgid "Complete lesson"
-msgstr "Complete lesson"
-
-#: templates/global/breadcrumb.html:5
-msgid "Home"
-msgstr "Home"
+msgstr ""
 
 #: templates/global/footer.html:4
 msgid "Made with &hearts; by"
-msgstr "Made with &hearts; by"
+msgstr ""
 
 #: templates/global/header.html:9
 msgid "menu"
-msgstr "menu"
-
-#: templates/global/header.html:16
-msgid "My Pets"
-msgstr "My Pets"
-
-#: templates/global/header.html:28
-msgid "settings"
-msgstr "settings"
+msgstr ""
 
 #: templates/global/header.html:32
 msgid "Logout"
-msgstr "Logout"
+msgstr ""
 
 #: templates/global/header.html:37
 msgid "Login"
-msgstr "Login"
+msgstr ""
