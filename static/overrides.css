@@ -29,3 +29,15 @@
 .p-title {
   border-bottom: 1px dashed #99b6cb;
 }
+.card-image {
+  width: 63px;
+}
+.card .card-image .fad {
+  color: #fffd82;
+}
+.pet-group .pet-image-sm { width: 50px; }
+.pet-group .pet-image-lg { width: 80px; }
+@media (min-width: 768px) {
+  .pet-group .pet-image-sm { width: 100px; }
+  .pet-group .pet-image-lg { width: 140px; }
+}

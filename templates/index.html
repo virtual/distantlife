@@ -9,12 +9,12 @@
 
 {% block main %}
 <div class="theme-inversed">
-  <p class="text-center my-0">
-    <img style="height: 100px;" height="100" src="{{ url_for('static', filename='/pets/034-jackalope.png') }}"
+  <p class="text-center my-0 pet-group">
+    <img class="pet-image-sm" src="{{ url_for('static', filename='/pets/034-jackalope.png') }}"
       alt="jackalope" />
-    <img style="height: 140px;" height="140" src="{{ url_for('static', filename='/pets/002-dragon.png') }}"
+    <img class="pet-image-lg" height="140" src="{{ url_for('static', filename='/pets/002-dragon.png') }}"
       alt="dragon" />
-    <img style="height: 100px;" height="100" src="{{ url_for('static', filename='/pets/004-ufo.png') }}"
+    <img class="pet-image-sm" height="100" src="{{ url_for('static', filename='/pets/004-ufo.png') }}"
       alt="UFO" />
     </p>
   <h2 class="text-center mt-0 h2">{{ _('Join for free!') }}</h2>
@@ -24,37 +24,36 @@
 
 <section class="card-container">
 
-  <div class="card">
-    <div class="card-image">
-      <span class="fal fa-narwhal"></span>
-      <span class="sr-only">narwhal</span>
-    </div>
-    <h3>{{ _('Grow your family of pets as you learn more!') }}</h3>
-
-    <p>{{ _('The more lessons you complete, the more points you earn toward purchasing additional pets, account upgrades,
-      and new lessons!') }} </p>
-  </div>
 
 
   <div class="card">
     <div class="card-image">
-      <span class="fal fa-rocket-launch"></span>
+      <span class="fad fa-rocket-launch"></span>
       <span class="sr-only">rocket-launch</span>
     </div>
-    <h3>Detailed Records</h3>
+    <h3>Discover languages</h3>
 
-    <p>Seamlessly communicate seamless infrastructures rather than progressive potentialities. </p>
+    <p>You've landed on a new planet and need to learn words and phrases in order to grow your family of pets and travel to new worlds!</p>
   </div>
-
 
   <div class="card">
     <div class="card-image">
-      <span class="fal fa-star"></span>
+      <span class="fad fa-cat-space"></span>
+      <span class="sr-only">cat in space</span>
+    </div>
+    <h3>{{ _('Grow your family of pets') }}</h3>
+
+    <p>{{ _('The more lessons you complete, the more experience you earn. Keep learning to gain additional pets, account upgrades, and new lessons.') }} </p>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <span class="fad fa-star"></span>
       <span class="sr-only">star</span>
     </div>
-    <h3>Fully Customizable</h3>
-
-    <p>Assertively create sustainable platforms without adaptive intellectual capital. Continually.</p>
+    <h3>New features</h3>
+    
+    <p>With new features weekly, we've created the learning experience you've been looking for!</p>
   </div>
 
 </section>
