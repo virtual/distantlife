@@ -16,12 +16,11 @@
         <thead>
             <tr>
                 <th>{{ _('Type') }}</th>
-                <th>{{ _('Img') }}</th>
+                <th>{{ _('Image') }}</th>
                 <th>{{ _('Adopt') }}</th>
             </tr>
         </thead>
         <tbody>
-            <!-- TODO: Loop through the database entries to display them in this table -->
             {% for pet_type in pet_types %}
             <tr>
                 <td>{{ pet_type.pet_type }} ({{pet_type.id}})</td>
@@ -34,8 +33,6 @@
               </td>
             </tr>
             {% endfor %}
-
-
         </tbody>
     </table>
   </form>

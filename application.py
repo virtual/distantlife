@@ -261,7 +261,6 @@ def delete_word():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-    # session.clear()
     if request.method == "POST":
         if not request.form.get("username"):
             return apology("must provide username", 403)
@@ -419,9 +418,6 @@ def updatelanguage():
 
         if (preferred_lang == learning_lang):
             return apology("Preferred language and learning language cannot be the same :)", 400)
-
-        rows = db.execute(
-            "SELECT password FROM users WHERE id = ?", session_get_int("user_id"))
 
         db.execute("UPDATE users SET preferred_lang = ? WHERE id = ?",
                    preferred_lang, session_get_int("user_id"))

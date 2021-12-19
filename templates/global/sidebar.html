@@ -1,14 +1,10 @@
-{% from "./macros.html" import usedalot, progressbar, get_data with context %}
+{% from "./macros.html" import progressbar, get_data with context %}
 <aside>
   {% if (session.get("active_pet")) %}
   <p class="text-center my-0 pet-box ">
-    
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />
   </p>
   <h3>{{session["active_pet"]["name"]}}</h3>
-  
   {{ progressbar(session["active_pet"]["exp"]) }}
-
   {% endif %}
-
 </aside>

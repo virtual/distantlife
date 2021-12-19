@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from "./macros.html" import usedalot, progressbar, get_data with context %}
+{% from "./macros.html" import progressbar, get_data with context %}
 
 
 {% block title %}
@@ -9,7 +9,7 @@
 {% block main %}
 
 
-<h1>My Pets</h1>
+<h1>{{ _('My Pets') }}</h1>
 
 
 {% if (pets_owned|length) > 0 %}
@@ -20,26 +20,26 @@
       <img src="/static/{{ pet.imgsrc }}" alt="" />
       <h2>{{ pet.name }} 
         {% if pet.id == pet.active_pet_id %}
-        <span class="badge badge-success">Active pet</span>
+        <span class="badge badge-success">{{ _('Active pet') }}</span>
         {% endif %} </h2>
         <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
         {{ progressbar((pet.exp)) }}
 
         <ul class="element-options">
           <li class="has-dropdown"><button class="btn-secondary" aria-haspopup="true">
-            Options
+            {{ _('Options') }}
           </button>
             <ul class="dropdown" aria-label="submenu">
-              <li><a href="/activate/?id={{pet.id}}">Make Active Pet</a></li>
+              <li><a href="/activate/?id={{pet.id}}">{{ _('Make Active Pet') }}</a></li>
               {% if (pet.exp) < 100 %}
-                <li><a class="disabled" href="#">Rename
+                <li><a class="disabled" href="#">{{ _('Rename') }}
                   <span title="Pet renaming is available at level 2" class="fad fa-info-circle"></span>
                   <span class="sr-only">info</span>
                 </a></li>
               {% else %}
-                <li><a href="/pets/edit/?id={{pet.id}}">Rename</a></li>
+                <li><a href="/pets/edit/?id={{pet.id}}">{{ _('Rename') }}</a></li>
               {% endif %}
-              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">Abandon</a></li>
+              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">{{ _('Abandon') }}</a></li>
             </ul>
           </li>
         </ul>

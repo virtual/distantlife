@@ -1,8 +1,3 @@
-{% macro usedalot(somevalue) %}
-    <div class="usedalot">{{ somevalue }}</div>
-{% endmacro %}
-
-
 {% macro progressbar(exp) %}
 {% set level %}{{ (exp // 100) + 1 }}{% endset %}
 {% set percent %}{{ exp % 100 }}{% endset %}

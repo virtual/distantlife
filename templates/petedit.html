@@ -1,22 +1,17 @@
 {% extends "layout.html" %}
-{% from "./macros.html" import usedalot, progressbar, get_data with context %}
-
+{% from "./macros.html" import progressbar, get_data with context %}
 
 {% block title %}
 {{ _('Edit') }}
 {% endblock %}
 
 {% block main %}
-
-
-
-
 {% if (pet_info|length) > 0 %}
 
     {% for pet in pet_info %}
     <h1>{{ pet.name }} 
       {% if pet.id == pet.active_pet_id %}
-      <span class="badge badge-success">Active pet</span>
+      <span class="badge badge-success">{{ _('Active pet') }}</span>
       {% endif %} </h1>
 
     <div class="pet-edit-image">
@@ -24,7 +19,7 @@
     </div>
       
         <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small><br/>
-        Created: {{ pet.created }}</p>
+          {{ _('Created') }}: {{ pet.created }}</p>
         {{ progressbar((pet.exp)) }}
 
         {% if (pet.exp) >= 100 %}
@@ -43,19 +38,15 @@
 
             <ul class="mt-5 dropdown" aria-label="submenu">
               {% if pet.id != pet.active_pet_id %}
-              <li><a href="/activate/?id={{pet.id}}">Make Active Pet</a></li>
+              <li><a href="/activate/?id={{pet.id}}">{{ _('Make Active Pet') }}</a></li>
               {% endif %}
-              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">Abandon</a></li>
+              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">{{ _('Abandon') }}</a></li>
             </ul> 
 
     {% endfor %}
-
   {% else %}
 
-
-    <p>You do not have a pet with that ID</p>
+    <p>{{ _('You do not have a pet with that ID') }}</p>
 {% endif %}
-
-
 
 {% endblock %}

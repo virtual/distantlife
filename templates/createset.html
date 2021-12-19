@@ -9,7 +9,7 @@
 
 <form class="mx-auto centered" action="/create/set/" method="post">
   <fieldset>
-    <legend>Word set shown in: (translated language)</legend>
+    <legend>{{ _('Word set shown in: (translated language)') }}</legend>
     <div class="form-group">
       <label for="setname">{{ _('Set Name') }}</label>
       <input required id="setname" name="setname" type="text" />
@@ -28,7 +28,7 @@
     </div>
   </fieldset>
   <fieldset>
-    <legend>Help text shown in: (native language)</legend>
+    <legend>{{ _('Help text shown in: (native language)') }}</legend>
     <div class="form-group">
       <label for="plang_setname">{{ _('Set Name') }}</label>
       <input required id="plang_setname" name="plang_setname" type="text" />

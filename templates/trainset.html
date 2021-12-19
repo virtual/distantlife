@@ -6,8 +6,6 @@
 
 {% block main %}
 
- 
-
   <header>
     <div class="main-options">
       <h1>{{words[page].wordstr}} <span class="badge badge-info">{{ words[page].type}}</span></h1>
@@ -28,8 +26,8 @@
     <div class="figure-img"><img src="{{ url_for('static', filename=words[page].imgsrc) }}" alt=""></div>
     {% endif %}
     <figcaption class="main-options">
-      <p>translation</p>
-      <p>{{page + 1}}/?</p>
+      <!-- <p>translation</p> -->
+      <p>{{page + 1}}/{{words | length}}</p>
     </figcaption>
   </figure>
 
