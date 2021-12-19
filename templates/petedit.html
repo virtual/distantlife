@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% from "./macros.html" import usedalot, progressbar, get_data with context %}
+
+
+{% block title %}
+{{ _('Edit') }}
+{% endblock %}
+
+{% block main %}
+
+
+
+
+{% if (pet_info|length) > 0 %}
+
+    {% for pet in pet_info %}
+    <h1>{{ pet.name }} 
+      {% if pet.id == pet.active_pet_id %}
+      <span class="badge badge-success">Active pet</span>
+      {% endif %} </h1>
+
+    <div class="pet-edit-image">
+      <img src="/static/{{ pet.imgsrc }}" alt="" />
+    </div>
+      
+        <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small><br/>
+        Created: {{ pet.created }}</p>
+        {{ progressbar((pet.exp)) }}
+
+        {% if (pet.exp) >= 100 %}
+        <form class="mx-auto centered" action="/pets/edit/" method="post">
+          <fieldset>
+              <legend>{{ _('Update Pet') }}</legend>
+              <div class="form-group">
+                <label for="rename">{{ _('Rename') }}</label>
+                <input placeholder="{{ pet.name }}" class="form-control" name="rename" id="rename" placeholder="{{ _('Rename') }}" type="text">
+              </div>
+              <input type="hidden" name="pet_id" value="{{pet.id}}" />
+              <button class="btn btn-primary" type="submit">{{ _('Change Name') }}</button>
+          </fieldset>
+        </form>
+        {% endif %}
+
+            <ul class="mt-5 dropdown" aria-label="submenu">
+              {% if pet.id != pet.active_pet_id %}
+              <li><a href="/activate/?id={{pet.id}}">Make Active Pet</a></li>
+              {% endif %}
+              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">Abandon</a></li>
+            </ul> 
+
+    {% endfor %}
+
+  {% else %}
+
+
+    <p>You do not have a pet with that ID</p>
+{% endif %}
+
+
+
+{% endblock %}

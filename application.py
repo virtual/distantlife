@@ -374,6 +374,40 @@ def uploadFiles():
         return redirect("/")
 
 
+@app.route("/pets/edit/", methods=["GET", "POST"])
+@login_required
+def petedit():
+    """Allows a user to rename a pet in their account"""
+    if request.method == "POST":
+        pet_id = request.form.get("pet_id")
+        rename = request.form.get("rename")
+        rows = db.execute("SELECT count(*) as count FROM owners WHERE owner_id = ? AND pet_id = ?",
+                      session_get_int("user_id"), pet_id)
+        # Confirmed user owns this pet
+        if rows[0]['count'] == 1:
+            exp = db.execute("SELECT exp FROM pets WHERE id = ?", pet_id)
+            if (int(exp[0]['exp']) >= 100):
+                db.execute("UPDATE pets SET name = ? WHERE id = ?", rename, pet_id)
+                
+                # Put updated info into session for pet
+                set_active_pet_in_session(session_get_int("user_id"))
+                flash("Pet renamed to " + rename)
+            else:
+                return apology("Your pet needs at least 100 experience to be renamed!", 403)
+
+        return redirect('/pets/edit/?id='+ str(pet_id))
+    else:
+        pet_id = int(request.args.get('id'))
+
+        # This ensures the current user owns the pet being renamed
+        pet_info = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ? AND pet_id = ?", 
+                session_get_int("user_id"), pet_id)
+        if len(pet_info) == 1:
+            return render_template("petedit.html", pet_info=pet_info)
+        else:
+            return apology("Error getting pet info", 403)
+
+
 @app.route("/updatelanguage", methods=["GET", "POST"])
 @login_required
 def updatelanguage():

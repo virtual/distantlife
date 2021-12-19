@@ -37,7 +37,7 @@
                   <span class="sr-only">info</span>
                 </a></li>
               {% else %}
-                <li><a href="/pet/?id={{pet.id}}">Rename</a></li>
+                <li><a href="/pets/edit/?id={{pet.id}}">Rename</a></li>
               {% endif %}
               <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">Abandon</a></li>
             </ul>

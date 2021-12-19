@@ -41,3 +41,8 @@
   .pet-group .pet-image-sm { width: 100px; }
   .pet-group .pet-image-lg { width: 140px; }
 }
+
+.pet-edit-image {
+  margin: 0 auto;
+  max-width: 300px;
+}
