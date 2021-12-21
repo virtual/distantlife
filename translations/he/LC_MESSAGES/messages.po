@@ -304,7 +304,7 @@ msgstr "השלם שיעור"
 
 #: templates/global/footer.html:4
 msgid "Made with &hearts; by"
-msgstr "הוכן עם &hearts על ידי"
+msgstr "הוכן עם &hearts; על ידי"
 
 #: templates/global/header.html:9
 msgid "menu"
