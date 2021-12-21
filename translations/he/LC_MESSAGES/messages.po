@@ -21,11 +21,11 @@ msgstr ""
 #: templates/about.html:5 templates/about.html:11
 #: templates/global/footer.html:4
 msgid "About"
-msgstr "על אודות"
+msgstr "אודות"
 
 #: templates/adopt.html:5 templates/adopt.html:11
 msgid "Adopt a Pet"
-msgstr "***לאמץ a Pet"
+msgstr "אמץ חיה"
 
 #: templates/adopt.html:18
 msgid "Type"
@@ -34,15 +34,15 @@ msgstr "סוג"
 #: templates/adopt.html:19
 #, fuzzy
 msgid "Image"
-msgstr "תגים"
+msgstr "תמונה"
 
 #: templates/adopt.html:20 templates/adopt.html:31
 msgid "Adopt"
-msgstr "*לאמץ"
+msgstr "אמץ"
 
 #: templates/adopt.html:40
 msgid "No pets"
-msgstr "*No pets"
+msgstr "אין חיות"
 
 #: templates/apology.html:4 templates/apology.html:17
 msgid "Error"
@@ -50,53 +50,53 @@ msgstr "שגיאה"
 
 #: templates/apology.html:18
 msgid "Go Back"
-msgstr "*Go Back"
+msgstr "חזור אחורה"
 
 #: templates/createset.html:4
 msgid "Admin"
-msgstr "אדמיניסטרטור"
+msgstr "מנהל"
 
 #: templates/createset.html:12
 msgid "Word set shown in: (translated language)"
-msgstr "*Word set shown in: (translated language)"
+msgstr "סדרת מילים מוצגת בשפה: (שפה מתורגמת)"??????
 
 #: templates/createset.html:14 templates/createset.html:33
 #, fuzzy
 msgid "Set Name"
-msgstr "*Set Name"
+msgstr "ערוך שם"
 
 #: templates/createset.html:18 templates/createset.html:37
 msgid "Language"
-msgstr "*שפה"
+msgstr "שפה"
 
 #: templates/createset.html:31
 msgid "Help text shown in: (native language)"
-msgstr "*Help text shown in: (native language)"
+msgstr "עזרה מוצגת ב: (שפת אם)"
 
 #: templates/createset.html:49 templates/editsets.html:49
 msgid "Create new set"
-msgstr "צור קטגוריה חדשה*"
+msgstr "צור סדרת מילים חדשה"
 
 #: templates/dashboard.html:5 templates/global/header.html:15
 msgid "Dashboard"
-msgstr "לוח מחוונים"
+msgstr "לוח בקרה"
 
 #: templates/dashboard.html:11
 msgid "Latest Notifications"
-msgstr "מינויים והודעות"
+msgstr "התראות אחרונות"
 
 #: templates/dashboard.html:15
 msgid "News"
-msgstr "*בשורה"
+msgstr "חדשות"
 
 #: templates/editset.html:4 templates/editset.html:10
 msgid "Edit Set"
-msgstr "*לערוך לקביעת"
+msgstr "ערוך רשימת מילים"
 
 #: templates/editset.html:17
 #, fuzzy
 msgid "Word"
-msgstr "*מילה"
+msgstr "מילה"
 
 #: templates/editset.html:18 templates/editsets.html:20 templates/list.html:30
 #: templates/train.html:31
@@ -107,36 +107,36 @@ msgstr "אפשרויות"
 #: templates/editsets.html:35 templates/editsets.html:37
 #: templates/petedit.html:5
 msgid "Edit"
-msgstr "*לערוך"
+msgstr "עריכה"
 
 #: templates/editset.html:39
 msgid "Remove word from set"
-msgstr "***למחוק word from set"
+msgstr "הסר מרשימת מילים"
 
 #: templates/editset.html:39 templates/editset.html:41
 msgid "Delete"
-msgstr "*למחוק"
+msgstr "מחיקה"
 
 #: templates/editset.html:74
 msgid "Upload"
-msgstr "*להעלות"
+msgstr "העלאה"
 
 #: templates/editsets.html:4
 msgid "Edit Sets"
-msgstr "***וערוך את הערכה"
+msgstr "ערוך רשימות מילים"
 
 #: templates/editsets.html:17 templates/train.html:32
 msgid "Icon"
-msgstr "*סמל"
+msgstr "סמל"
 
 #: templates/editsets.html:18 templates/train.html:29
 msgid "Word Set"
-msgstr "*קבוצת מילים"
+msgstr "קבוצת מילים"
 
 #: templates/editsets.html:19
 #, fuzzy
 msgid "Count"
-msgstr "*ספירה"
+msgstr "כמות"
 
 #: templates/global/breadcrumb.html:5 templates/index.html:7
 msgid "Home"
@@ -144,29 +144,29 @@ msgstr "בית"
 
 #: templates/list.html:6
 msgid "List"
-msgstr "*רשימה"
+msgstr "רשימה"
 
 #: templates/global/header.html:16 templates/list.html:12
 msgid "My Pets"
-msgstr "*חיות המחמד שלי"
+msgstr "חיות המחמד שלי"
 
 #: templates/list.html:23 templates/petedit.html:14
 msgid "Active pet"
-msgstr "***Active חיות המחמד"
+msgstr "חיה פעילה"
 
 #: templates/list.html:33 templates/petedit.html:41
 msgid "Make Active Pet"
-msgstr "***Make Active חיות המחמד"
+msgstr "הפוך לחיה פעילה"
 
 #: templates/list.html:35 templates/list.html:40 templates/petedit.html:30
 #: templates/petedit.html:31
 #, fuzzy
 msgid "Rename"
-msgstr "*לשנות שם"
+msgstr "שנה שם"
 
 #: templates/list.html:42 templates/petedit.html:43
 msgid "Abandon"
-msgstr "*לנטוש"
+msgstr "נטוש חיה"
 
 #: templates/login.html:4 templates/login.html:17
 msgid "Log In"
@@ -174,90 +174,90 @@ msgstr "כניסה"
 
 #: templates/login.html:10 templates/profile.html:9 templates/signup.html:18
 msgid "Username"
-msgstr "*שם משתמש"
+msgstr "שם משתמש"
 
 #: templates/login.html:14 templates/profile.html:48 templates/profile.html:49
 #: templates/signup.html:22
 msgid "Password"
-msgstr "*סיסמה"
+msgstr "סיסמה"
 
 #: templates/macros.html:4
 msgid "Level"
-msgstr "*רמה"
+msgstr "רמה"
 
 #: templates/macros.html:4
 msgid "Experience"
-msgstr "*ניסיון"
+msgstr "ניסיון"
 
 #: templates/petedit.html:22
 # Created on date
 msgid "Created"
-msgstr "*יצר"
+msgstr "נוצר"
 
 #: templates/petedit.html:28
 msgid "Update Pet"
-msgstr "*לעדכן חיית מחמד"
+msgstr "עדכן חיית מחמד"
 
 #: templates/petedit.html:34
 msgid "Change Name"
-msgstr "*לשנות את שם"
+msgstr "שנה שם"
 
 #: templates/petedit.html:49
 msgid "You do not have a pet with that ID"
-msgstr "***אין לך"
+msgstr "אין לך חיה עם המזהה הזה"
 
 #: templates/global/header.html:31 templates/profile.html:4
 msgid "Profile"
-msgstr "*פרופיל"
+msgstr "פרופיל"
 
 #: templates/profile.html:10
 msgid "ID"
-msgstr "*מזהה"
+msgstr "מזהה"
 
 #: templates/profile.html:15
 msgid "Language Preferences"
-msgstr "*העדפות השפה"
+msgstr "העדפות שפה"
 
 #: templates/profile.html:17
 msgid "My native language is"
-msgstr "*שפת האם שלי"
+msgstr "שפת האם שלי"
 
 #: templates/profile.html:29
 msgid "I want to learn"
-msgstr "*אני רוצה ללמוד"
+msgstr "אני רוצה ללמוד"
 
 #: templates/profile.html:40
 msgid "Save Preferences"
-msgstr "*לשמור העדפות"
+msgstr "שמור העדפות"
 
 #: templates/profile.html:46
 msgid "Change password"
-msgstr "*שינוי סיסמה"
+msgstr "שינוי סיסמה"
 
 #: templates/profile.html:52 templates/profile.html:53 templates/signup.html:26
 msgid "Retype Password"
-msgstr "*הקלד שוב את הסיסמה"
+msgstr "הקלד שוב את הסיסמה"
 
 #: templates/profile.html:55
 msgid "Update Password"
-msgstr "*עדכן את הסיסמה"
+msgstr "עדכן את הסיסמה"
 
 #: templates/global/header.html:17 templates/quizset.html:4
 #: templates/train.html:4
 msgid "Train"
-msgstr "*תאמן"
+msgstr "להתאמן"
 
 #: templates/quizset.html:16 templates/trainset.html:16
 msgid "play audio"
-msgstr "*להשמיע שמע"
+msgstr "השמע שמע"
 
 #: templates/quizset.html:39
 msgid "Continue"
-msgstr "*להמשיך"
+msgstr "השמע"
 
 #: templates/quizset.html:40
 msgid "Skip"
-msgstr "הבא"
+msgstr "דלג"
 
 #: templates/global/header.html:36 templates/signup.html:4
 #: templates/signup.html:30
@@ -266,33 +266,33 @@ msgstr "הירשם"
 
 #: templates/signup.html:13
 msgid "Sign up today to start your language-learning journey."
-msgstr "הירשם"
+msgstr "הירשם עכשיו להתחלת מסע למידת השפות שלך"
 
 #: templates/global/header.html:28 templates/train.html:15
 msgid "settings"
-msgstr "ההגדרות שלי"
+msgstr "הגדרות"
 
 #: templates/train.html:27
 msgid "complete"
-msgstr "*הושלם"
+msgstr "הושלם"
 
 #: templates/train.html:30
 #, fuzzy
 msgid "Words"
-msgstr "*מילים"
+msgstr "מילים"
 
 #: templates/train.html:40
 #, fuzzy
 msgid "incomplete"
-msgstr "*לא שלמה"
+msgstr "לא שלם"
 
 #: templates/train.html:47
 msgid "Quiz"
-msgstr "*לבחון"
+msgstr "בוחן"
 
 #: templates/trainset.html:4
 msgid "Learn It"
-msgstr "*למד את זה"
+msgstr "למד את זה"
 
 #: templates/trainset.html:37
 msgid "Next"
@@ -300,20 +300,20 @@ msgstr "הבא"
 
 #: templates/trainset.html:41
 msgid "Complete lesson"
-msgstr "*השלם שיעור"
+msgstr "השלם שיעור"
 
 #: templates/global/footer.html:4
 msgid "Made with &hearts; by"
-msgstr "*Made with &hearts; by"
+msgstr "הוכן עם &hearts על ידי: {BY-WHO}"
 
 #: templates/global/header.html:9
 msgid "menu"
-msgstr "אפשרויות"
+msgstr "תפריט"
 
 #: templates/global/header.html:32
 msgid "Logout"
-msgstr "יציאה"
+msgstr "התנתק"
 
 #: templates/global/header.html:37
 msgid "Login"
-msgstr "כניסה"
+msgstr "התחבר"
