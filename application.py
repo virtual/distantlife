@@ -1,8 +1,8 @@
 import os
 import random
 import redis
+import sqlite3
 
-from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
@@ -66,8 +66,9 @@ app.config['SESSION_REDIS'] = redis.from_url('redis://0.0.0.0:6379')
 
 Session(app)
 
-db = SQL("sqlite:///distantlife.db")
-
+con = sqlite3.connect("distantlife.db")
+con.row_factory = sqlite3.Row # Includes column name in return dictionary
+db = con.cursor()
 
 @app.route("/")
 def index():
@@ -82,7 +83,8 @@ def index():
 @login_required
 def pets():
     """Lists all of user's pets"""
-    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", session_get_int("user_id"))
+    
+    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", (session_get_int("user_id"), )).fetchall()
     return render_template("list.html", pets_owned=pets_owned)
 
 
@@ -106,7 +108,7 @@ def trainset():
     if tset is not None:
         words = get_words_by_set_id(tset)
         set_info = db.execute(
-            "SELECT id, imgsrc FROM word_sets WHERE id = ?", tset)
+            "SELECT id, imgsrc FROM word_sets WHERE id = ?", (tset, )).fetchall()
         return render_template("trainset.html", words=words, set_info=set_info, page=page, tset=tset)
     else:
         return redirect('/train')
@@ -157,7 +159,7 @@ def quizset():
             if set_id is not None:
                 words = get_words_by_set_id(int(set_id))
                 set_info = db.execute(
-                    "SELECT id, imgsrc FROM word_sets WHERE id = ?", set_id)
+                    "SELECT id, imgsrc FROM word_sets WHERE id = ?", (set_id, )).fetchall()
 
                 activeword = words[page]
                 word_options = []
@@ -208,22 +210,28 @@ def createset():
             preferred_lang = request.form.get('preferred_lang')
 
             # Sets will usually be a noun
-            learning_wordid = db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                         learning_lang, 1, '', setname)
+            learning_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
+                                         (learning_lang, 1, '', setname, ))).lastrowid
+            con.commit()
 
-            preferred_wordid = db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                          preferred_lang, 1, '', plang_setname)
+            preferred_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
+                                          (preferred_lang, 1, '', plang_setname, ))).lastrowid
+            con.commit()
 
             db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                       preferred_lang, learning_lang, preferred_wordid, learning_wordid)
+                       (preferred_lang, learning_lang, preferred_wordid, learning_wordid, )).fetchall()
             db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                       learning_lang, preferred_lang, learning_wordid, preferred_wordid)
+                       (learning_lang, preferred_lang, learning_wordid, preferred_wordid, )).fetchall()
+            con.commit()
 
             # TODO Set a default image here
-            insert_word_set = db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                         "/sets/fruits.png", learning_wordid, learning_lang)
-            insert_word_set_orig = db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                              "/sets/fruits.png", preferred_wordid, preferred_lang)
+            insert_word_set = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
+                                         ("/sets/fruits.png", learning_wordid, learning_lang, ))).lastrowid
+            con.commit()
+
+            insert_word_set_orig = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
+                                              ("/sets/fruits.png", preferred_wordid, preferred_lang, ))).lastrowid
+            con.commit()
 
             if (insert_word_set > 0):
                 flash("New set created: " + setname)
@@ -235,9 +243,9 @@ def createset():
             sets = get_sets()
         return render_template("editsets.html", sets=sets)
     else:
-        language_options = db.execute("SELECT * FROM languages")
+        language_options = db.execute("SELECT * FROM languages").fetchall()
         userinfo = db.execute(
-            "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session_get_int("user_id"))
+            "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
         return render_template("createset.html", language_options=language_options, userinfo=userinfo[0])
 
 
@@ -252,8 +260,9 @@ def delete_word():
             if request.form.get('word_set_id') is not None:
                 # delete word from word_sets
                 deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?",
-                                       request.form.get("word_id"), request.form.get("word_set_id"))
-                if (deleteqry > 0):
+                                       (request.form.get("word_id"), request.form.get("word_set_id")))
+                con.commit()
+                if (deleteqry.rowcount > 0):
                     flash('delete successful')
     return redirect("/edit/set")
 
@@ -267,7 +276,7 @@ def login():
         elif not request.form.get("password"):
             return apology("must provide password", 403)
         rows = db.execute("SELECT * FROM users WHERE username = ?",
-                          request.form.get("username"))
+                          (request.form.get("username"), )).fetchall()
         if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
@@ -304,11 +313,11 @@ def signup():
             return apology("passwords must match", 400)
         elif not password2:
             return apology("must confirm password", 400)
-        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        rows = db.execute("SELECT * FROM users WHERE username = ?", (username, )).fetchall()
         if len(rows) != 1:
-            lastrow = db.execute("INSERT INTO users(username, password, created_at, preferred_lang, learning_lang, roles) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?)",
-                                 username, generate_password_hash(password), 1, 2, 1)
-
+            lastrow = (db.execute("INSERT INTO users(username, password, created_at, preferred_lang, learning_lang, roles) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?)",
+                                 (username, generate_password_hash(password), 1, 2, 1, ))).lastrowid
+            con.commit()
             session["user_id"] = lastrow
             session["username"] = username
             set_languages(session["user_id"])
@@ -330,9 +339,9 @@ def about():
 def profile():
     """User Profile"""
     userinfo = db.execute(
-        "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", session_get_int("user_id"))
+        "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
 
-    language_options = db.execute("SELECT * FROM languages")
+    language_options = db.execute("SELECT * FROM languages").fetchall()
 
     if (len(userinfo) > 0):
         return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options)
@@ -381,13 +390,14 @@ def petedit():
         pet_id = request.form.get("pet_id")
         rename = request.form.get("rename")
         rows = db.execute("SELECT count(*) as count FROM owners WHERE owner_id = ? AND pet_id = ?",
-                      session_get_int("user_id"), pet_id)
+                      (session_get_int("user_id"), pet_id, )).fetchall()
         # Confirmed user owns this pet
         if rows[0]['count'] == 1:
-            exp = db.execute("SELECT exp FROM pets WHERE id = ?", pet_id)
+            exp = db.execute("SELECT exp FROM pets WHERE id = ?", (pet_id, )).fetchall()
             if (int(exp[0]['exp']) >= 100):
-                db.execute("UPDATE pets SET name = ? WHERE id = ?", rename, pet_id)
-                
+                db.execute("UPDATE pets SET name = ? WHERE id = ?", (rename, pet_id, ))
+                con.commit()
+
                 # Put updated info into session for pet
                 set_active_pet_in_session(session_get_int("user_id"))
                 flash("Pet renamed to " + rename)
@@ -400,7 +410,7 @@ def petedit():
 
         # This ensures the current user owns the pet being renamed
         pet_info = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ? AND pet_id = ?", 
-                session_get_int("user_id"), pet_id)
+                (session_get_int("user_id"), pet_id, )).fetchall()
         if len(pet_info) == 1:
             return render_template("petedit.html", pet_info=pet_info)
         else:
@@ -420,10 +430,11 @@ def updatelanguage():
             return apology("Preferred language and learning language cannot be the same :)", 400)
 
         db.execute("UPDATE users SET preferred_lang = ? WHERE id = ?",
-                   preferred_lang, session_get_int("user_id"))
+                   (preferred_lang, session_get_int("user_id"), ))
+        con.commit()
         db.execute("UPDATE users SET learning_lang = ? WHERE id = ?",
-                   learning_lang, session_get_int("user_id"))
-
+                   (learning_lang, session_get_int("user_id"), ))
+        con.commit()
         set_languages(session_get_int("user_id"))
 
         return redirect("/profile")
@@ -450,14 +461,15 @@ def updatepassword():
             return apology("must confirm password", 400)
 
         rows = db.execute(
-            "SELECT password FROM users WHERE id = ?", session_get_int("user_id"))
+            "SELECT password FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
 
         if (check_password_hash(rows[0]["password"], password)):
             return apology("password cannot be the same as existing password", 400)
 
         else:
             db.execute("UPDATE users SET password = ? WHERE id = ?",
-                       generate_password_hash(password), session_get_int("user_id"))
+                       (generate_password_hash(password), session_get_int("user_id")))
+            con.commit()
 
         return redirect("/profile")
     else:
@@ -474,24 +486,27 @@ def adopt():
             return apology("must choose pet type", 403)
         pet_type_id = int(request.form.get("pet_type"))
         petname = db.execute(
-            "SELECT pet_type FROM pet_types WHERE id = ?", pet_type_id)
+            "SELECT pet_type FROM pet_types WHERE id = ?", (pet_type_id, )).fetchall()
 
         # Create pet with default name as pet type
-        petid = db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-                           pet_type_id, petname[0]['pet_type'], 0)
+        petid = (db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                           (pet_type_id, petname[0]['pet_type'], 0 ))).lastrowid
+        con.commit()
 
         # Add owner to pet
         db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
-                   session_get_int("user_id"), petid)
+                   (session_get_int("user_id"), petid))
+        con.commit()
 
         # Set as user's active pet
         db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-                   petid, session_get_int("user_id"))
+                   (petid, session_get_int("user_id") ))
+        con.commit()
         set_active_pet_in_session(session_get_int("user_id"))
-        return redirect("/")
+        return redirect("/pets")
 
     else:
-        rows = db.execute("SELECT * FROM pet_types")
+        rows = db.execute("SELECT * FROM pet_types").fetchall()
         if len(rows) < 1:
             return apology("no pets", 403)
         return render_template("adopt.html", pet_types=rows)
@@ -511,9 +526,11 @@ def abandon():
     # Delete pet from pet owners
     # This ensures the current user owns the pet being abandoned
     rows = db.execute("DELETE FROM owners WHERE owner_id = ? AND pet_id = ?",
-                      session_get_int("user_id"), pet_id)
-    if rows == 1:
-        db.execute("DELETE FROM pets WHERE id = ?", pet_id)
+                      (session_get_int("user_id"), pet_id ))
+    con.commit()
+    if rows.rowcount == 1:
+        db.execute("DELETE FROM pets WHERE id = ?", (pet_id, ))
+        con.commit()
     else:
         return apology("Error abandoning pet", 403)
 
@@ -532,7 +549,8 @@ def activate():
     """Allows a user to change their active pet"""
     pet_id = int(request.args.get('id'))
     db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-               pet_id, session_get_int("user_id"))
+               (pet_id, session_get_int("user_id"), ))
+    con.commit()
     set_active_pet_in_session(session_get_int("user_id"))
     return redirect('/pets')
 

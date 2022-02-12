@@ -1,8 +1,11 @@
-from cs50 import SQL
+import sqlite3
 import csv
 import redis
 
-db = SQL("sqlite:///distantlife.db")
+con = sqlite3.connect("distantlife.db")
+con.row_factory = sqlite3.Row # Includes column name in return dictionary
+db = con.cursor()
+
 r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 
@@ -50,37 +53,38 @@ def save_words(csvf, word_set_id, orig_set_id=''):
     lang2p = headings[3]  # Translation transliteration
     wtype = headings[4]  # Type of word (noun, verb)
 
-    orig_lang_id = db.execute(
-        "SELECT id FROM languages WHERE name = ?", lang1)[0]['id']
-    trans_lang_id = db.execute(
-        "SELECT id FROM languages WHERE name = ?", lang2)[0]['id']
+    orig_lang_id = (db.execute(
+        "SELECT id FROM languages WHERE name = ?", (lang1, )).fetchall())[0]['id']
+    trans_lang_id = (db.execute(
+        "SELECT id FROM languages WHERE name = ?", (lang2, )).fetchall())[0]['id']
 
     for w in words:
-        word_type_id = db.execute(
-            "SELECT id FROM word_type WHERE type = ?", w[wtype])[0]['id']
+        word_type_id = (db.execute(
+            "SELECT id FROM word_type WHERE type = ?", (w[wtype], )).fetchall())[0]['id']
 
-        new_orig_word_id = db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
-                                      w[lang1], orig_lang_id, word_type_id, w[lang1p]
-                                      )
-        new_translated_word_id = db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
-                                            w[lang2], trans_lang_id, word_type_id,  w[lang2p]
-                                            )
-
+        new_orig_word_id = (db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
+                                      (w[lang1], orig_lang_id, word_type_id, w[lang1p])
+                                      )).lastrowid
+        con.commit()
+        new_translated_word_id = (db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
+                                            (w[lang2], trans_lang_id, word_type_id,  w[lang2p])
+                                            )).lastrowid
+        con.commit()
         db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)",
-                   word_set_id, new_translated_word_id)
-
+                   (word_set_id, new_translated_word_id))
+        con.commit()
         # if orig_set_id is set
         if (orig_set_id != ''):
             db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)",
-                       int(orig_set_id), new_orig_word_id)
-
+                       (int(orig_set_id), new_orig_word_id))
+            con.commit()
         # insert orig and its translation equivalent
         db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                   orig_lang_id, trans_lang_id, new_orig_word_id, new_translated_word_id)
-
+                   (orig_lang_id, trans_lang_id, new_orig_word_id, new_translated_word_id))
+        con.commit()
         # reverse orig & translation
         db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                   trans_lang_id, orig_lang_id, new_translated_word_id, new_orig_word_id)
-
+                   (trans_lang_id, orig_lang_id, new_translated_word_id, new_orig_word_id))
+        con.commit()
     file.close()
     return len(words)
