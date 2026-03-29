@@ -1,13 +1,11 @@
-import sqlite3
-import redis
 from flask import redirect, render_template, session
 from functools import wraps
+from connections import get_db_connection, get_redis_client
 
-con = sqlite3.connect("distantlife.db", check_same_thread=False)
-con.row_factory = sqlite3.Row
-db = con.cursor()
+con = get_db_connection()
+db = con
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = get_redis_client()
 
 
 def apology(message, code=400):

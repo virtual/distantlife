@@ -1,7 +1,5 @@
 import os
 import random
-import redis
-import sqlite3
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -10,11 +8,11 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask_babel import Babel
+from connections import get_db_connection, get_redis_client
 from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int
 from fileparser import save_words
 
-REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
-r = redis.from_url(REDIS_URL)
+r = get_redis_client()
 
 app = Flask(__name__)
 
@@ -67,9 +65,8 @@ app.config['SESSION_REDIS'] = r
 
 Session(app)
 
-con = sqlite3.connect("distantlife.db", check_same_thread=False)
-con.row_factory = sqlite3.Row # Includes column name in return dictionary
-db = con.cursor()
+con = get_db_connection()
+db = con
 
 @app.route("/")
 def index():
