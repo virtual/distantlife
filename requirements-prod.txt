@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# Linux/hosting WSGI servers
+uwsgi

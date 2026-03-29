@@ -3,7 +3,7 @@ import redis
 from flask import redirect, render_template, session
 from functools import wraps
 
-con = sqlite3.connect("distantlife.db")
+con = sqlite3.connect("distantlife.db", check_same_thread=False)
 con.row_factory = sqlite3.Row
 db = con.cursor()
 

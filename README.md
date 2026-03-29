@@ -97,6 +97,8 @@ Tables were created to allow for users to own multiple pets, translate words, cr
 
 ## Development
 
+### Linux
+
 ```sh
 brew install redis
 ```
@@ -106,16 +108,53 @@ Enable virtual environment:
 ```sh
 python3 -m venv venv
 . venv/bin/activate
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 export FLASK_APP=application
 export FLASK_ENV=development # enable autoreload
 ```
 
+Use `requirements.txt` for local development. Production server packages are in `requirements-prod.txt`.
+
+### Windows (Bash)
+
+Install [Memurai](https://docs.memurai.com/en/windows-service) (Redis-compatible) and start the service:
+
+```sh
+memurai.exe --service-start
+```
+
+Enable virtual environment:
+
+```sh
+python -m venv venv
+source venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+export FLASK_APP=application
+export FLASK_ENV=development # enable autoreload
+```
+
+For Linux deployment environments, install production packages with:
+
+```sh
+python -m pip install -r requirements-prod.txt
+```
+
 ## Running
+
+Linux:
 
 ```sh
 redis-server # terminal #1
 flask run # terminal #2 (venv)
+```
+
+Windows:
+
+```sh
+memurai.exe --service-start # run once to ensure service is started
+python -m flask run # terminal (venv)
 ```
 
 ## Translations

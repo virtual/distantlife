@@ -2,7 +2,7 @@ import sqlite3
 import csv
 import redis
 
-con = sqlite3.connect("distantlife.db")
+con = sqlite3.connect("distantlife.db", check_same_thread=False)
 con.row_factory = sqlite3.Row # Includes column name in return dictionary
 db = con.cursor()
 

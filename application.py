@@ -13,11 +13,10 @@ from flask_babel import Babel
 from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int
 from fileparser import save_words
 
-# default it runs on port 6379
-r = redis.StrictRedis(host="0.0.0.0", port=6379, db=0)
+REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
+r = redis.from_url(REDIS_URL)
 
 app = Flask(__name__)
-babel = Babel(app)
 
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
@@ -31,12 +30,14 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0')
 
 
-@babel.localeselector
 def get_locale():
     """Set localization for text keys"""
     if (session.get("language") is not None):
         return session.get('language')['charcode']
-    return request.accept_languages.best_match(app.config['LANGUAGES'].keys())
+    return request.accept_languages.best_match(LANGUAGES.keys())
+
+
+babel = Babel(app, locale_selector=get_locale)
 
 
 @app.after_request
@@ -62,11 +63,11 @@ app.secret_key = 'DL_SESSION_KEY'
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis.from_url('redis://0.0.0.0:6379')
+app.config['SESSION_REDIS'] = r
 
 Session(app)
 
-con = sqlite3.connect("distantlife.db")
+con = sqlite3.connect("distantlife.db", check_same_thread=False)
 con.row_factory = sqlite3.Row # Includes column name in return dictionary
 db = con.cursor()
 
