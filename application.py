@@ -206,6 +206,34 @@ def edit_set():
         return render_template("editsets.html", sets=sets, role=role)
 
 
+@app.route("/edit/word/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_word():
+    """Admin: Placeholder word edit route that redirects to the containing set editor."""
+    word_id = request.values.get("word_id")
+    if not word_id:
+        flash("Missing word id")
+        return redirect("/edit/set")
+
+    set_row = None
+    if using_lemma_schema():
+        set_row = db.execute(
+            "SELECT word_set_id FROM set_item WHERE sense_id = ? ORDER BY id ASC LIMIT 1",
+            (int(word_id),),
+        ).fetchone()
+    else:
+        set_row = db.execute(
+            "SELECT word_set_id FROM word_set_words WHERE word_id = ? ORDER BY id ASC LIMIT 1",
+            (int(word_id),),
+        ).fetchone()
+
+    flash("Word inline editing is not implemented yet; opened the set editor instead.")
+    if set_row is not None:
+        return redirect(f"/edit/set/?set_id={int(set_row['word_set_id'])}")
+    return redirect("/edit/set")
+
+
 @app.route("/quiz/set/", methods=["GET", "POST"])
 @login_required
 def quizset():
