@@ -43,6 +43,7 @@
         <td>{{set.totalcount}}</td>
         <td>
           <form method="post" action="/quiz/set/">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <input name="set_id" type="hidden" value="{{set.id}}" />
             <input type="submit" value="{{ _('Quiz') }}" />
           </form>

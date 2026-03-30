@@ -8,6 +8,7 @@
 <header><h1>{{title_s}}</h1></header>
 
 <form class="mx-auto centered" action="/create/set/" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <fieldset>
     <legend>{{ _('Word set shown in: (translated language)') }}</legend>
     <div class="form-group">

@@ -1,12 +1,10 @@
-import sqlite3
 import csv
-import redis
+from connections import get_db_connection, get_redis_client
 
-con = sqlite3.connect("distantlife.db", check_same_thread=False)
-con.row_factory = sqlite3.Row # Includes column name in return dictionary
-db = con.cursor()
+con = get_db_connection()
+db = con
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = get_redis_client()
 
 
 def save_words(csvf, word_set_id, orig_set_id=''):

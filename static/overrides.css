@@ -46,3 +46,28 @@
   margin: 0 auto;
   max-width: 300px;
 }
+
+.form-group .has-password-toggle {
+  padding-right: 40px;
+}
+
+.form-group .password-toggle {
+  position: absolute;
+  right: 8px;
+  inset-inline-end: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  min-width: 0;
+  background: transparent;
+  color: #050517;
+  border: 0;
+  border-radius: 4px;
+  padding: 6px;
+  line-height: 1;
+}
+
+.form-group .password-toggle:hover,
+.form-group .password-toggle:focus {
+  color: #247ba0;
+}

@@ -1,5 +1,7 @@
 Flask
 Flask-Session
 Flask-Babel
+Flask-WTF
+Flask-Limiter
 requests
 redis

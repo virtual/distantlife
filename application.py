@@ -1,20 +1,23 @@
 import os
 import random
-import redis
-import sqlite3
+import re
 
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, has_request_context
 from flask_session import Session
 from tempfile import mkdtemp
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
+from connections import REDIS_URL, get_db_connection, get_redis_client
 from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int
 from fileparser import save_words
 
-REDIS_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
-r = redis.from_url(REDIS_URL)
+r = get_redis_client()
 
 app = Flask(__name__)
 
@@ -32,9 +35,9 @@ if __name__ == "__main__":
 
 def get_locale():
     """Set localization for text keys"""
-    if (session.get("language") is not None):
+    if has_request_context() and session.get("language") is not None:
         return session.get('language')['charcode']
-    return request.accept_languages.best_match(LANGUAGES.keys())
+    return request.accept_languages.best_match(LANGUAGES.keys()) if has_request_context() else 'en'
 
 
 babel = Babel(app, locale_selector=get_locale)
@@ -49,15 +52,20 @@ def after_request(response):
 
 
 UPLOAD_FOLDER = 'static/files'
+ALLOWED_UPLOAD_EXTENSIONS = {'.csv'}
+USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9._-]{3,30}$")
+PET_NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _'\-]{1,50}$")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.jinja_env.filters["usd"] = usd
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 
-# TODO
-# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
-# NOTE: The secret key is used to cryptographically-sign the cookies used for storing
-#       the session identifiesession.
-app.secret_key = 'DL_SESSION_KEY'
+# Use an environment-provided secret in non-dev environments.
+configured_secret = os.environ.get("SECRET_KEY")
+flask_env = os.environ.get("FLASK_ENV", "development").lower()
+is_dev_mode = flask_env == "development" or app.debug
+if not configured_secret and flask_env == "production":
+    raise RuntimeError("SECRET_KEY must be set in non-development environments")
+app.secret_key = configured_secret or "dev-only-insecure-secret-key"
 
 # Configure Redis for storing the session data on the server-side
 app.config['SESSION_TYPE'] = 'redis'
@@ -65,11 +73,75 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_REDIS'] = r
 
+csrf = CSRFProtect(app)
+
+
+@app.context_processor
+def inject_csrf_token():
+    # Keep csrf_token available in templates even if extension init order changes.
+    return {"csrf_token": generate_csrf}
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri=REDIS_URL,
+)
+
 Session(app)
 
-con = sqlite3.connect("distantlife.db", check_same_thread=False)
-con.row_factory = sqlite3.Row # Includes column name in return dictionary
-db = con.cursor()
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+con = get_db_connection()
+db = con
+
+
+def validate_username(username):
+    if not username:
+        return "must provide username"
+    if not USERNAME_PATTERN.fullmatch(username):
+        return "username must be 3-30 chars and only letters, numbers, dot, underscore, or hyphen"
+    return None
+
+
+def validate_password_strength(password):
+    if not password:
+        return "must provide password"
+    if len(password) < 12:
+        return "password must be at least 12 characters"
+    if not re.search(r"[A-Z]", password):
+        return "password must include an uppercase letter"
+    if not re.search(r"[a-z]", password):
+        return "password must include a lowercase letter"
+    if not re.search(r"\d", password):
+        return "password must include a number"
+    if not re.search(r"[^A-Za-z0-9]", password):
+        return "password must include a symbol"
+    return None
+
+
+def parse_and_validate_language_id(language_id):
+    try:
+        parsed = int(language_id)
+    except (TypeError, ValueError):
+        return None
+
+    exists = db.execute("SELECT 1 FROM languages WHERE id = ?", (parsed,)).fetchone()
+    if not exists:
+        return None
+    return parsed
+
+
+def auth_limit_key():
+    ip = get_remote_address() or "unknown"
+    username = (request.form.get("username") or "").strip().lower()
+    return f"{ip}:{username or 'anonymous'}"
+
+
+def password_limit_key():
+    ip = get_remote_address() or "unknown"
+    user_id = session_get_int("user_id")
+    return f"{ip}:{user_id or 'anonymous'}"
 
 @app.route("/")
 def index():
@@ -269,20 +341,24 @@ def delete_word():
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("8 per minute", key_func=auth_limit_key)
 def login():
     """Log user in"""
     if request.method == "POST":
-        if not request.form.get("username"):
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password")
+
+        if not username:
             return apology("must provide username", 403)
-        elif not request.form.get("password"):
+        elif not password:
             return apology("must provide password", 403)
         rows = db.execute("SELECT * FROM users WHERE username = ?",
-                          (request.form.get("username"), )).fetchall()
-        if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
+                          (username, )).fetchall()
+        if len(rows) != 1 or not check_password_hash(rows[0]["password"], password):
             return apology("invalid username and/or password", 403)
 
         session["user_id"] = int(rows[0]["id"])
-        session["username"] = request.form.get("username")
+        session["username"] = username
 
         set_active_pet_in_session(session_get_int("user_id"))
         set_languages(session_get_int("user_id"))
@@ -295,21 +371,26 @@ def login():
 def logout():
     """Log user out"""
     session.clear()
-    r.flushdb()
     return redirect("/")
 
 
 @app.route("/signup", methods=["GET", "POST"])
+@limiter.limit("5 per minute", key_func=auth_limit_key)
 def signup():
     """Sign up user"""
     if request.method == "POST":
-        username = request.form.get("username")
+        username = (request.form.get("username") or "").strip()
         password = request.form.get("password")
         password2 = request.form.get("confirmation")
-        if not username:
-            return apology("must provide username", 400)
-        elif not password:
-            return apology("must provide password", 400)
+
+        username_error = validate_username(username)
+        if username_error:
+            return apology(username_error, 400)
+
+        password_error = validate_password_strength(password)
+        if password_error:
+            return apology(password_error, 400)
+
         elif not (password == password2):
             return apology("passwords must match", 400)
         elif not password2:
@@ -362,9 +443,14 @@ def uploadFiles():
             word_set_id = request.form.get("word_set_id")
 
             if uploaded_file.filename != '':
+                safe_filename = secure_filename(uploaded_file.filename)
+                _, extension = os.path.splitext(safe_filename.lower())
+                if not safe_filename or extension not in ALLOWED_UPLOAD_EXTENSIONS:
+                    return apology("invalid file type", 400)
+
                 # Set the file path and save
                 file_path = os.path.join(
-                    app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+                    app.config['UPLOAD_FOLDER'], safe_filename)
                 uploaded_file.save(file_path)
 
                 if request.form.get("additional_set"):
@@ -389,7 +475,11 @@ def petedit():
     """Allows a user to rename a pet in their account"""
     if request.method == "POST":
         pet_id = request.form.get("pet_id")
-        rename = request.form.get("rename")
+        rename = (request.form.get("rename") or "").strip()
+
+        if not PET_NAME_PATTERN.fullmatch(rename):
+            return apology("pet name must be 1-50 chars and only letters, numbers, spaces, apostrophes, or hyphens", 400)
+
         rows = db.execute("SELECT count(*) as count FROM owners WHERE owner_id = ? AND pet_id = ?",
                       (session_get_int("user_id"), pet_id, )).fetchall()
         # Confirmed user owns this pet
@@ -424,8 +514,11 @@ def updatelanguage():
     """User Profile - change preference for native and learning language"""
     if request.method == "POST":
 
-        preferred_lang = request.form.get("orig_language")
-        learning_lang = request.form.get("learning_lang")
+        preferred_lang = parse_and_validate_language_id(request.form.get("orig_language"))
+        learning_lang = parse_and_validate_language_id(request.form.get("learning_lang"))
+
+        if preferred_lang is None or learning_lang is None:
+            return apology("invalid language selection", 400)
 
         if (preferred_lang == learning_lang):
             return apology("Preferred language and learning language cannot be the same :)", 400)
@@ -445,15 +538,21 @@ def updatelanguage():
 
 @app.route("/updatepassword", methods=["GET", "POST"])
 @login_required
+@limiter.limit("5 per 10 minutes", key_func=password_limit_key)
 def updatepassword():
     """User Profile - allows a user to change their password"""
     if request.method == "POST":
 
+        current_password = request.form.get("current_password")
         password = request.form.get("password")
         password2 = request.form.get("confirmation")
 
-        if not password:
-            return apology("must provide password", 400)
+        if not current_password:
+            return apology("must provide current password", 400)
+
+        password_error = validate_password_strength(password)
+        if password_error:
+            return apology(password_error, 400)
 
         elif not (password == password2):
             return apology("passwords must match", 400)
@@ -463,6 +562,9 @@ def updatepassword():
 
         rows = db.execute(
             "SELECT password FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
+
+        if not check_password_hash(rows[0]["password"], current_password):
+            return apology("current password is incorrect", 403)
 
         if (check_password_hash(rows[0]["password"], password)):
             return apology("password cannot be the same as existing password", 400)

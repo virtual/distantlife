@@ -22,6 +22,7 @@
   <p class="text-lowercase d-none"><em>{{words[page].pronunciation}}</em></p>
 
   <form class="form-quiz-container" method="post" action="/quiz/set/">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <input name="set_id" type="hidden" value="{{set_id}}" />
     <input name="page" type="hidden" value="{{page+1}}" />
   {% if not words[page+1] %}
@@ -30,12 +31,12 @@
     <div class="form-quiz">
 
       {% for opt in word_options %}
-        <input data-type={{opt.data}} data-index={{loop.index}} value="{{opt.word}}" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option{{loop.index}}" autocomplete="off">
+        <input data-type="{{ opt.data }}" data-index="{{ loop.index }}" value="{{ opt.word }}" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option{{loop.index}}" autocomplete="off">
         <label class="btn btn-radio" for="option{{loop.index}}">{{opt.word}}</label>
       {% endfor %}
 
     </div>
-    <input type="hidden" id="experience" name="experience" value={{experience}} />
+    <input type="hidden" id="experience" name="experience" value="{{ experience }}" />
     <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('Continue') }}</button>
     <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('Skip') }}</button>
   </form>
