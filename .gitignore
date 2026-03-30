@@ -143,3 +143,6 @@ distantlife.db
 distantlifebk.db
 distantlife.ini
 dump.rdb
+
+# Local-only reference files
+.local/
