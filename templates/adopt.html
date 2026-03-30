@@ -27,6 +27,7 @@
                 <td><img src="/static/{{ pet_type.imgsrc }}" alt="" /></td>
                 <td>
                   <form method="post" action="/adopt">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <input name="pet_type" type="hidden" value="{{pet_type.id}}" />
                     <input type="submit" value="{{ _('Adopt') }}" />
                 </form>

@@ -6,6 +6,7 @@
 
 {% block main %}
     <form class="mx-auto centered" action="/login" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="form-group">
         <label for="username">{{ _('Username') }}</label>
         <input required id="username" name="username" type="text" />

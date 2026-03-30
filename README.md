@@ -154,7 +154,7 @@ Windows:
 
 ```sh
 memurai.exe --service-start # run once to ensure service is started
-python -m flask run # terminal (venv)
+python -m flask --app application --debug run # debug
 ```
 
 ## Translations

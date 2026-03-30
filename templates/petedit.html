@@ -24,6 +24,7 @@
 
         {% if (pet.exp) >= 100 %}
         <form class="mx-auto centered" action="/pets/edit/" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <fieldset>
               <legend>{{ _('Update Pet') }}</legend>
               <div class="form-group">

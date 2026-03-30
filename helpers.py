@@ -10,7 +10,7 @@ r = get_redis_client()
 
 def apology(message, code=400):
     """Render message as an apology to user."""
-    return render_template("apology.html", message=message, code=code)
+    return render_template("apology.html", message=message, code=code), code
 
 
 def login_required(f):
