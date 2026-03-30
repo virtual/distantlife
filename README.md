@@ -33,6 +33,39 @@ In addition to the member experience, there is an admin dashboard available to u
 - Add new words to word sets using a CSV file uploader
 - Delete words from word sets
 
+#### CSV Upload Format
+
+The uploader expects at least 5 columns in this exact order:
+
+1. First language name (must match an entry in `languages.name`)
+2. First language pronunciation
+3. Second language name (must match an entry in `languages.name`)
+4. Second language pronunciation
+5. `word_type` (must match an entry in `word_type.type`, for example `noun`)
+
+The first row must be headers. Header text is used to detect each column.
+
+Required pattern:
+
+```csv
+<Language1>,<Language1Pronunciation>,<Language2>,<Language2Pronunciation>,word_type
+```
+
+How column direction works in the admin UI:
+
+- The selected set gets the second language column.
+- If you choose "Add first column to additional set", the first language column is added to that additional set.
+
+Example: Upload to a Hebrew set (Translated language) with native language English:
+
+```csv
+English,en_pronunciation,עברית,he_pronunciation,word_type
+dog,dawg,כלב,kelev,noun
+cat,kat,חתול,chatul,noun
+```
+
+Optional extra columns are currently ignored by the importer, so you can include reference-only columns (for example a nikkud variant) without breaking upload.
+
 ### 🪐 Localization and Internationalization
 
 To better support users, the site supports language translation and internationalization. For languages that require a right-to-left (RTL) reading direction, the interface mirrors the normal reading direction. In addition, RTL includes small enhancements such as flipping the active pet image and general site layout.
