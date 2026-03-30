@@ -14,8 +14,9 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema
 from fileparser import save_words
+from normalization import compute_search_key
 
 r = get_redis_client()
 
@@ -278,33 +279,102 @@ def createset():
         if request.form.get('setname') is not None:
 
             setname = request.form.get('setname')
-            learning_lang = request.form.get('learning_lang')
+            learning_lang = int(request.form.get('learning_lang'))
             plang_setname = request.form.get('plang_setname')
-            preferred_lang = request.form.get('preferred_lang')
+            preferred_lang = int(request.form.get('preferred_lang'))
 
-            # Sets will usually be a noun
-            learning_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                         (learning_lang, 1, '', setname, ))).lastrowid
-            con.commit()
+            if using_lemma_schema():
+                language_rows = db.execute(
+                    "SELECT id, charcode FROM languages WHERE id IN (?, ?)",
+                    (learning_lang, preferred_lang),
+                ).fetchall()
+                lang_code_map = {int(row['id']): (row['charcode'] or '') for row in language_rows}
 
-            preferred_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                          (preferred_lang, 1, '', plang_setname, ))).lastrowid
-            con.commit()
+                learning_lemma_id = db.execute(
+                    "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+                    (learning_lang, 1, '', None),
+                ).lastrowid
+                db.execute(
+                    "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        learning_lemma_id,
+                        learning_lang,
+                        'surface',
+                        'Hebr' if lang_code_map.get(learning_lang, '').lower() == 'he' else 'Latn',
+                        setname,
+                        compute_search_key(setname, lang_code_map.get(learning_lang, '')),
+                        1,
+                    ),
+                )
+                learning_sense_id = db.execute(
+                    "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+                    (learning_lemma_id, 1, 1),
+                ).lastrowid
 
-            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                       (preferred_lang, learning_lang, preferred_wordid, learning_wordid, )).fetchall()
-            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                       (learning_lang, preferred_lang, learning_wordid, preferred_wordid, )).fetchall()
-            con.commit()
+                preferred_lemma_id = db.execute(
+                    "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+                    (preferred_lang, 1, '', None),
+                ).lastrowid
+                db.execute(
+                    "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        preferred_lemma_id,
+                        preferred_lang,
+                        'surface',
+                        'Hebr' if lang_code_map.get(preferred_lang, '').lower() == 'he' else 'Latn',
+                        plang_setname,
+                        compute_search_key(plang_setname, lang_code_map.get(preferred_lang, '')),
+                        1,
+                    ),
+                )
+                preferred_sense_id = db.execute(
+                    "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+                    (preferred_lemma_id, 1, 1),
+                ).lastrowid
 
-            # TODO Set a default image here
-            insert_word_set = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                         ("/sets/fruits.png", learning_wordid, learning_lang, ))).lastrowid
-            con.commit()
+                db.execute(
+                    "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                    (preferred_sense_id, learning_sense_id, 'exact'),
+                )
+                db.execute(
+                    "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                    (learning_sense_id, preferred_sense_id, 'exact'),
+                )
 
-            insert_word_set_orig = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                              ("/sets/fruits.png", preferred_wordid, preferred_lang, ))).lastrowid
-            con.commit()
+                insert_word_set = db.execute(
+                    "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
+                    ("/sets/fruits.png", None, learning_lang, learning_sense_id),
+                ).lastrowid
+                insert_word_set_orig = db.execute(
+                    "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
+                    ("/sets/fruits.png", None, preferred_lang, preferred_sense_id),
+                ).lastrowid
+                con.commit()
+
+            else:
+                # Sets will usually be a noun
+                learning_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
+                                            (learning_lang, 1, '', setname, ))).lastrowid
+                con.commit()
+
+                preferred_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
+                                            (preferred_lang, 1, '', plang_setname, ))).lastrowid
+                con.commit()
+
+                db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
+                        (preferred_lang, learning_lang, preferred_wordid, learning_wordid, )).fetchall()
+                db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
+                        (learning_lang, preferred_lang, learning_wordid, preferred_wordid, )).fetchall()
+                con.commit()
+
+                # TODO Set a default image here
+                insert_word_set = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
+                                            ("/sets/fruits.png", learning_wordid, learning_lang, ))).lastrowid
+                con.commit()
+
+                insert_word_set_orig = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
+                                                ("/sets/fruits.png", preferred_wordid, preferred_lang, ))).lastrowid
+                con.commit()
 
             if (insert_word_set > 0):
                 flash("New set created: " + setname)
@@ -331,9 +401,15 @@ def delete_word():
     if request.method == "POST":
         if request.form.get('word_id') is not None:
             if request.form.get('word_set_id') is not None:
-                # delete word from word_sets
-                deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?",
-                                       (request.form.get("word_id"), request.form.get("word_set_id")))
+                if using_lemma_schema():
+                    deleteqry = db.execute(
+                        "DELETE FROM set_item WHERE sense_id = ? and word_set_id = ?",
+                        (request.form.get("word_id"), request.form.get("word_set_id")),
+                    )
+                else:
+                    # delete word from word_sets
+                    deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?",
+                                        (request.form.get("word_id"), request.form.get("word_set_id")))
                 con.commit()
                 if (deleteqry.rowcount > 0):
                     flash('delete successful')
