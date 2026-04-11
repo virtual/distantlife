@@ -160,12 +160,7 @@ memurai.exe --service-start
 Enable virtual environment:
 
 ```sh
-python -m venv venv
-source venv/Scripts/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-export FLASK_APP=application
-export FLASK_ENV=development # enable autoreload
+bash scripts/dev.sh
 ```
 
 For Linux deployment environments, install production packages with:
@@ -187,7 +182,7 @@ Windows:
 
 ```sh
 memurai.exe --service-start # run once to ensure service is started
-python -m flask --app application --debug run # debug
+bash scripts/dev.sh
 ```
 
 ## Translations
