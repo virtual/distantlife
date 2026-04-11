@@ -1,5 +1,6 @@
 from flask import redirect, render_template, session
 from functools import wraps
+from datetime import datetime
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
 
@@ -202,11 +203,35 @@ def get_sets(language_id='', trans_lang=''):
                 "select count(*) as count from word_set_words where word_set_id =  ?", 
                 (setinfo['id'], )).fetchall()
 
+        learnedcount = 0
+        if session_get_int('user_id') is not None:
+            if using_lemma_schema():
+                learnedcount = db.execute(
+                    """
+                    SELECT COUNT(*) AS count
+                    FROM words_learned wl
+                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
+                    WHERE sl.user_id = ? AND sl.wordsets = ?
+                    """,
+                    (session_get_int('user_id'), setinfo['id']),
+                ).fetchone()['count']
+            else:
+                learnedcount = db.execute(
+                    """
+                    SELECT COUNT(*) AS count
+                    FROM words_learned wl
+                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
+                    WHERE sl.user_id = ? AND sl.wordsets = ?
+                    """,
+                    (session_get_int('user_id'), setinfo['id']),
+                ).fetchone()['count']
+
         setinfo = {
             "id": setinfo['id'],
             "set_name": setinfo['wordstr'],
             "imgsrc": setinfo['imgsrc'],
             "totalcount": totalcount[0]['count'],
+            "completed": int(totalcount[0]['count']) > 0 and int(learnedcount) >= int(totalcount[0]['count']),
             "translation": translation
         }
         sets.append(setinfo)
@@ -301,6 +326,117 @@ def session_get_int(key):
         return int(session.get(key))
     else:
         return None
+
+
+def table_columns(table_name):
+    """Return column names for a table."""
+    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return [row["name"] for row in rows]
+
+
+def current_timestamp():
+    """Return a SQLite-friendly timestamp string."""
+    return datetime.now().isoformat(sep=" ", timespec="seconds")
+
+
+def record_set_learned(user_id, set_id, subject='', word_count=0):
+    """Create or refresh a learned-set record for the user."""
+    columns = table_columns("sets_learned")
+    existing = db.execute(
+        "SELECT id FROM sets_learned WHERE user_id = ? AND wordsets = ?",
+        (user_id, set_id),
+    ).fetchone()
+
+    values = {
+        "subject": subject,
+        "user_id": user_id,
+        "wordsets": set_id,
+        "started": current_timestamp(),
+        "completed": current_timestamp(),
+    }
+
+    if existing is None:
+        insert_columns = [column for column in ["subject", "user_id", "wordsets", "started", "completed"] if column in columns]
+        placeholders = ", ".join(["?"] * len(insert_columns))
+        db.execute(
+            f"INSERT INTO sets_learned ({', '.join(insert_columns)}) VALUES ({placeholders})",
+            tuple(values[column] for column in insert_columns),
+        )
+        con.commit()
+        return db.execute(
+            "SELECT id FROM sets_learned WHERE user_id = ? AND wordsets = ?",
+            (user_id, set_id),
+        ).fetchone()["id"]
+
+    update_columns = [column for column in ["subject", "completed"] if column in columns]
+    if update_columns:
+        assignments = ", ".join([f"{column} = ?" for column in update_columns])
+        db.execute(
+            f"UPDATE sets_learned SET {assignments} WHERE id = ?",
+            tuple(values[column] for column in update_columns) + (existing["id"],),
+        )
+        con.commit()
+    return existing["id"]
+
+
+def record_words_learned(user_id, learned_id, word_ids):
+    """Create learned-word rows for the given set completion."""
+    columns = table_columns("words_learned")
+    word_column = "sense_id" if "sense_id" in columns else "word"
+    learned_column = "learned" if "learned" in columns else None
+    timestamp_columns = [column for column in ["created_at", "updated_at"] if column in columns]
+
+    for word_id in word_ids:
+        existing = db.execute(
+            f"SELECT id FROM words_learned WHERE user_id = ? AND {word_column} = ?",
+            (user_id, word_id),
+        ).fetchone()
+        if existing is not None:
+            continue
+
+        insert_columns = ["user_id", word_column, "sets_learned_id"]
+        values = [user_id, word_id, learned_id]
+        if learned_column is not None:
+            insert_columns.append(learned_column)
+            values.append(True)
+        for column in timestamp_columns:
+            insert_columns.append(column)
+            values.append(current_timestamp())
+
+        placeholders = ", ".join(["?"] * len(insert_columns))
+        db.execute(
+            f"INSERT INTO words_learned ({', '.join(insert_columns)}) VALUES ({placeholders})",
+            tuple(values),
+        )
+
+    con.commit()
+
+
+def get_learning_progress(user_id):
+    """Return aggregate learning progress for a user."""
+    learned_words = db.execute(
+        "SELECT COUNT(*) AS count FROM words_learned WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()["count"]
+    learned_sets = db.execute(
+        "SELECT COUNT(*) AS count FROM sets_learned WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()["count"]
+    recent_sets = db.execute(
+        """
+        SELECT subject, wordsets, completed
+        FROM sets_learned
+        WHERE user_id = ?
+        ORDER BY completed DESC, id DESC
+        LIMIT 5
+        """,
+        (user_id,),
+    ).fetchall()
+    return {
+        "learned_words": learned_words,
+        "learned_sets": learned_sets,
+        "recent_sets": recent_sets,
+    }
 
 
 def update_experience(amount):

@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema
+from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -148,7 +148,8 @@ def password_limit_key():
 def index():
     """Landing page for visitors, dashboard for registered users"""
     if (session_get_int("user_id") is not None):
-        return render_template("dashboard.html")
+        progress = get_learning_progress(session_get_int("user_id"))
+        return render_template("dashboard.html", progress=progress)
     else:
         return render_template("index.html")
 
@@ -249,6 +250,13 @@ def quizset():
             if (experience > 0):
                 # Add experience to active pet
                 update_experience(experience)
+                set_id = int(request.form.get('set_id')) if request.form.get("set_id") else None
+                if set_id is not None:
+                    words = get_words_by_set_id(set_id)
+                    if experience >= len(words):
+                        set_info = get_set_by_id(set_id)
+                        learned_id = record_set_learned(session_get_int("user_id"), set_id, subject=set_info["wordstr"])
+                        record_words_learned(session_get_int("user_id"), learned_id, [int(word["id"]) for word in words])
                 flash("Gained " + str(experience) + " experience!")
             return redirect('/train')
 
@@ -528,9 +536,10 @@ def profile():
         "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
 
     language_options = db.execute("SELECT * FROM languages").fetchall()
+    progress = get_learning_progress(session_get_int("user_id"))
 
     if (len(userinfo) > 0):
-        return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options)
+        return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options, progress=progress)
 
     return apology("error accessing profile", 400)
 

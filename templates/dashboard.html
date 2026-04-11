@@ -10,7 +10,27 @@
  
 <h2>{{ _('Latest Notifications') }}</h2>
 <div class="card">
-<p>No recent updates.</p>
+  {% if progress and progress.learned_words > 0 %}
+    <p>{{ _('You have learned') }} {{ progress.learned_words }} {{ _('words across') }} {{ progress.learned_sets }} {{ _('completed sets.') }}</p>
+    {% if progress.recent_sets %}
+      <ul>
+        {% for set in progress.recent_sets %}
+          <li>
+            {% if set.subject %}
+              {{ set.subject }}
+            {% else %}
+              {{ _('Set') }} {{ set.wordsets }}
+            {% endif %}
+            {% if set.completed %}
+              - {{ set.completed }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% else %}
+    <p>{{ _('No recent updates.') }}</p>
+  {% endif %}
 </div>
 <h2>{{ _('News') }}</h2>
 <div class="card">

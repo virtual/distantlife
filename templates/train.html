@@ -36,8 +36,13 @@
     {% for set in sets %}
      <tr>
         <td class="table-icon">
-          <span class="fal fa-circle"></span>
-          <span class="sr-only">{{ _('incomplete') }}</span>
+          {% if set.completed %}
+            <span class="fal fa-check-circle"></span>
+            <span class="sr-only">{{ _('complete') }}</span>
+          {% else %}
+            <span class="fal fa-circle"></span>
+            <span class="sr-only">{{ _('incomplete') }}</span>
+          {% endif %}
         </td>
         <td><a href="/train/set/?s={{set.id}}"> <strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
         <td>{{set.totalcount}}</td>

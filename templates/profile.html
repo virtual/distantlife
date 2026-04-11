@@ -10,6 +10,29 @@
         <dd>{{ userinfo.username }} <small>({{ _('ID') }}: {{ userinfo.id }})</small></dd>
     </dl>
 
+    <div class="card">
+      <h3>{{ _('Learning Progress') }}</h3>
+      <p>{{ _('Words learned') }}: {{ progress.learned_words }}</p>
+      <p>{{ _('Completed sets') }}: {{ progress.learned_sets }}</p>
+      {% if progress.recent_sets %}
+        <h4>{{ _('Recent completions') }}</h4>
+        <ul>
+          {% for set in progress.recent_sets %}
+            <li>
+              {% if set.subject %}
+                {{ set.subject }}
+              {% else %}
+                {{ _('Set') }} {{ set.wordsets }}
+              {% endif %}
+              {% if set.completed %}
+                - {{ set.completed }}
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
     <form class="mx-auto centered" action="/updatelanguage" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <fieldset>
