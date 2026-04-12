@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-{{ _('Train') }}
+{{ _('ui.train') }}
 {% endblock %}
 
 {% block main %}
@@ -12,7 +12,7 @@
     <div class="options">
       <a href="/edit/set/" class="btn-option">
         <span class="fal fa-cog"></span>
-        <span class="sr-only">{{ _('settings') }}</span>
+        <span class="sr-only">{{ _('ui.nav.settings') }}</span>
       </a>
     </div>
     {% endif %}
@@ -24,12 +24,12 @@
     <tr>
       <th class="table-icon">
         <span class="fal fa-check-circle"></span>
-        <span class="sr-only">{{ _('complete') }}</span>
+        <span class="sr-only">{{ _('ui.progress.complete') }}</span>
       </th>
-      <th>{{ _('Word Set') }}</th>
-      <th>{{ _('Words') }}</th>
-      <th>{{ _('Options') }}</th>
-      <th><span class="sr-only">{{ _('Icon') }}</span></th>
+      <th>{{ _('ui.word_set') }}</th>
+      <th>{{ _('ui.words') }}</th>
+      <th>{{ _('ui.options') }}</th>
+      <th><span class="sr-only">{{ _('ui.icon') }}</span></th>
    </tr>
   </thead>
   <tbody>
@@ -38,10 +38,10 @@
         <td class="table-icon">
           {% if set.completed %}
             <span class="fal fa-check-circle"></span>
-            <span class="sr-only">{{ _('complete') }}</span>
+            <span class="sr-only">{{ _('ui.progress.complete') }}</span>
           {% else %}
             <span class="fal fa-circle"></span>
-            <span class="sr-only">{{ _('incomplete') }}</span>
+            <span class="sr-only">{{ _('ui.progress.incomplete') }}</span>
           {% endif %}
         </td>
         <td><a href="/train/set/?s={{set.id}}"> <strong>{{set.translation}}</strong> ({{set.set_name}})</a></td>
@@ -50,7 +50,7 @@
           <form method="post" action="/quiz/set/">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <input name="set_id" type="hidden" value="{{set.id}}" />
-            <input type="submit" value="{{ _('Quiz') }}" />
+            <input type="submit" value="{{ _('ui.quiz') }}" />
           </form>
         </td>
         <td>

@@ -2,22 +2,22 @@
 
 
 {% block title %}
-{{ _('Adopt a pet') }} 
+{{ _('ui.adopt_a_pet') }} 
 {% endblock %}
 
 {% block main %}
 
 
-<h1>{{ _('Adopt a pet') }}</h1>
+<h1>{{ _('ui.adopt_a_pet') }}</h1>
 
 {% if (pet_types|length) > 0 %}
   
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>{{ _('Type') }}</th>
-                <th>{{ _('Image') }}</th>
-                <th>{{ _('Adopt') }}</th>
+                <th>{{ _('ui.type') }}</th>
+                <th>{{ _('ui.image') }}</th>
+                <th>{{ _('ui.adopt') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +29,7 @@
                   <form method="post" action="/adopt">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <input name="pet_type" type="hidden" value="{{pet_type.id}}" />
-                    <input type="submit" value="{{ _('Adopt') }}" />
+                    <input type="submit" value="{{ _('ui.adopt') }}" />
                 </form>
               </td>
             </tr>
@@ -38,7 +38,7 @@
     </table>
   </form>
     {% else %}
-      <p>{{ _('No pets') }}</p>
+      <p>{{ _('ui.no_pets') }}</p>
     {% endif %}
 
 {% endblock %}

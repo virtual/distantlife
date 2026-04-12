@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-  {{ _('Admin') }}  
+  {{ _('ui.admin') }}  
 {% endblock %}
 
 {% block main %}
@@ -10,13 +10,13 @@
 <form class="mx-auto centered" action="/create/set/" method="post">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <fieldset>
-    <legend>{{ _('Word set shown in: (translated language)') }}</legend>
+    <legend>{{ _('ui.word_set_shown_in_translated_language') }}</legend>
     <div class="form-group">
-      <label for="setname">{{ _('Set Name') }}</label>
+      <label for="setname">{{ _('ui.set_name') }}</label>
       <input required id="setname" name="setname" type="text" />
     </div> 
     <div class="form-group">
-      <label for="learning_lang">{{ _('Language') }}:</label>
+      <label for="learning_lang">{{ _('ui.language') }}:</label>
       <select id="learning_lang" name="learning_lang">
         {% for lang in language_options %}
           {% if lang.id == userinfo.learning_lang %}
@@ -29,13 +29,13 @@
     </div>
   </fieldset>
   <fieldset>
-    <legend>{{ _('Help text shown in: (native language)') }}</legend>
+    <legend>{{ _('ui.help_text_shown_in_native_language') }}</legend>
     <div class="form-group">
-      <label for="plang_setname">{{ _('Set Name') }}</label>
+      <label for="plang_setname">{{ _('ui.set_name') }}</label>
       <input required id="plang_setname" name="plang_setname" type="text" />
     </div> 
     <div class="form-group">
-      <label for="preferred_lang">{{ _('Language') }}:</label>
+      <label for="preferred_lang">{{ _('ui.language') }}:</label>
       <select id="preferred_lang" name="preferred_lang">
         {% for lang in language_options %}
           {% if lang.id == userinfo.preferred_lang %}
@@ -47,6 +47,6 @@
       </select>
     </div>
   </fieldset>
-  <button>{{ _('Create new set') }}</button>
+  <button>{{ _('ui.create_new_set') }}</button>
 </form>
 {% endblock %}

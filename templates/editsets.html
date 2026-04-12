@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-{{ _('Edit Sets') }}
+{{ _('ui.edit_sets') }}
 {% endblock %}
 
 {% block main %}
@@ -14,10 +14,10 @@
 <table class="table-responsive-stack">
   <thead>
     <tr>
-      <th class="table-img"><span class="sr-only">{{ _('Icon') }}</span></th>
-      <th>{{ _('Word Set') }}</th>
-      <th>{{ _('Count') }}</th>
-      <th>{{ _('Options') }}</th>
+      <th class="table-img"><span class="sr-only">{{ _('ui.icon') }}</span></th>
+      <th>{{ _('ui.word_set') }}</th>
+      <th>{{ _('ui.count') }}</th>
+      <th>{{ _('ui.options') }}</th>
    </tr>
   </thead>
   <tbody>
@@ -32,9 +32,9 @@
         <td>
           <form method="get" action="/edit/set/?s={{set.id}}">
             <input name="set_id" type="hidden" value="{{set.id}}" />
-            <button class="btn btn-secondary" type="submit" value="{{ _('Edit') }}">
+            <button class="btn btn-secondary" type="submit" value="{{ _('ui.edit') }}">
               <span class="fal fa-pencil"></span>
-              <span class="sr-only">{{ _('Edit') }}</span>
+              <span class="sr-only">{{ _('ui.edit') }}</span>
             </button>
           </form>
         </td>
@@ -46,7 +46,7 @@
 
 {% if role == 9 %}
 <p class="text-center">
-  <a class="btn btn-primary" href="/create/set/">{{ _('Create new set') }}</a>
+  <a class="btn btn-primary" href="/create/set/">{{ _('ui.create_new_set') }}</a>
 </p>
 {% endif %}
 {% endblock %}

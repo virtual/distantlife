@@ -3,13 +3,13 @@
 
 
 {% block title %}
-{{ _('List') }}
+{{ _('ui.list') }}
 {% endblock %}
 
 {% block main %}
 
 
-<h1>{{ _('My Pets') }}</h1>
+<h1>{{ _('ui.my_pets') }}</h1>
 
 
 {% if (pets_owned|length) > 0 %}
@@ -20,26 +20,26 @@
       <img src="/static/{{ pet.imgsrc }}" alt="" />
       <h2>{{ pet.name }} 
         {% if pet.id == pet.active_pet_id %}
-        <span class="badge badge-success">{{ _('Active pet') }}</span>
+        <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
         {% endif %} </h2>
         <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
         {{ progressbar((pet.exp)) }}
 
         <ul class="element-options">
           <li class="has-dropdown"><button class="btn-secondary" aria-haspopup="true">
-            {{ _('Options') }}
+            {{ _('ui.options') }}
           </button>
             <ul class="dropdown" aria-label="submenu">
-              <li><a href="/activate/?id={{pet.id}}">{{ _('Make Active Pet') }}</a></li>
+              <li><a href="/activate/?id={{pet.id}}">{{ _('ui.make_active_pet') }}</a></li>
               {% if (pet.exp) < 100 %}
-                <li><a class="disabled" href="#">{{ _('Rename') }}
+                <li><a class="disabled" href="#">{{ _('ui.rename') }}
                   <span title="Pet renaming is available at level 2" class="fad fa-info-circle"></span>
                   <span class="sr-only">info</span>
                 </a></li>
               {% else %}
-                <li><a href="/pets/edit/?id={{pet.id}}">{{ _('Rename') }}</a></li>
+                <li><a href="/pets/edit/?id={{pet.id}}">{{ _('ui.rename') }}</a></li>
               {% endif %}
-              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">{{ _('Abandon') }}</a></li>
+              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">{{ _('ui.abandon') }}</a></li>
             </ul>
           </li>
         </ul>
@@ -49,8 +49,8 @@
   </div>
 
   {% else %}
-    <p>{{ _('No pets') }}</p>
+    <p>{{ _('ui.no_pets') }}</p>
   {% endif %}
 
-  <p class="text-center"><a class="btn btn-primary" href="/adopt">{{ _('Adopt a pet') }}</a></p>
+  <p class="text-center"><a class="btn btn-primary" href="/adopt">{{ _('ui.adopt_a_pet') }}</a></p>
 {% endblock %}
