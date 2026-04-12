@@ -1,10 +1,17 @@
 {% from "./macros.html" import progressbar, get_data with context %}
 <aside>
   {% if (session.get("active_pet")) %}
-  <p class="text-center my-0 pet-box ">
+  <p class="text-center mx-auto pet-box ">
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />
   </p>
   <h3>{{session["active_pet"]["name"]}}</h3>
   {{ progressbar(session["active_pet"]["exp"]) }}
+  {% elif session.get("user_id") %}
+  <p class="text-center mx-auto pet-box pet-hidden sidebar-empty-pet-box">
+    <img width="200" height="200" src="{{ url_for('static', filename='pets/031-frog.png') }}" alt="frog" />
+  </p>
+  <p class="text-center">
+    <a href="/adopt" class="btn text-center mx-auto">{{ _('Adopt your first pet') }}</a>
+  </p>
   {% endif %}
 </aside>

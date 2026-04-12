@@ -49,12 +49,8 @@
   </div>
 
   {% else %}
+    <p>{{ _('No pets') }}</p>
+  {% endif %}
 
-
-    <p>No pets</p>
-{% endif %}
-
-
-<p class="text-center"><a class="btn btn-primary" href="/adopt">Adopt a pet</a></p>
-
+  <p class="text-center"><a class="btn btn-primary" href="/adopt">{{ _('Adopt a pet') }}</a></p>
 {% endblock %}

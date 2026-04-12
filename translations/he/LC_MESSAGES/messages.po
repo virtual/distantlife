@@ -23,16 +23,23 @@ msgstr ""
 msgid "About"
 msgstr "אודות"
 
-#: templates/adopt.html:5 templates/adopt.html:11
-msgid "Adopt a Pet"
+#: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:58
+msgid "Adopt a pet"
 msgstr "אמץ חיה"
+
+#: templates/global/sidebar.html:14
+msgid "Adopt your first pet"
+msgstr "אמץ את חיית המחמד הראשונה שלך"
+
+#: helpers.py:65
+msgid "Before training, adopt your first pet!"
+msgstr "לפני האימון, אמץ את חיית המחמד הראשונה שלך!"
 
 #: templates/adopt.html:18
 msgid "Type"
 msgstr "סוג"
 
 #: templates/adopt.html:19
-#, fuzzy
 msgid "Image"
 msgstr "תמונה"
 

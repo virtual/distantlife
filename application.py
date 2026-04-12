@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from helpers import apology, login_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -164,7 +164,7 @@ def pets():
 
 
 @app.route("/train")
-@login_required
+@adopted_pet_required
 def train():
     """Lists available word sets to learn and test on"""
     role = get_role()
@@ -173,7 +173,7 @@ def train():
 
 
 @app.route("/train/set/")
-@login_required
+@adopted_pet_required
 def trainset():
     """Allows a user to learn a set of words, one word at a time"""
     tset = int(request.args.get('s'))
@@ -236,7 +236,7 @@ def edit_word():
 
 
 @app.route("/quiz/set/", methods=["GET", "POST"])
-@login_required
+@adopted_pet_required
 def quizset():
     """Shows a quiz for a given set of words, one word at a time. Experience is added on completion."""
     if request.method == "POST":
@@ -733,16 +733,22 @@ def adopt():
 def abandon():
     """Allows a user to remove a pet from their account"""
     pet_id = int(request.args.get('id'))
+    user_id = session_get_int("user_id")
 
-    # TODO
-    # Check that active pet is not the one being deleted
-    # print("SELECT active_pet_id FROM users WHERE id = ?",
-          # session_get_int("user_id"))
+    active_pet_row = db.execute(
+        "SELECT active_pet_id FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    was_active_pet = (
+        active_pet_row is not None
+        and active_pet_row["active_pet_id"] is not None
+        and int(active_pet_row["active_pet_id"]) == pet_id
+    )
 
     # Delete pet from pet owners
     # This ensures the current user owns the pet being abandoned
     rows = db.execute("DELETE FROM owners WHERE owner_id = ? AND pet_id = ?",
-                      (session_get_int("user_id"), pet_id ))
+                      (user_id, pet_id ))
     con.commit()
     if rows.rowcount == 1:
         db.execute("DELETE FROM pets WHERE id = ?", (pet_id, ))
@@ -750,11 +756,22 @@ def abandon():
     else:
         return apology("Error abandoning pet", 403)
 
-    # TODO
-    # If active pet is deleted pet, change a different pet to active pet
-    # db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-    #                              petid, session_get_int("user_id"))
-    # set_active_pet_in_session(session_get_int("user_id"))
+    if was_active_pet:
+        replacement_row = db.execute(
+            "SELECT pet_id FROM owners WHERE owner_id = ? ORDER BY pet_id ASC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+        if replacement_row is not None:
+            db.execute(
+                "UPDATE users SET active_pet_id = ? WHERE id = ?",
+                (int(replacement_row["pet_id"]), user_id),
+            )
+            con.commit()
+            set_active_pet_in_session(user_id)
+        else:
+            db.execute("UPDATE users SET active_pet_id = NULL WHERE id = ?", (user_id,))
+            con.commit()
+            session.pop("active_pet", None)
 
     return redirect('/pets')
 

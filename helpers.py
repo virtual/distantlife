@@ -1,6 +1,7 @@
-from flask import redirect, render_template, session
+from flask import flash, redirect, render_template, session
 from functools import wraps
 from datetime import datetime
+from flask_babel import gettext as _
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
 
@@ -38,6 +39,37 @@ def login_required(f):
         if session_get_int("user_id") is None:
             return redirect("/login")
         return f(*args, **kwargs)
+    return decorated_function
+
+
+def adopted_pet_required(f):
+    """
+    Requires user to have an adopted active pet.
+    """
+    @login_required
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_id = session_get_int("user_id")
+        active_pet = session.get("active_pet")
+        if isinstance(active_pet, dict) and active_pet.get("id"):
+            return f(*args, **kwargs)
+
+        user_row = db.execute(
+            "SELECT active_pet_id FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+        if user_row is not None and user_row["active_pet_id"] is not None:
+            refreshed_pet_id = set_active_pet_in_session(user_id)
+            if refreshed_pet_id is not None:
+                return f(*args, **kwargs)
+
+            # Active pet reference is stale (e.g., deleted pet). Clear it.
+            db.execute("UPDATE users SET active_pet_id = NULL WHERE id = ?", (user_id,))
+            con.commit()
+            session.pop("active_pet", None)
+
+        flash(_("Before training, adopt your first pet!"))
+        return redirect("/adopt")
     return decorated_function
 
 
@@ -457,7 +489,6 @@ def update_experience(amount):
     """
     activepetqry = db.execute(
         "SELECT active_pet_id FROM users WHERE id =  ?", (session_get_int('user_id'), )).fetchone()
-    print(activepetqry['active_pet_id'])    
     active_pet_id = int(activepetqry['active_pet_id'])
     expqry = db.execute("SELECT exp FROM pets WHERE id =  ?", (active_pet_id, )).fetchall()
     exp = int(expqry[0]['exp']) + int(amount)
