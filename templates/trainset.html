@@ -20,6 +20,9 @@
     </div>
   </header>
   <p class="text-lowercase"><em>{{words[page].pronunciation}}</em></p>
+  {% if words[page].translation %}
+  <p class="text-center"><strong>{{ words[page].translation }}</strong></p>
+  {% endif %}
 
   <figure class="learn-word">
     {% if (words[page].imgsrc) %}

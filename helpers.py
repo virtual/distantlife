@@ -299,7 +299,15 @@ def get_words_by_set_id(set_id):
     else:
         words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type, words.audiopath AS audiosrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = ?", 
                     (set_id, )).fetchall()
-    return words
+
+    words_with_translation = []
+    for word in words:
+        word_translation = get_word_translation(int(word["id"]))
+        word_with_translation = dict(word)
+        word_with_translation["translation"] = word_translation
+        words_with_translation.append(word_with_translation)
+
+    return words_with_translation
 
 
 def get_role():
