@@ -32,6 +32,118 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 		});
 	});
+
+	var signupForm = document.querySelector("[data-signup-password-form]");
+	if (signupForm) {
+		var passwordInput = signupForm.querySelector("#password");
+		var confirmationInput = signupForm.querySelector("#confirmation");
+		var submitButton = signupForm.querySelector('button[type="submit"], input[type="submit"]');
+		var criteria = {
+			length: signupForm.querySelector('[data-password-rule="length"]'),
+			uppercase: signupForm.querySelector('[data-password-rule="uppercase"]'),
+			lowercase: signupForm.querySelector('[data-password-rule="lowercase"]'),
+			number: signupForm.querySelector('[data-password-rule="number"]'),
+			symbol: signupForm.querySelector('[data-password-rule="symbol"]')
+		};
+		var passwordStartMessage = signupForm.getAttribute("data-password-start-message") || "Start typing a password to check it.";
+		var passwordValidMessage = signupForm.getAttribute("data-password-valid-message") || "Password meets the requirements.";
+		var passwordInvalidMessage = signupForm.getAttribute("data-password-invalid-message") || "Password does not meet the requirements.";
+		var passwordMatchPrompt = signupForm.getAttribute("data-password-match-prompt") || "Retype your password to confirm it matches.";
+		var passwordMatchValid = signupForm.getAttribute("data-password-match-valid") || "Passwords match.";
+		var passwordMatchInvalid = signupForm.getAttribute("data-password-match-invalid") || "Passwords do not match.";
+		var stateSuccess = signupForm.getAttribute("data-password-state-success") || "success";
+		var stateError = signupForm.getAttribute("data-password-state-error") || "error";
+		var stateNeutral = signupForm.getAttribute("data-password-state-neutral") || "status";
+		var criteriaStatus = signupForm.querySelector("#password-criteria-status");
+		var matchStatus = signupForm.querySelector("#password-match-status");
+		var rules = Object.keys(criteria);
+
+		if (passwordInput && confirmationInput && submitButton) {
+			var setStatusState = function (element, state, message) {
+				if (!element) {
+					return;
+				}
+				var icon = element.querySelector(".status-icon");
+				var stateLabel = element.querySelector(".status-state");
+				var messageLabel = element.querySelector(".status-message");
+				var isSuccess = state === "success";
+				var isError = state === "error";
+
+				if (icon) {
+					icon.classList.remove("fa-check-circle", "fa-times-circle", "text-success", "text-danger", "d-none");
+					if (isSuccess) {
+						icon.classList.add("fa-check-circle", "text-success");
+					} else if (isError) {
+						icon.classList.add("fa-times-circle", "text-danger");
+					} else {
+						icon.classList.add("d-none");
+					}
+				}
+
+				if (stateLabel) {
+					stateLabel.textContent = state === "success" ? stateSuccess : state === "error" ? stateError : stateNeutral;
+				}
+
+				if (messageLabel && typeof message === "string") {
+					messageLabel.textContent = message;
+				}
+			};
+
+			var evaluatePassword = function () {
+				var password = passwordInput.value || "";
+				var checks = {
+					length: password.length >= 12,
+					uppercase: /[A-Z]/.test(password),
+					lowercase: /[a-z]/.test(password),
+					number: /\d/.test(password),
+					symbol: /[^A-Za-z0-9]/.test(password)
+				};
+				var meetsCriteria = true;
+
+				rules.forEach(function (rule) {
+					var isValid = Boolean(checks[rule]);
+					meetsCriteria = meetsCriteria && isValid;
+				});
+
+				var matches = password.length > 0 && password === confirmationInput.value;
+				var confirmationFilled = confirmationInput.value.length > 0;
+				var criteriaMessage = passwordStartMessage;
+				var criteriaState = "neutral";
+
+				if (password.length > 0) {
+					if (meetsCriteria) {
+						criteriaMessage = passwordValidMessage;
+						criteriaState = "success";
+					} else {
+						criteriaMessage = passwordInvalidMessage;
+						criteriaState = "error";
+					}
+				}
+
+				if (criteriaStatus) {
+					setStatusState(criteriaStatus, criteriaState, criteriaMessage);
+				}
+
+				if (matchStatus) {
+					if (!confirmationFilled) {
+						setStatusState(matchStatus, "neutral", passwordMatchPrompt);
+					} else if (matches) {
+						setStatusState(matchStatus, "success", passwordMatchValid);
+					} else {
+						setStatusState(matchStatus, "error", passwordMatchInvalid);
+					}
+				}
+
+				passwordInput.setCustomValidity(password.length === 0 || meetsCriteria ? "" : passwordInvalidMessage);
+				confirmationInput.setCustomValidity(confirmationFilled && !matches ? passwordMatchInvalid : "");
+				submitButton.disabled = !(meetsCriteria && matches);
+			};
+
+			passwordInput.addEventListener("input", evaluatePassword);
+			confirmationInput.addEventListener("input", evaluatePassword);
+			evaluatePassword();
+		}
+	}
 });
 
 //# sourceMappingURL=main.js.map

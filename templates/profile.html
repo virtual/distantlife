@@ -71,54 +71,60 @@
             <legend>{{ _('Change password') }}</legend>
             <div class="form-group">
               <label for="current_password">{{ _('Current Password') }}</label>
-              <input class="form-control has-password-toggle" name="current_password" id="current_password" placeholder="{{ _('Current Password') }}" type="password">
-              <button
-                type="button"
-                class="password-toggle"
-                data-toggle-password="current_password"
-                data-show-label="{{ _('Show password') }}"
-                data-hide-label="{{ _('Hide password') }}"
-                aria-controls="current_password"
-                aria-label="{{ _('Show password') }}"
-                aria-pressed="false"
-              >
-                <span class="far fa-eye" aria-hidden="true"></span>
-                <span class="sr-only">{{ _('Show password') }}</span>
-              </button>
+              <div class="password-field">
+                <input class="form-control has-password-toggle" name="current_password" id="current_password" placeholder="{{ _('Current Password') }}" type="password">
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-toggle-password="current_password"
+                  data-show-label="{{ _('Show password') }}"
+                  data-hide-label="{{ _('Hide password') }}"
+                  aria-controls="current_password"
+                  aria-label="{{ _('Show password') }}"
+                  aria-pressed="false"
+                >
+                  <span class="far fa-eye" aria-hidden="true"></span>
+                  <span class="sr-only">{{ _('Show password') }}</span>
+                </button>
+              </div>
             </div>
             <div class="form-group">
               <label for="password">{{ _('Password') }}</label>
-              <input class="form-control has-password-toggle" name="password" id="password" placeholder="{{ _('Password') }}" type="password">
-              <button
-                type="button"
-                class="password-toggle"
-                data-toggle-password="password"
-                data-show-label="{{ _('Show password') }}"
-                data-hide-label="{{ _('Hide password') }}"
-                aria-controls="password"
-                aria-label="{{ _('Show password') }}"
-                aria-pressed="false"
-              >
-                <span class="far fa-eye" aria-hidden="true"></span>
-                <span class="sr-only">{{ _('Show password') }}</span>
-              </button>
+              <div class="password-field">
+                <input class="form-control has-password-toggle" name="password" id="password" placeholder="{{ _('Password') }}" type="password">
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-toggle-password="password"
+                  data-show-label="{{ _('Show password') }}"
+                  data-hide-label="{{ _('Hide password') }}"
+                  aria-controls="password"
+                  aria-label="{{ _('Show password') }}"
+                  aria-pressed="false"
+                >
+                  <span class="far fa-eye" aria-hidden="true"></span>
+                  <span class="sr-only">{{ _('Show password') }}</span>
+                </button>
+              </div>
             </div>
             <div class="form-group">
               <label for="confirmation">{{ _('Retype Password') }}</label>
-              <input class="form-control has-password-toggle" name="confirmation" id="confirmation" placeholder="{{ _('Retype Password') }}" type="password">
-              <button
-                type="button"
-                class="password-toggle"
-                data-toggle-password="confirmation"
-                data-show-label="{{ _('Show password') }}"
-                data-hide-label="{{ _('Hide password') }}"
-                aria-controls="confirmation"
-                aria-label="{{ _('Show password') }}"
-                aria-pressed="false"
-              >
-                <span class="far fa-eye" aria-hidden="true"></span>
-                <span class="sr-only">{{ _('Show password') }}</span>
-              </button>
+              <div class="password-field">
+                <input class="form-control has-password-toggle" name="confirmation" id="confirmation" placeholder="{{ _('Retype Password') }}" type="password">
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-toggle-password="confirmation"
+                  data-show-label="{{ _('Show password') }}"
+                  data-hide-label="{{ _('Hide password') }}"
+                  aria-controls="confirmation"
+                  aria-label="{{ _('Show password') }}"
+                  aria-pressed="false"
+                >
+                  <span class="far fa-eye" aria-hidden="true"></span>
+                  <span class="sr-only">{{ _('Show password') }}</span>
+                </button>
+              </div>
             </div>
             <button class="btn btn-primary" type="submit">{{ _('Update Password') }}</button>
         </fieldset>

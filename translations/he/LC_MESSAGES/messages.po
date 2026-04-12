@@ -268,6 +268,66 @@ msgstr "הירשם"
 msgid "Sign up today to start your language-learning journey."
 msgstr "הירשם עכשיו להתחלת מסע למידת השפות שלך"
 
+#: templates/signup.html:16 templates/signup.html:23
+msgid "success"
+msgstr "הצלחה"
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "error"
+msgstr "שגיאה"
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "status"
+msgstr "סטטוס"
+
+#: templates/signup.html:16 templates/signup.html:23 templates/signup.html:41
+msgid "Start typing a password to check it."
+msgstr "התחל להקליד סיסמה כדי לבדוק אותה."
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "Password meets the requirements."
+msgstr "הסיסמה עומדת בדרישות."
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "Password does not meet the requirements."
+msgstr "הסיסמה אינה עומדת בדרישות."
+
+#: templates/signup.html:16 templates/signup.html:48
+msgid "Retype your password to confirm it matches."
+msgstr "הקלד שוב את הסיסמה כדי לוודא שהיא תואמת."
+
+#: templates/signup.html:16 templates/signup.html:48
+msgid "Passwords match."
+msgstr "הסיסמאות תואמות."
+
+#: templates/signup.html:16 templates/signup.html:48
+msgid "Passwords do not match."
+msgstr "הסיסמאות אינן תואמות."
+
+#: templates/signup.html:39
+msgid "Password must meet all of these requirements:"
+msgstr "הסיסמה חייבת לעמוד בכל הדרישות הבאות:"
+
+#: templates/signup.html:41
+msgid "At least 12 characters"
+msgstr "לפחות 12 תווים"
+
+#: templates/signup.html:42
+msgid "At least 1 uppercase letter"
+msgstr "לפחות אות גדולה אחת"
+
+#: templates/signup.html:43
+msgid "At least 1 lowercase letter"
+msgstr "לפחות אות קטנה אחת"
+
+#: templates/signup.html:44
+msgid "At least 1 number"
+msgstr "לפחות ספרה אחת"
+
+#: templates/signup.html:45
+msgid "At least 1 symbol"
+msgstr "לפחות סימן אחד"
+
 #: templates/global/header.html:28 templates/train.html:15
 msgid "settings"
 msgstr "הגדרות"

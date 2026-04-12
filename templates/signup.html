@@ -13,7 +13,7 @@
     {{ _('Sign up today to start your language-learning journey.') }}
   </p>
 </div>
-    <form class="mx-auto centered" action="/signup" method="post">
+    <form class="mx-auto centered" action="/signup" method="post" data-signup-password-form data-password-start-message="{{ _('Start typing a password to check it.') }}" data-password-valid-message="{{ _('Password meets the requirements.') }}" data-password-invalid-message="{{ _('Password does not meet the requirements.') }}" data-password-match-prompt="{{ _('Retype your password to confirm it matches.') }}" data-password-match-valid="{{ _('Passwords match.') }}" data-password-match-invalid="{{ _('Passwords do not match.') }}" data-password-state-success="{{ _('success') }}" data-password-state-error="{{ _('error') }}" data-password-state-neutral="{{ _('status') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="form-group">
         <label for="username">{{ _('Username') }}</label>
@@ -21,39 +21,64 @@
       </div> 
       <div class="form-group">
         <label for="password">{{ _('Password') }}</label>
-        <input required id="password" name="password" type="password" class="has-password-toggle" />
-        <button
-          type="button"
-          class="password-toggle"
-          data-toggle-password="password"
-          data-show-label="{{ _('Show password') }}"
-          data-hide-label="{{ _('Hide password') }}"
-          aria-controls="password"
-          aria-label="{{ _('Show password') }}"
-          aria-pressed="false"
-        >
-          <span class="far fa-eye" aria-hidden="true"></span>
-          <span class="sr-only">{{ _('Show password') }}</span>
-        </button>
+        <div class="password-field">
+          <input required minlength="12" autocomplete="new-password" id="password" name="password" type="password" class="has-password-toggle" aria-describedby="password-criteria password-match-status" />
+          <button
+            type="button"
+            class="password-toggle"
+            data-toggle-password="password"
+            data-show-label="{{ _('Show password') }}"
+            data-hide-label="{{ _('Hide password') }}"
+            aria-controls="password"
+            aria-label="{{ _('Show password') }}"
+            aria-pressed="false"
+          >
+            <span class="far fa-eye" aria-hidden="true"></span>
+            <span class="sr-only">{{ _('Show password') }}</span>
+          </button>
+        </div>
+      </div>
+      <div id="password-criteria" class="form-group password-help small-text" aria-live="polite">
+        <p id="password-criteria-status" class="password-criteria-status password-status">
+          <span class="fal status-icon" aria-hidden="true"></span>
+          <span class="sr-only status-state">{{ _('status') }}</span>
+          <span class="status-message text-muted">{{ _('Start typing a password to check it.') }}</span>
+        </p>
+        <p class="mb-1">{{ _('Password must meet all of these requirements:') }}</p>
+        <ul class="mb-0 mt-0 pl-3">
+          <li data-password-rule="length">{{ _('At least 12 characters') }}</li>
+          <li data-password-rule="uppercase">{{ _('At least 1 uppercase letter') }}</li>
+          <li data-password-rule="lowercase">{{ _('At least 1 lowercase letter') }}</li>
+          <li data-password-rule="number">{{ _('At least 1 number') }}</li>
+          <li data-password-rule="symbol">{{ _('At least 1 symbol') }}</li>
+        </ul>
       </div>
       <div class="form-group">
         <label for="confirmation">{{ _('Retype Password') }}</label>
-        <input required id="confirmation" name="confirmation" type="password" class="has-password-toggle" />
-        <button
-          type="button"
-          class="password-toggle"
-          data-toggle-password="confirmation"
-          data-show-label="{{ _('Show password') }}"
-          data-hide-label="{{ _('Hide password') }}"
-          aria-controls="confirmation"
-          aria-label="{{ _('Show password') }}"
-          aria-pressed="false"
-        >
-          <span class="far fa-eye" aria-hidden="true"></span>
-          <span class="sr-only">{{ _('Show password') }}</span>
-        </button>
+        <div class="password-field">
+          <input required autocomplete="new-password" id="confirmation" name="confirmation" type="password" class="has-password-toggle" aria-describedby="password-match-status" />
+          <button
+            type="button"
+            class="password-toggle"
+            data-toggle-password="confirmation"
+            data-show-label="{{ _('Show password') }}"
+            data-hide-label="{{ _('Hide password') }}"
+            aria-controls="confirmation"
+            aria-label="{{ _('Show password') }}"
+            aria-pressed="false"
+          >
+            <span class="far fa-eye" aria-hidden="true"></span>
+            <span class="sr-only">{{ _('Show password') }}</span>
+          </button>
+        </div>
       </div>
-       
+      <div class="form-group small-text">
+        <p id="password-match-status" class="password-help password-match-status password-status" aria-live="polite">
+          <span class="fal status-icon" aria-hidden="true"></span>
+          <span class="sr-only status-state">{{ _('status') }}</span>
+          <span class="status-message text-muted">{{ _('Retype your password to confirm it matches.') }}</span>
+        </p>
+      </div>  
       <button type="submit">{{ _('Sign Up') }}</button>
     </form>
 {% endblock %}

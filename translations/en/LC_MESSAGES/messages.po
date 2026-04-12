@@ -267,6 +267,18 @@ msgstr "Sign Up"
 msgid "Sign up today to start your language-learning journey."
 msgstr "Sign up today to start your language-learning journey."
 
+#: templates/signup.html:16 templates/signup.html:23
+msgid "success"
+msgstr "success"
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "error"
+msgstr "error"
+
+#: templates/signup.html:16 templates/signup.html:23
+msgid "status"
+msgstr "status"
+
 #: templates/global/header.html:28 templates/train.html:15
 msgid "settings"
 msgstr "settings"
