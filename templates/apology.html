@@ -1,7 +1,7 @@
 {% extends "layout-1col.html" %}
 
 {% block title %}
-{{ _('Error') }}
+{{ _('ui.error.title') }}
 {% endblock %}
 
 {% block main %}
@@ -14,6 +14,6 @@ function goBack() {
       <span class=" fad fa-transporter-empty icon-xxl"></span>
       <span class="sr-only">transporter-empty</span>
     </p>
-    <p class="text-center lead"><strong>{{ _('Error') }} {{ code }}</strong><br/> {{ message }}</p>
-    <p class="text-center mt-5"><a class="btn btn-primary" onclick="goBack()">{{ _('Go Back') }}</a></p>
+    <p class="text-center lead"><strong>{{ _('ui.error.title') }} {{ code }}</strong><br/> {{ message }}</p>
+    <p class="text-center mt-5"><a class="btn btn-primary" onclick="goBack()">{{ _('ui.go_back') }}</a></p>
 {% endblock %}

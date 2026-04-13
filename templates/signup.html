@@ -1,7 +1,7 @@
 {% extends "layout-1col.html" %}
 
 {% block title %}
-{{ _('Sign Up') }}  
+{{ _('ui.auth.sign_up') }}  
 {% endblock %}
 
 {% block main %}
@@ -10,75 +10,75 @@
     <img alt="Distant Life" src="{{ url_for('static', filename='/logos/logo-light-blue.svg') }}" height="28" width="140"/>
   </p>
   <p style="max-width: 370px; margin: 0 auto;" class="text-center pb-3">
-    {{ _('Sign up today to start your language-learning journey.') }}
+    {{ _('ui.auth.sign_up_today_to_start_your_language_learning_journey') }}
   </p>
 </div>
-    <form class="mx-auto centered" action="/signup" method="post" data-signup-password-form data-password-start-message="{{ _('Start typing a password to check it.') }}" data-password-valid-message="{{ _('Password meets the requirements.') }}" data-password-invalid-message="{{ _('Password does not meet the requirements.') }}" data-password-match-prompt="{{ _('Retype your password to confirm it matches.') }}" data-password-match-valid="{{ _('Passwords match.') }}" data-password-match-invalid="{{ _('Passwords do not match.') }}" data-password-state-success="{{ _('success') }}" data-password-state-error="{{ _('error') }}" data-password-state-neutral="{{ _('status') }}">
+    <form class="mx-auto centered" action="/signup" method="post" data-signup-password-form data-password-start-message="{{ _('ui.auth.start_typing_a_password_to_check_it') }}" data-password-valid-message="{{ _('ui.auth.password_meets_the_requirements') }}" data-password-invalid-message="{{ _('ui.auth.password_does_not_meet_the_requirements') }}" data-password-match-prompt="{{ _('ui.auth.retype_your_password_to_confirm_it_matches') }}" data-password-match-valid="{{ _('ui.auth.passwords_match') }}" data-password-match-invalid="{{ _('ui.auth.passwords_do_not_match') }}" data-password-state-success="{{ _('ui.auth.status.success') }}" data-password-state-error="{{ _('ui.auth.status.error') }}" data-password-state-neutral="{{ _('ui.auth.status.neutral') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="form-group">
-        <label for="username">{{ _('Username') }}</label>
+        <label for="username">{{ _('ui.auth.username') }}</label>
         <input required id="username" name="username" type="text" />
       </div> 
       <div class="form-group">
-        <label for="password">{{ _('Password') }}</label>
+        <label for="password">{{ _('ui.auth.password') }}</label>
         <div class="password-field">
           <input required minlength="12" autocomplete="new-password" id="password" name="password" type="password" class="has-password-toggle" aria-describedby="password-criteria password-match-status" />
           <button
             type="button"
             class="password-toggle"
             data-toggle-password="password"
-            data-show-label="{{ _('Show password') }}"
-            data-hide-label="{{ _('Hide password') }}"
+            data-show-label="{{ _('ui.auth.show_password') }}"
+            data-hide-label="{{ _('ui.auth.hide_password') }}"
             aria-controls="password"
-            aria-label="{{ _('Show password') }}"
+            aria-label="{{ _('ui.auth.show_password') }}"
             aria-pressed="false"
           >
             <span class="far fa-eye" aria-hidden="true"></span>
-            <span class="sr-only">{{ _('Show password') }}</span>
+            <span class="sr-only">{{ _('ui.auth.show_password') }}</span>
           </button>
         </div>
       </div>
       <div id="password-criteria" class="form-group password-help small-text" aria-live="polite">
         <p id="password-criteria-status" class="password-criteria-status password-status">
           <span class="fal status-icon" aria-hidden="true"></span>
-          <span class="sr-only status-state">{{ _('status') }}</span>
-          <span class="status-message text-muted">{{ _('Start typing a password to check it.') }}</span>
+          <span class="sr-only status-state">{{ _('ui.auth.status.neutral') }}</span>
+          <span class="status-message text-muted">{{ _('ui.auth.start_typing_a_password_to_check_it') }}</span>
         </p>
-        <p class="mb-1">{{ _('Password must meet all of these requirements:') }}</p>
+        <p class="mb-1">{{ _('ui.auth.password_must_meet_all_of_these_requirements') }}</p>
         <ul class="mb-0 mt-0 pl-3">
-          <li data-password-rule="length">{{ _('At least 12 characters') }}</li>
-          <li data-password-rule="uppercase">{{ _('At least 1 uppercase letter') }}</li>
-          <li data-password-rule="lowercase">{{ _('At least 1 lowercase letter') }}</li>
-          <li data-password-rule="number">{{ _('At least 1 number') }}</li>
-          <li data-password-rule="symbol">{{ _('At least 1 symbol') }}</li>
+          <li data-password-rule="length">{{ _('ui.auth.reqs.string_length') }}</li>
+          <li data-password-rule="uppercase">{{ _('ui.auth.reqs.string_uppercase') }}</li>
+          <li data-password-rule="lowercase">{{ _('ui.auth.reqs.string_lowercase') }}</li>
+          <li data-password-rule="number">{{ _('ui.auth.reqs.numbers') }}</li>
+          <li data-password-rule="symbol">{{ _('ui.auth.reqs.symbols') }}</li>
         </ul>
       </div>
       <div class="form-group">
-        <label for="confirmation">{{ _('Retype Password') }}</label>
+        <label for="confirmation">{{ _('ui.auth.retype_password') }}</label>
         <div class="password-field">
           <input required autocomplete="new-password" id="confirmation" name="confirmation" type="password" class="has-password-toggle" aria-describedby="password-match-status" />
           <button
             type="button"
             class="password-toggle"
             data-toggle-password="confirmation"
-            data-show-label="{{ _('Show password') }}"
-            data-hide-label="{{ _('Hide password') }}"
+            data-show-label="{{ _('ui.auth.show_password') }}"
+            data-hide-label="{{ _('ui.auth.hide_password') }}"
             aria-controls="confirmation"
-            aria-label="{{ _('Show password') }}"
+            aria-label="{{ _('ui.auth.show_password') }}"
             aria-pressed="false"
           >
             <span class="far fa-eye" aria-hidden="true"></span>
-            <span class="sr-only">{{ _('Show password') }}</span>
+            <span class="sr-only">{{ _('ui.auth.show_password') }}</span>
           </button>
         </div>
       </div>
       <div class="form-group small-text">
         <p id="password-match-status" class="password-help password-match-status password-status" aria-live="polite">
           <span class="fal status-icon" aria-hidden="true"></span>
-          <span class="sr-only status-state">{{ _('status') }}</span>
-          <span class="status-message text-muted">{{ _('Retype your password to confirm it matches.') }}</span>
+          <span class="sr-only status-state">{{ _('ui.auth.status.neutral') }}</span>
+          <span class="status-message text-muted">{{ _('ui.auth.retype_your_password_to_confirm_it_matches') }}</span>
         </p>
       </div>  
-      <button type="submit">{{ _('Sign Up') }}</button>
+      <button type="submit">{{ _('ui.auth.sign_up') }}</button>
     </form>
 {% endblock %}

@@ -1,20 +1,20 @@
 {% extends "layout-1col.html" %}
 
 {% block title %}
-{{ _('Log In') }}  
+{{ _('ui.auth.log_in') }}  
 {% endblock %}
 
 {% block main %}
     <form class="mx-auto centered" action="/login" method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="form-group">
-        <label for="username">{{ _('Username') }}</label>
+        <label for="username">{{ _('ui.auth.username') }}</label>
         <input required id="username" name="username" type="text" />
       </div> 
       <div class="form-group">
-        <label for="password">{{ _('Password') }}</label>
+        <label for="password">{{ _('ui.auth.password') }}</label>
         <input required id="password" name="password" type="password" />
       </div>
-      <button type="submit">{{ _('Log In') }}</button>
+      <button type="submit">{{ _('ui.auth.log_in') }}</button>
     </form>
 {% endblock %}

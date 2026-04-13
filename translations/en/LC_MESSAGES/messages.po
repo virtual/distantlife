@@ -7,331 +7,427 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-19 12:03-0700\n"
+"POT-Creation-Date: 2026-04-12 17:49-0600\n"
 "PO-Revision-Date: 2021-12-06 20:16-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: helpers.py:71
+#, fuzzy
+msgid "ui.adopt_your_first_pet"
+msgstr "Adopt your first pet"
 
 #: templates/about.html:5 templates/about.html:11
 #: templates/global/footer.html:4
-msgid "About"
+msgid "ui.about"
 msgstr "About"
 
-#: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:58
-msgid "Adopt a pet"
+#: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:55
+msgid "ui.adopt_a_pet"
 msgstr "Adopt a pet"
 
-#: templates/global/sidebar.html:14
-msgid "Adopt your first pet"
-msgstr "Adopt your first pet"
-
-#: helpers.py:65
-msgid "Before training, adopt your first pet!"
-msgstr "Before training, adopt your first pet!"
-
 #: templates/adopt.html:18
-msgid "Type"
+msgid "ui.type"
 msgstr "Type"
 
 #: templates/adopt.html:19
-msgid "Image"
+msgid "ui.image"
 msgstr "Image"
 
-#: templates/adopt.html:20 templates/adopt.html:31
-msgid "Adopt"
+#: templates/adopt.html:20 templates/adopt.html:32
+msgid "ui.adopt"
 msgstr "Adopt"
 
-#: templates/adopt.html:40
-msgid "No pets"
+#: templates/adopt.html:41 templates/list.html:52
+msgid "ui.no_pets"
 msgstr "No pets"
 
 #: templates/apology.html:4 templates/apology.html:17
-msgid "Error"
+msgid "ui.error.title"
 msgstr "Error"
 
 #: templates/apology.html:18
-msgid "Go Back"
+msgid "ui.go_back"
 msgstr "Go Back"
 
 #: templates/createset.html:4
-msgid "Admin"
+msgid "ui.admin"
 msgstr "Admin"
 
-#: templates/createset.html:12
-msgid "Word set shown in: (translated language)"
+#: templates/createset.html:13
+msgid "ui.word_set_shown_in_translated_language"
 msgstr "Word set shown in: (translated language)"
 
-#: templates/createset.html:14 templates/createset.html:33
-#, fuzzy
-msgid "Set Name"
-msgstr "Username"
+#: templates/createset.html:15 templates/createset.html:34
+msgid "ui.set_name"
+msgstr "Set Name"
 
-#: templates/createset.html:18 templates/createset.html:37
-msgid "Language"
+#: templates/createset.html:19 templates/createset.html:38
+msgid "ui.language"
 msgstr "Language"
 
-#: templates/createset.html:31
-msgid "Help text shown in: (native language)"
+#: templates/createset.html:32
+msgid "ui.help_text_shown_in_native_language"
 msgstr "Help text shown in: (native language)"
 
-#: templates/createset.html:49 templates/editsets.html:49
-msgid "Create new set"
+#: templates/createset.html:50 templates/editsets.html:49
+msgid "ui.create_new_set"
 msgstr "Create new set"
 
 #: templates/dashboard.html:5 templates/global/header.html:15
-msgid "Dashboard"
+msgid "ui.dashboard"
 msgstr "Dashboard"
 
 #: templates/dashboard.html:11
-msgid "Latest Notifications"
+msgid "ui.latest_notifications"
 msgstr "Latest Notifications"
 
-#: templates/dashboard.html:15
-msgid "News"
+#: templates/dashboard.html:14
+msgid "ui.learning_summary"
+msgstr "You have learned {words} words across {sets} completed sets."
+
+#: templates/dashboard.html:22 templates/profile.html:25
+msgid "ui.set_label"
+msgstr "Set"
+
+#: templates/dashboard.html:32
+msgid "ui.no_recent_updates"
+msgstr "No recent updates."
+
+#: templates/dashboard.html:35
+msgid "ui.news"
 msgstr "News"
 
 #: templates/editset.html:4 templates/editset.html:10
-msgid "Edit Set"
+msgid "ui.edit_set"
 msgstr "Edit Set"
 
 #: templates/editset.html:17
 #, fuzzy
-msgid "Word"
+msgid "ui.word"
 msgstr "Word"
 
 #: templates/editset.html:18 templates/editsets.html:20 templates/list.html:30
 #: templates/train.html:31
-msgid "Options"
+msgid "ui.options"
 msgstr "Options"
 
 #: templates/editset.html:31 templates/editset.html:33
 #: templates/editsets.html:35 templates/editsets.html:37
 #: templates/petedit.html:5
-msgid "Edit"
+msgid "ui.edit"
 msgstr "Edit"
 
-#: templates/editset.html:39
-msgid "Remove word from set"
+#: templates/editset.html:40
+msgid "ui.remove_word_from_set"
 msgstr "Remove word from set"
 
-#: templates/editset.html:39 templates/editset.html:41
-msgid "Delete"
+#: templates/editset.html:40 templates/editset.html:42
+msgid "ui.delete"
 msgstr "Delete"
 
-#: templates/editset.html:74
-msgid "Upload"
+#: templates/editset.html:76
+msgid "ui.upload"
 msgstr "Upload"
 
 #: templates/editsets.html:4
-msgid "Edit Sets"
+msgid "ui.edit_sets"
 msgstr "Edit Sets"
 
 #: templates/editsets.html:17 templates/train.html:32
-msgid "Icon"
+msgid "ui.icon"
 msgstr "Icon"
 
 #: templates/editsets.html:18 templates/train.html:29
-msgid "Word Set"
+msgid "ui.word_set"
 msgstr "Word Set"
 
 #: templates/editsets.html:19
 #, fuzzy
-msgid "Count"
+msgid "ui.count"
 msgstr "Count"
 
 #: templates/global/breadcrumb.html:5 templates/index.html:7
-msgid "Home"
+msgid "ui.home"
 msgstr "Home"
 
 #: templates/list.html:6
-msgid "List"
+msgid "ui.list"
 msgstr "List"
 
 #: templates/global/header.html:16 templates/list.html:12
-msgid "My Pets"
+msgid "ui.my_pets"
 msgstr "My Pets"
 
 #: templates/list.html:23 templates/petedit.html:14
-msgid "Active pet"
+msgid "ui.active_pet"
 msgstr "Active pet"
 
-#: templates/list.html:33 templates/petedit.html:41
-msgid "Make Active Pet"
+#: templates/list.html:33 templates/petedit.html:42
+msgid "ui.make_active_pet"
 msgstr "Make Active Pet"
 
-#: templates/list.html:35 templates/list.html:40 templates/petedit.html:30
-#: templates/petedit.html:31
+#: templates/list.html:35 templates/list.html:40 templates/petedit.html:31
+#: templates/petedit.html:32
 #, fuzzy
-msgid "Rename"
+msgid "ui.rename"
 msgstr "Rename"
 
-#: templates/list.html:42 templates/petedit.html:43
-msgid "Abandon"
+#: templates/list.html:42 templates/petedit.html:44
+msgid "ui.abandon"
 msgstr "Abandon"
 
-#: templates/login.html:4 templates/login.html:17
-msgid "Log In"
+#: templates/login.html:4 templates/login.html:18
+msgid "ui.auth.log_in"
 msgstr "Log In"
 
-#: templates/login.html:10 templates/profile.html:9 templates/signup.html:18
-msgid "Username"
+#: templates/login.html:11 templates/profile.html:9 templates/signup.html:19
+msgid "ui.auth.username"
 msgstr "Username"
 
-#: templates/login.html:14 templates/profile.html:48 templates/profile.html:49
-#: templates/signup.html:22
-msgid "Password"
+#: templates/login.html:15 templates/profile.html:92 templates/profile.html:94
+#: templates/signup.html:23
+msgid "ui.auth.password"
 msgstr "Password"
 
 #: templates/macros.html:4
-msgid "Level"
+msgid "ui.level"
 msgstr "Level"
 
 #: templates/macros.html:4
-msgid "Experience"
+msgid "ui.experience"
 msgstr "Experience"
 
 #: templates/petedit.html:22
-msgid "Created"
+msgid "ui.created"
 msgstr "Created"
 
-#: templates/petedit.html:28
-msgid "Update Pet"
+#: templates/petedit.html:29
+msgid "ui.update_pet"
 msgstr "Update Pet"
 
-#: templates/petedit.html:34
-msgid "Change Name"
+#: templates/petedit.html:35
+msgid "ui.change_name"
 msgstr "Change Name"
 
-#: templates/petedit.html:49
-msgid "You do not have a pet with that ID"
+#: templates/petedit.html:50
+msgid "ui.you_do_not_have_a_pet_with_that_id"
 msgstr "You do not have a pet with that ID"
 
 #: templates/global/header.html:31 templates/profile.html:4
-msgid "Profile"
+msgid "ui.profile"
 msgstr "Profile"
 
 #: templates/profile.html:10
-msgid "ID"
+msgid "ui.profile.id_label"
 msgstr "ID"
 
+#: templates/profile.html:14
+msgid "ui.learning_progress"
+msgstr "Learning Progress"
+
 #: templates/profile.html:15
-msgid "Language Preferences"
+msgid "ui.words_learned"
+msgstr "Words learned"
+
+#: templates/profile.html:16
+msgid "ui.completed_sets"
+msgstr "Completed sets"
+
+#: templates/profile.html:18
+msgid "ui.recent_completions"
+msgstr "Recent completions"
+
+#: templates/profile.html:39
+msgid "ui.language_preferences"
 msgstr "Language Preferences"
 
-#: templates/profile.html:17
-msgid "My native language is"
+#: templates/profile.html:41
+msgid "ui.my_native_language_is"
 msgstr "My native language is"
 
-#: templates/profile.html:29
-msgid "I want to learn"
+#: templates/profile.html:53
+msgid "ui.i_want_to_learn"
 msgstr "I want to learn"
 
-#: templates/profile.html:40
-msgid "Save Preferences"
+#: templates/profile.html:64
+msgid "ui.save_preferences"
 msgstr "Save Preferences"
 
-#: templates/profile.html:46
-msgid "Change password"
+#: templates/profile.html:71
+msgid "ui.auth.change_password"
 msgstr "Change password"
 
-#: templates/profile.html:52 templates/profile.html:53 templates/signup.html:26
-msgid "Retype Password"
+#: templates/profile.html:73 templates/profile.html:75
+msgid "ui.auth.current_password"
+msgstr "Current Password"
+
+#: templates/profile.html:80 templates/profile.html:83
+#: templates/profile.html:87 templates/profile.html:99
+#: templates/profile.html:102 templates/profile.html:106
+#: templates/profile.html:118 templates/profile.html:121
+#: templates/profile.html:125 templates/signup.html:30 templates/signup.html:33
+#: templates/signup.html:37 templates/signup.html:64 templates/signup.html:67
+#: templates/signup.html:71
+msgid "ui.auth.show_password"
+msgstr "Show password"
+
+#: templates/profile.html:81 templates/profile.html:100
+#: templates/profile.html:119 templates/signup.html:31 templates/signup.html:65
+msgid "ui.auth.hide_password"
+msgstr "Hide password"
+
+#: templates/profile.html:111 templates/profile.html:113
+#: templates/signup.html:57
+msgid "ui.auth.retype_password"
 msgstr "Retype Password"
 
-#: templates/profile.html:55
-msgid "Update Password"
+#: templates/profile.html:129
+msgid "ui.auth.update_password"
 msgstr "Update Password"
 
 #: templates/global/header.html:17 templates/quizset.html:4
 #: templates/train.html:4
-msgid "Train"
+msgid "ui.train"
 msgstr "Train"
 
 #: templates/quizset.html:16 templates/trainset.html:16
-msgid "play audio"
+msgid "ui.play_audio"
 msgstr "play audio"
 
-#: templates/quizset.html:39
-msgid "Continue"
+#: templates/quizset.html:40
+msgid "ui.quiz.continue"
 msgstr "Continue"
 
-#: templates/quizset.html:40
-msgid "Skip"
+#: templates/quizset.html:41
+msgid "ui.quiz.skip"
 msgstr "Skip"
 
 #: templates/global/header.html:36 templates/signup.html:4
-#: templates/signup.html:30
-msgid "Sign Up"
+#: templates/signup.html:82
+msgid "ui.auth.sign_up"
 msgstr "Sign Up"
 
 #: templates/signup.html:13
-msgid "Sign up today to start your language-learning journey."
+msgid "ui.auth.sign_up_today_to_start_your_language_learning_journey"
 msgstr "Sign up today to start your language-learning journey."
 
-#: templates/signup.html:16 templates/signup.html:23
-msgid "success"
+#: templates/signup.html:16 templates/signup.html:45
+msgid "ui.auth.start_typing_a_password_to_check_it"
+msgstr "Start typing a password to check it."
+
+#: templates/signup.html:16
+msgid "ui.auth.password_meets_the_requirements"
+msgstr "Password meets the requirements."
+
+#: templates/signup.html:16
+msgid "ui.auth.password_does_not_meet_the_requirements"
+msgstr "Password does not meet the requirements."
+
+#: templates/signup.html:16 templates/signup.html:79
+msgid "ui.auth.retype_your_password_to_confirm_it_matches"
+msgstr "Retype your password to confirm it matches."
+
+#: templates/signup.html:16
+msgid "ui.auth.passwords_match"
+msgstr "Passwords match."
+
+#: templates/signup.html:16
+msgid "ui.auth.passwords_do_not_match"
+msgstr "Passwords do not match."
+
+#: templates/signup.html:16
+msgid "ui.auth.status.success"
 msgstr "success"
 
-#: templates/signup.html:16 templates/signup.html:23
-msgid "error"
+#: templates/signup.html:16
+msgid "ui.auth.status.error"
 msgstr "error"
 
-#: templates/signup.html:16 templates/signup.html:23
-msgid "status"
+#: templates/signup.html:16 templates/signup.html:44 templates/signup.html:78
+msgid "ui.auth.status.neutral"
 msgstr "status"
 
+#: templates/signup.html:47
+msgid "ui.auth.password_must_meet_all_of_these_requirements"
+msgstr "Password must meet all of these requirements:"
+
+#: templates/signup.html:49
+msgid "ui.auth.reqs.string_length"
+msgstr "At least 12 characters"
+
+#: templates/signup.html:50
+msgid "ui.auth.reqs.string_uppercase"
+msgstr "At least 1 uppercase letter"
+
+#: templates/signup.html:51
+msgid "ui.auth.reqs.string_lowercase"
+msgstr "At least 1 lowercase letter"
+
+#: templates/signup.html:52
+msgid "ui.auth.reqs.numbers"
+msgstr "At least 1 number"
+
+#: templates/signup.html:53
+msgid "ui.auth.reqs.symbols"
+msgstr "At least 1 symbol"
+
 #: templates/global/header.html:28 templates/train.html:15
-msgid "settings"
+msgid "ui.nav.settings"
 msgstr "settings"
 
-#: templates/train.html:27
-msgid "complete"
+#: templates/train.html:27 templates/train.html:41
+msgid "ui.progress.complete"
 msgstr "complete"
 
 #: templates/train.html:30
 #, fuzzy
-msgid "Words"
+msgid "ui.words"
 msgstr "Words"
 
-#: templates/train.html:40
+#: templates/train.html:44
 #, fuzzy
-msgid "incomplete"
+msgid "ui.progress.incomplete"
 msgstr "incomplete"
 
-#: templates/train.html:47
-msgid "Quiz"
+#: templates/train.html:53
+msgid "ui.quiz"
 msgstr "Quiz"
 
 #: templates/trainset.html:4
-msgid "Learn It"
+msgid "ui.quiz.learn_it"
 msgstr "Learn It"
 
-#: templates/trainset.html:37
-msgid "Next"
+#: templates/trainset.html:40
+msgid "ui.quiz.next"
 msgstr "Next"
 
-#: templates/trainset.html:41
-msgid "Complete lesson"
+#: templates/trainset.html:44
+msgid "ui.quiz.complete_lesson"
 msgstr "Complete lesson"
 
 #: templates/global/footer.html:4
-msgid "Made with &hearts; by"
+msgid "ui.made_with_hearts_by"
 msgstr "Made with &hearts; by"
 
 #: templates/global/header.html:9
-msgid "menu"
+msgid "ui.nav.menu"
 msgstr "menu"
 
 #: templates/global/header.html:32
-msgid "Logout"
+msgid "ui.nav.logout"
 msgstr "Logout"
 
 #: templates/global/header.html:37
-msgid "Login"
+msgid "ui.auth.login_link"
 msgstr "Login"
+
+#: templates/global/sidebar.html:14
+msgid "ui.adopt_your_first_pet"
+msgstr "Adopt your first pet"

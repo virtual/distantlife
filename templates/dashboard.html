@@ -2,16 +2,16 @@
 
 
 {% block title %}
-{{ _('Dashboard') }}
+{{ _('ui.dashboard') }}
 {% endblock %}
 
 {% block main %}
 
  
-<h2>{{ _('Latest Notifications') }}</h2>
+<h2>{{ _('ui.latest_notifications') }}</h2>
 <div class="card">
   {% if progress and progress.learned_words > 0 %}
-    <p>{{ _('You have learned') }} {{ progress.learned_words }} {{ _('words across') }} {{ progress.learned_sets }} {{ _('completed sets.') }}</p>
+    <p>{{ _('ui.learning_summary').format(words=progress.learned_words, sets=progress.learned_sets) }}</p>
     {% if progress.recent_sets %}
       <ul>
         {% for set in progress.recent_sets %}
@@ -19,7 +19,7 @@
             {% if set.subject %}
               {{ set.subject }}
             {% else %}
-              {{ _('Set') }} {{ set.wordsets }}
+              {{ _('ui.set_label') }} {{ set.wordsets }}
             {% endif %}
             {% if set.completed %}
               - {{ set.completed }}
@@ -29,10 +29,10 @@
       </ul>
     {% endif %}
   {% else %}
-    <p>{{ _('No recent updates.') }}</p>
+    <p>{{ _('ui.no_recent_updates') }}</p>
   {% endif %}
 </div>
-<h2>{{ _('News') }}</h2>
+<h2>{{ _('ui.news') }}</h2>
 <div class="card">
      <h3>March 29, 2026</h3>
      <ul>

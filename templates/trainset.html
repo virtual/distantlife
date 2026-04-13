@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-{{ _('Learn It') }}
+{{ _('ui.quiz.learn_it') }}
 {% endblock %}
 
 {% block main %}
@@ -13,7 +13,7 @@
       <div class="options">
         <button class="btn-option">
           <span class="fal fa-volume"></span>
-          <span class="sr-only">{{ _('play audio') }}</span>
+          <span class="sr-only">{{ _('ui.play_audio') }}</span>
         </button>
       </div>
       {% endif %}
@@ -37,11 +37,11 @@
 
 {% if words[page+1] %}
   <p class="text-center">
-    <a class="btn btn-primary" href="/train/set/?s={{tset}}&page={{page+1}}">{{ _('Next') }}</a>
+    <a class="btn btn-primary" href="/train/set/?s={{tset}}&page={{page+1}}">{{ _('ui.quiz.next') }}</a>
   </p>
 {% else %}
   <p class="text-center">
-    <a class="btn btn-primary" href="/train">{{ _('Complete lesson') }}</a>
+    <a class="btn btn-primary" href="/train">{{ _('ui.quiz.complete_lesson') }}</a>
   </p>
 {% endif %}
 

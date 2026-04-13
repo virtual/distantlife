@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-  {{ _('Train') }}
+  {{ _('ui.train') }}
 {% endblock %}
 
 {% block main %}
@@ -13,7 +13,7 @@
       <div class="options">
         <button class="btn-option">
           <span class="fal fa-volume"></span>
-          <span class="sr-only">{{ _('play audio') }}</span>
+          <span class="sr-only">{{ _('ui.play_audio') }}</span>
         </button>
       </div>
       {% endif %}
@@ -37,8 +37,8 @@
 
     </div>
     <input type="hidden" id="experience" name="experience" value="{{ experience }}" />
-    <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('Continue') }}</button>
-    <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('Skip') }}</button>
+    <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('ui.quiz.continue') }}</button>
+    <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('ui.quiz.skip') }}</button>
   </form>
 
   <script>
