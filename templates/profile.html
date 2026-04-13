@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block main %}
+  <dl class="list-inline">
+    <dt>Joined:</dt>
+    <dd>{{ joined_display or userinfo.created_at }}</dd>
+  </dl>
+
     <dl class="list-inline">
         <dt>{{ _('ui.auth.username') }}:</dt>
         <dd>{{ userinfo.username }} <small>({{ _('ui.profile.id_label') }}: {{ userinfo.id }})</small></dd>

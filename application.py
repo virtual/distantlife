@@ -1,6 +1,7 @@
 import os
 import random
 import re
+from datetime import datetime
 
 from flask import Flask, flash, redirect, render_template, request, session, has_request_context
 from flask_session import Session
@@ -131,6 +132,63 @@ def parse_and_validate_language_id(language_id):
     if not exists:
         return None
     return parsed
+
+
+def format_timestamp(value):
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+        timestamp = value
+    else:
+        try:
+            timestamp = datetime.fromisoformat(str(value))
+        except ValueError:
+            return str(value)
+
+    return timestamp.strftime("%b %d, %Y")
+
+
+def get_user_profile(identifier):
+    query = "SELECT username, id, full_name, email, preferred_lang, learning_lang, created_at, active_pet_id FROM users WHERE {column} = ?"
+    identifier_text = str(identifier)
+
+    if identifier_text.isdigit():
+        user_row = db.execute(query.format(column="id"), (int(identifier_text),)).fetchone()
+        if user_row is None:
+            user_row = db.execute(query.format(column="username"), (identifier_text,)).fetchone()
+    else:
+        user_row = db.execute(query.format(column="username"), (identifier_text,)).fetchone()
+        if user_row is None:
+            try:
+                user_id = int(identifier_text)
+            except (TypeError, ValueError):
+                return None
+
+            user_row = db.execute(query.format(column="id"), (user_id,)).fetchone()
+
+    return user_row
+
+
+def get_user_pets(user_id):
+    return db.execute(
+        """
+        SELECT pets.id,
+               pet_types.imgsrc,
+               pet_types.pet_type,
+               pets.created,
+               pets.exp,
+               pets.name,
+               users.active_pet_id
+        FROM owners
+        JOIN pets ON pets.id = owners.pet_id
+        JOIN pet_types ON pets.type = pet_types.id
+        JOIN users ON users.id = owners.owner_id
+        WHERE owner_id = ?
+        ORDER BY pets.created DESC, pets.id DESC
+        """,
+        (user_id,),
+    ).fetchall()
 
 
 def auth_limit_key():
@@ -532,16 +590,46 @@ def about():
 @login_required
 def profile():
     """User Profile"""
-    userinfo = db.execute(
-        "SELECT username, id, preferred_lang, learning_lang, created_at, email, full_name FROM users WHERE id = ?", (session_get_int("user_id"), )).fetchall()
+    userinfo = get_user_profile(session_get_int("user_id"))
+
+    if userinfo is None:
+        return apology("error accessing profile", 400)
 
     language_options = db.execute("SELECT * FROM languages").fetchall()
     progress = get_learning_progress(session_get_int("user_id"))
 
-    if (len(userinfo) > 0):
-        return render_template("profile.html", userinfo=userinfo[0], usd=usd, language_options=language_options, progress=progress)
+    return render_template(
+        "profile.html",
+        userinfo=userinfo,
+        usd=usd,
+        language_options=language_options,
+        progress=progress,
+        joined_display=format_timestamp(userinfo["created_at"]),
+    )
 
-    return apology("error accessing profile", 400)
+
+@app.route("/users/<identifier>", methods=["GET"])
+def public_profile(identifier):
+    """Public user profile page."""
+    userinfo = get_user_profile(identifier)
+
+    if userinfo is None:
+        return apology("user not found", 404)
+
+    user_id = int(userinfo["id"])
+    pets_owned = get_user_pets(user_id)
+    progress = get_learning_progress(user_id)
+    is_self = session_get_int("user_id") == user_id
+
+    return render_template(
+        "user_profile.html",
+        userinfo=userinfo,
+        pets_owned=pets_owned,
+        progress=progress,
+        joined_display=format_timestamp(userinfo["created_at"]),
+        pet_created_display=format_timestamp,
+        is_self=is_self,
+    )
 
 
 @app.route("/uploadwordset", methods=["GET", "POST"])
