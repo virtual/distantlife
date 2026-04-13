@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+{% from "./macros.html" import progressbar with context %}
+
+{% block title %}
+{{ userinfo.full_name or userinfo.username }}
+{% endblock %}
+
+{% block main %}
+  <section class="card mb-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div>
+        <p class="text-small-caps mb-2">Public profile</p>
+        <h1 class="mb-2">{{ userinfo.full_name or userinfo.username }}</h1>
+        {% if userinfo.full_name and userinfo.full_name != userinfo.username %}
+          <p class="mb-2">@{{ userinfo.username }}</p>
+        {% endif %}
+        <p class="mb-0">Joined {{ joined_display or userinfo.created_at }}</p>
+      </div>
+
+      {% if is_self %}
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-primary" href="/profile">Edit account</a>
+          <a class="btn btn-secondary" href="/pets">View pets</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <dl class="list-inline mt-4 mb-0">
+      <dt>User ID:</dt>
+      <dd>#{{ userinfo.id }}</dd>
+    </dl>
+  </section>
+
+  <section class="card mb-4">
+    <h2>{{ _('ui.my_pets') }}</h2>
+
+    {% if pets_owned|length > 0 %}
+      <div class="col-list row">
+        {% for pet in pets_owned %}
+          <div class="col-12 col-md-6">
+            <div class="card h-100">
+              <img src="/static/{{ pet.imgsrc }}" alt="{{ pet.pet_type }}" />
+              <h3 class="mt-3">{{ pet.name }}
+                {% if pet.id == pet.active_pet_id %}
+                  <span class="badge badge-success">Active pet</span>
+                {% endif %}
+              </h3>
+              <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
+              {% if pet.created %}
+                <p class="text-muted">Adopted {{ pet_created_display(pet.created) }}</p>
+              {% endif %}
+              {{ progressbar((pet.exp)) }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>{{ userinfo.username }} has not adopted any pets yet.</p>
+    {% endif %}
+  </section>
+
+  {% if is_self %}
+    <section class="card">
+      <h2>{{ _('ui.learning_progress') }}</h2>
+      <p>{{ _('ui.words_learned') }}: {{ progress.learned_words }}</p>
+      <p>{{ _('ui.completed_sets') }}: {{ progress.learned_sets }}</p>
+      {% if progress.recent_sets %}
+        <h3>{{ _('ui.recent_completions') }}</h3>
+        <ul>
+          {% for set in progress.recent_sets %}
+            <li>
+              {% if set.subject %}
+                {{ set.subject }}
+              {% else %}
+                {{ _('ui.set_label') }} {{ set.wordsets }}
+              {% endif %}
+              {% if set.completed %}
+                - {{ set.completed }}
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}
