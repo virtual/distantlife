@@ -30,7 +30,7 @@ msgstr "אודות"
 
 #: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:55
 msgid "ui.adopt_a_pet"
-msgstr "אמץ חיה"
+msgstr "אמץ חיית מחמד"
 
 #: templates/adopt.html:18
 msgid "ui.type"
@@ -90,7 +90,7 @@ msgstr "התראות אחרונות"
 
 #: templates/dashboard.html:14
 msgid "ui.learning_summary"
-msgstr "למדת {words} מילים בתוך {sets} קבוצות שהושלמו."
+msgstr ".למדת {words} מילים ב-{sets} קבוצות שהושלמו"
 
 #: templates/dashboard.html:22 templates/profile.html:25
 msgid "ui.set_label"
@@ -297,11 +297,11 @@ msgstr "להתאמן"
 
 #: templates/quizset.html:16 templates/trainset.html:16
 msgid "ui.play_audio"
-msgstr "השמע שמע"
+msgstr "השמע"
 
 #: templates/quizset.html:40
 msgid "ui.quiz.continue"
-msgstr "השמע"
+msgstr "המשך"
 
 #: templates/quizset.html:41
 msgid "ui.quiz.skip"
