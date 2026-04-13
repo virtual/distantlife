@@ -68,7 +68,7 @@ def adopted_pet_required(f):
             con.commit()
             session.pop("active_pet", None)
 
-        flash(_("ui.before_training_adopt_your_first_pet"))
+        flash(_("ui.adopt_your_first_pet"))
         return redirect("/adopt")
     return decorated_function
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-12 16:43-0600\n"
+"POT-Creation-Date: 2026-04-12 17:49-0600\n"
 "PO-Revision-Date: 2021-12-06 20:16-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: he\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: helpers.py:71
+#, fuzzy
+msgid "ui.adopt_your_first_pet"
+msgstr "אמץ את חיית המחמד הראשונה שלך"
 
 #: templates/about.html:5 templates/about.html:11
 #: templates/global/footer.html:4
@@ -86,18 +91,6 @@ msgstr "התראות אחרונות"
 #: templates/dashboard.html:14
 msgid "ui.learning_summary"
 msgstr "למדת {words} מילים בתוך {sets} קבוצות שהושלמו."
-
-#: templates/dashboard.html:14
-msgid "ui.you_have_learned"
-msgstr "למדת"
-
-#: templates/dashboard.html:14
-msgid "ui.words_across"
-msgstr "מילים בתוך"
-
-#: templates/dashboard.html:14
-msgid "ui.completed_sets_suffix"
-msgstr "קבוצות שהושלמו."
 
 #: templates/dashboard.html:22 templates/profile.html:25
 msgid "ui.set_label"
@@ -364,23 +357,23 @@ msgid "ui.auth.password_must_meet_all_of_these_requirements"
 msgstr "הסיסמה חייבת לעמוד בכל הדרישות הבאות:"
 
 #: templates/signup.html:49
-msgid "ui.auth.at_least_12_characters"
+msgid "ui.auth.reqs.string_length"
 msgstr "לפחות 12 תווים"
 
 #: templates/signup.html:50
-msgid "ui.auth.at_least_1_uppercase_letter"
+msgid "ui.auth.reqs.string_uppercase"
 msgstr "לפחות אות גדולה אחת"
 
 #: templates/signup.html:51
-msgid "ui.auth.at_least_1_lowercase_letter"
+msgid "ui.auth.reqs.string_lowercase"
 msgstr "לפחות אות קטנה אחת"
 
 #: templates/signup.html:52
-msgid "ui.auth.at_least_1_number"
+msgid "ui.auth.reqs.numbers"
 msgstr "לפחות ספרה אחת"
 
 #: templates/signup.html:53
-msgid "ui.auth.at_least_1_symbol"
+msgid "ui.auth.reqs.symbols"
 msgstr "לפחות סימן אחד"
 
 #: templates/global/header.html:28 templates/train.html:15
@@ -424,7 +417,7 @@ msgid "ui.nav.menu"
 msgstr "תפריט"
 
 #: templates/global/header.html:32
-msgid "ui.logout"
+msgid "ui.nav.logout"
 msgstr "התנתק"
 
 #: templates/global/header.html:37
@@ -434,7 +427,3 @@ msgstr "התחבר"
 #: templates/global/sidebar.html:14
 msgid "ui.adopt_your_first_pet"
 msgstr "אמץ את חיית המחמד הראשונה שלך"
-
-#~ msgid "ui.before_training_adopt_your_first_pet"
-#~ msgstr "לפני האימון, אמץ את חיית המחמד הראשונה שלך!"
-
