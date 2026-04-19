@@ -96,6 +96,26 @@ msgstr ".למדת {words} מילים ב-{sets} קבוצות שהושלמו"
 msgid "ui.set_label"
 msgstr "קבוצה"
 
+#: templates/user_profile.html:11
+msgid "ui.profile.public_title"
+msgstr "פרופיל ציבורי"
+
+#: templates/user_profile.html:16
+msgid "ui.profile.joined"
+msgstr "הצטרף ב־"
+
+#: templates/user_profile.html:20
+msgid "ui.profile.edit_account"
+msgstr "ערוך חשבון"
+
+#: templates/user_profile.html:21
+msgid "ui.profile.view_pets"
+msgstr "צפה בחיות המחמד"
+
+#: templates/user_profile.html:54
+msgid "ui.profile.no_pets"
+msgstr "{username} עדיין לא אימץ חיות מחמד."
+
 #: templates/dashboard.html:32
 msgid "ui.no_recent_updates"
 msgstr "אין עדכונים אחרונים."
