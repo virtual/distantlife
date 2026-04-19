@@ -96,6 +96,26 @@ msgstr "You have learned {words} words across {sets} completed sets."
 msgid "ui.set_label"
 msgstr "Set"
 
+#: templates/user_profile.html:11
+msgid "ui.profile.public_title"
+msgstr "Public profile"
+
+#: templates/user_profile.html:16
+msgid "ui.profile.joined"
+msgstr "Joined"
+
+#: templates/user_profile.html:20
+msgid "ui.profile.edit_account"
+msgstr "Edit account"
+
+#: templates/user_profile.html:21
+msgid "ui.profile.view_pets"
+msgstr "View pets"
+
+#: templates/user_profile.html:54
+msgid "ui.profile.no_pets"
+msgstr "{username} has not adopted any pets yet."
+
 #: templates/dashboard.html:32
 msgid "ui.no_recent_updates"
 msgstr "No recent updates."
