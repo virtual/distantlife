@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-12 17:49-0600\n"
+"POT-Creation-Date: 2026-04-27 15:26-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: helpers.py:71
+#: helpers.py:74 templates/global/sidebar.html:20 templates/quests.html:25
 msgid "ui.adopt_your_first_pet"
 msgstr ""
 
@@ -90,7 +90,8 @@ msgstr ""
 msgid "ui.learning_summary"
 msgstr ""
 
-#: templates/dashboard.html:22 templates/profile.html:25
+#: templates/dashboard.html:22 templates/profile.html:30
+#: templates/user_profile.html:71
 msgid "ui.set_label"
 msgstr ""
 
@@ -158,10 +159,12 @@ msgid "ui.list"
 msgstr ""
 
 #: templates/global/header.html:16 templates/list.html:12
+#: templates/user_profile.html:35
 msgid "ui.my_pets"
 msgstr ""
 
 #: templates/list.html:23 templates/petedit.html:14
+#: templates/user_profile.html:45
 msgid "ui.active_pet"
 msgstr ""
 
@@ -182,11 +185,11 @@ msgstr ""
 msgid "ui.auth.log_in"
 msgstr ""
 
-#: templates/login.html:11 templates/profile.html:9 templates/signup.html:19
+#: templates/login.html:11 templates/profile.html:14 templates/signup.html:19
 msgid "ui.auth.username"
 msgstr ""
 
-#: templates/login.html:15 templates/profile.html:92 templates/profile.html:94
+#: templates/login.html:15 templates/profile.html:97 templates/profile.html:99
 #: templates/signup.html:23
 msgid "ui.auth.password"
 msgstr ""
@@ -215,76 +218,168 @@ msgstr ""
 msgid "ui.you_do_not_have_a_pet_with_that_id"
 msgstr ""
 
-#: templates/global/header.html:31 templates/profile.html:4
+#: templates/global/header.html:32 templates/profile.html:4
 msgid "ui.profile"
 msgstr ""
 
-#: templates/profile.html:10
+#: templates/profile.html:15 templates/user_profile.html:29
 msgid "ui.profile.id_label"
 msgstr ""
 
-#: templates/profile.html:14
+#: templates/profile.html:19 templates/user_profile.html:60
 msgid "ui.learning_progress"
 msgstr ""
 
-#: templates/profile.html:15
+#: templates/profile.html:20 templates/user_profile.html:61
 msgid "ui.words_learned"
 msgstr ""
 
-#: templates/profile.html:16
+#: templates/profile.html:21 templates/user_profile.html:62
 msgid "ui.completed_sets"
 msgstr ""
 
-#: templates/profile.html:18
+#: templates/profile.html:23 templates/user_profile.html:64
 msgid "ui.recent_completions"
 msgstr ""
 
-#: templates/profile.html:39
+#: templates/profile.html:44
 msgid "ui.language_preferences"
 msgstr ""
 
-#: templates/profile.html:41
+#: templates/profile.html:46
 msgid "ui.my_native_language_is"
 msgstr ""
 
-#: templates/profile.html:53
+#: templates/profile.html:58
 msgid "ui.i_want_to_learn"
 msgstr ""
 
-#: templates/profile.html:64
+#: templates/profile.html:69
 msgid "ui.save_preferences"
 msgstr ""
 
-#: templates/profile.html:71
+#: templates/profile.html:76
 msgid "ui.auth.change_password"
 msgstr ""
 
-#: templates/profile.html:73 templates/profile.html:75
+#: templates/profile.html:78 templates/profile.html:80
 msgid "ui.auth.current_password"
 msgstr ""
 
-#: templates/profile.html:80 templates/profile.html:83
-#: templates/profile.html:87 templates/profile.html:99
-#: templates/profile.html:102 templates/profile.html:106
-#: templates/profile.html:118 templates/profile.html:121
-#: templates/profile.html:125 templates/signup.html:30 templates/signup.html:33
+#: templates/profile.html:85 templates/profile.html:88
+#: templates/profile.html:92 templates/profile.html:104
+#: templates/profile.html:107 templates/profile.html:111
+#: templates/profile.html:123 templates/profile.html:126
+#: templates/profile.html:130 templates/signup.html:30 templates/signup.html:33
 #: templates/signup.html:37 templates/signup.html:64 templates/signup.html:67
 #: templates/signup.html:71
 msgid "ui.auth.show_password"
 msgstr ""
 
-#: templates/profile.html:81 templates/profile.html:100
-#: templates/profile.html:119 templates/signup.html:31 templates/signup.html:65
+#: templates/profile.html:86 templates/profile.html:105
+#: templates/profile.html:124 templates/signup.html:31 templates/signup.html:65
 msgid "ui.auth.hide_password"
 msgstr ""
 
-#: templates/profile.html:111 templates/profile.html:113
+#: templates/profile.html:116 templates/profile.html:118
 #: templates/signup.html:57
 msgid "ui.auth.retype_password"
 msgstr ""
 
-#: templates/profile.html:129
+#: templates/profile.html:134
 msgid "ui.auth.update_password"
+msgstr ""
+
+#: templates/quest.html:10
+msgid "ui.quests.quest_story"
+msgstr ""
+
+#: templates/quest.html:22
+msgid "ui.quests.episode"
+msgstr ""
+
+#: templates/quest.html:29
+msgid "ui.quests.vocabulary_targets"
+msgstr ""
+
+#: templates/quest.html:36
+msgid "ui.quests.speech_lines"
+msgstr ""
+
+#: templates/quest.html:47
+msgid "ui.quests.sentence_order"
+msgstr ""
+
+#: templates/quest.html:58
+msgid "ui.quests.quiz"
+msgstr ""
+
+#: templates/quest.html:80
+msgid "ui.quests.back_to_board"
+msgstr ""
+
+#: templates/quests.html:10
+msgid "ui.quests.quest_board"
+msgstr ""
+
+#: templates/quests.html:11
+msgid "ui.quests.choose_adventure"
+msgstr ""
+
+#: templates/quests.html:11
+msgid "ui.quests.your_pet"
+msgstr ""
+
+#: templates/quests.html:13
+msgid "ui.quests.active_pet_intro"
+msgstr ""
+
+#: templates/quests.html:13
+msgid "ui.quests.open_quest_intro"
+msgstr ""
+
+#: templates/quests.html:15
+msgid "ui.quests.no_pet_intro"
+msgstr ""
+
+#: templates/quests.html:20 templates/quests.html:45
+msgid "ui.quests.open_quest"
+msgstr ""
+
+#: templates/quests.html:23
+msgid "ui.quests.switch_pet_to_unlock"
+msgstr ""
+
+#: templates/quests.html:33
+msgid "ui.quests.available_quests"
+msgstr ""
+
+#: templates/quests.html:38
+msgid "ui.quests.available"
+msgstr ""
+
+#: templates/quests.html:44 templates/quests.html:70
+msgid "ui.quests.episodes"
+msgstr ""
+
+#: templates/quests.html:55
+msgid "ui.quests.locked_quests"
+msgstr ""
+
+#: templates/quests.html:60 templates/quests.html:71
+msgid "ui.quests.locked"
+msgstr ""
+
+#: templates/quests.html:62
+msgid "ui.quests.available_if_switch"
+msgstr ""
+
+#: templates/quests.html:68
+msgid "ui.quests.requires"
+msgstr ""
+
+#: templates/quests.html:81
+msgid "ui.quests.no_quests_published"
 msgstr ""
 
 #: templates/global/header.html:17 templates/quizset.html:4
@@ -304,7 +399,7 @@ msgstr ""
 msgid "ui.quiz.skip"
 msgstr ""
 
-#: templates/global/header.html:36 templates/signup.html:4
+#: templates/global/header.html:37 templates/signup.html:4
 #: templates/signup.html:82
 msgid "ui.auth.sign_up"
 msgstr ""
@@ -373,7 +468,7 @@ msgstr ""
 msgid "ui.auth.reqs.symbols"
 msgstr ""
 
-#: templates/global/header.html:28 templates/train.html:15
+#: templates/global/header.html:29 templates/train.html:15
 msgid "ui.nav.settings"
 msgstr ""
 
@@ -405,6 +500,26 @@ msgstr ""
 msgid "ui.quiz.complete_lesson"
 msgstr ""
 
+#: templates/user_profile.html:12
+msgid "ui.profile.public_title"
+msgstr ""
+
+#: templates/user_profile.html:17
+msgid "ui.profile.joined"
+msgstr ""
+
+#: templates/user_profile.html:22
+msgid "ui.profile.edit_account"
+msgstr ""
+
+#: templates/user_profile.html:23
+msgid "ui.profile.view_pets"
+msgstr ""
+
+#: templates/user_profile.html:54
+msgid "ui.profile.no_pets"
+msgstr ""
+
 #: templates/global/footer.html:4
 msgid "ui.made_with_hearts_by"
 msgstr ""
@@ -413,15 +528,11 @@ msgstr ""
 msgid "ui.nav.menu"
 msgstr ""
 
-#: templates/global/header.html:32
+#: templates/global/header.html:33
 msgid "ui.nav.logout"
 msgstr ""
 
-#: templates/global/header.html:37
+#: templates/global/header.html:38
 msgid "ui.auth.login_link"
-msgstr ""
-
-#: templates/global/sidebar.html:14
-msgid "ui.adopt_your_first_pet"
 msgstr ""
 
