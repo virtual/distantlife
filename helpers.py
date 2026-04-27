@@ -355,6 +355,16 @@ def get_role():
     return role
 
 
+def is_admin():
+    """
+    Returns True if the current user is an admin (role ID 9).
+
+      :returns: 
+          - boolean - True if admin, False otherwise
+    """
+    return get_role() == 9
+
+
 def session_get_int(key):
     """
     Returns the value of a stored session variable converted to integer
