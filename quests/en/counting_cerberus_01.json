@@ -1,0 +1,205 @@
+{
+  "quest_id": "counting_cerberus_01",
+  "locale": "en",
+  "version": 1,
+  "review_status": "draft",
+  "theme": "numbers_and_counting",
+  "quest_type": "story_quest",
+  "quest_line_id": "counting_cerberus",
+  "allowed_pet_type_ids": [26],
+  "unlock_cost": 0,
+  "title": "Three Heads, One Number Lesson",
+  "summary": "A Cerberus with three curious heads learns to count from one to ten and use number words in daily tasks.",
+  "episodes": [
+    {
+      "episode_id": "counting_cerberus_01_ep1",
+      "title": "Count the Steps",
+      "story_text": {
+        "male": "{{pet_name}} had three heads, and each head shouted a different number. He took a deep breath and said, 'We will count together.' He walked up the hill and counted each step from one to five.",
+        "female": "{{pet_name}} had three heads, and each head shouted a different number. She took a deep breath and said, 'We will count together.' She walked up the hill and counted each step from one to five.",
+        "neutral": "{{pet_name}} had three heads, and each head shouted a different number. {{pet_name}} took a deep breath and said, 'We will count together.' {{pet_name}} walked up the hill and counted each step from one to five."
+      },
+      "vocabulary_targets": [
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "step",
+        "count",
+        "together"
+      ],
+      "speech_bubble_lines": [
+        {
+          "male": "Head one says one!",
+          "female": "Head one says one!",
+          "neutral": "Head one says one!"
+        },
+        {
+          "male": "Head two says two!",
+          "female": "Head two says two!",
+          "neutral": "Head two says two!"
+        },
+        {
+          "male": "Let us count together: one, two, three, four, five.",
+          "female": "Let us count together: one, two, three, four, five.",
+          "neutral": "Let us count together: one, two, three, four, five."
+        }
+      ],
+      "sentences": [
+        {
+          "order": 1,
+          "text": {
+            "neutral": "{{pet_name}} has three heads."
+          }
+        },
+        {
+          "order": 2,
+          "text": {
+            "neutral": "Each head says a number."
+          }
+        },
+        {
+          "order": 3,
+          "text": {
+            "neutral": "{{pet_name}} counts steps from one to five."
+          }
+        }
+      ],
+      "quiz": {
+        "questions": [
+          {
+            "type": "cloze",
+            "answer_mode": "type_in",
+            "prompt": {
+              "male": "He counted from one to ____.",
+              "female": "She counted from one to ____.",
+              "neutral": "{{pet_name}} counted from one to ____."
+            },
+            "answer": "five",
+            "accepted_answers": [
+              "five",
+              "5"
+            ]
+          },
+          {
+            "type": "multiple_choice",
+            "answer_mode": "multiple_choice",
+            "prompt": "How many heads does {{pet_name}} have?",
+            "options": [
+              "one",
+              "two",
+              "three"
+            ],
+            "answer": "three"
+          },
+          {
+            "type": "count_sequence",
+            "prompt": "Choose the correct counting order from one to five.",
+            "options": [
+              ["one", "three", "two", "four", "five"],
+              ["one", "two", "three", "four", "five"],
+              ["five", "four", "three", "two", "one"]
+            ],
+            "answer": ["one", "two", "three", "four", "five"]
+          }
+        ]
+      }
+    },
+    {
+      "episode_id": "counting_cerberus_01_ep2",
+      "title": "Count to Ten at the Gate",
+      "story_text": {
+        "male": "At the city gate, {{pet_name}} helped sort ten small stones. He placed them in two rows and counted out loud: one, two, three, four, five, six, seven, eight, nine, ten. All three heads smiled because they agreed.",
+        "female": "At the city gate, {{pet_name}} helped sort ten small stones. She placed them in two rows and counted out loud: one, two, three, four, five, six, seven, eight, nine, ten. All three heads smiled because they agreed.",
+        "neutral": "At the city gate, {{pet_name}} helped sort ten small stones. {{pet_name}} placed them in two rows and counted out loud: one, two, three, four, five, six, seven, eight, nine, ten. All three heads smiled because they agreed."
+      },
+      "vocabulary_targets": [
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "stone",
+        "row",
+        "gate"
+      ],
+      "speech_bubble_lines": [
+        {
+          "male": "Now we count to ten.",
+          "female": "Now we count to ten.",
+          "neutral": "Now we count to ten."
+        },
+        {
+          "male": "All three heads agree!",
+          "female": "All three heads agree!",
+          "neutral": "All three heads agree!"
+        },
+        {
+          "male": "Counting helps us work together.",
+          "female": "Counting helps us work together.",
+          "neutral": "Counting helps us work together."
+        }
+      ],
+      "sentences": [
+        {
+          "order": 1,
+          "text": {
+            "neutral": "{{pet_name}} sorted ten stones."
+          }
+        },
+        {
+          "order": 2,
+          "text": {
+            "neutral": "{{pet_name}} counted from one to ten."
+          }
+        },
+        {
+          "order": 3,
+          "text": {
+            "neutral": "The three heads agreed on the numbers."
+          }
+        }
+      ],
+      "quiz": {
+        "questions": [
+          {
+            "type": "cloze",
+            "answer_mode": "type_in",
+            "prompt": {
+              "male": "He sorted ten ____ at the gate.",
+              "female": "She sorted ten ____ at the gate.",
+              "neutral": "{{pet_name}} sorted ten ____ at the gate."
+            },
+            "answer": "stones",
+            "accepted_answers": [
+              "stones",
+              "stone"
+            ]
+          },
+          {
+            "type": "multiple_choice",
+            "answer_mode": "multiple_choice",
+            "prompt": "What number comes after nine?",
+            "options": [
+              "eight",
+              "ten",
+              "eleven"
+            ],
+            "answer": "ten"
+          },
+          {
+            "type": "count_sequence",
+            "prompt": "Complete the sequence: six, seven, eight, ____, ____.",
+            "options": [
+              ["nine", "ten"],
+              ["ten", "nine"],
+              ["eight", "nine"]
+            ],
+            "answer": ["nine", "ten"]
+          }
+        ]
+      }
+    }
+  ]
+}
