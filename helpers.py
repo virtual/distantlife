@@ -453,6 +453,30 @@ def get_adoptable_pet_types_for_user(user_id):
     ).fetchall()
 
 
+def get_active_pet_for_user(user_id):
+    """
+    Fetch the currently active pet for a user.
+    
+    Returns a dict with id, type_id, name, gender, or None if no active pet.
+    
+      :param int user_id - user's ID
+      :returns:
+          - dict with keys: id, type_id, name, gender
+          - None if user has no active pet
+    """
+    pet = db.execute(
+        """
+        SELECT p.id, p.type_id as type_id, p.name, p.gender
+        FROM pets p
+        JOIN owners o ON p.id = o.pet_id
+        WHERE o.owner_id = ? AND p.is_active = 1
+        LIMIT 1
+        """,
+        (int(user_id),),
+    ).fetchone()
+    return dict(pet) if pet else None
+
+
 def session_get_int(key):
     """
     Returns the value of a stored session variable converted to integer

@@ -172,3 +172,176 @@ def validate_quest_file(file_path):
     with path.open("r", encoding="utf-8") as file_obj:
         quest = json.load(file_obj)
     return validate_quest_content(quest)
+
+
+# ============================================================================
+# Runtime Helpers: Token Replacement, Gender Resolution, and Access Control
+# ============================================================================
+
+
+def resolve_gender_variant(text_obj, gender="neutral"):
+    """
+    Resolve a gendered text object to a single string using fallback order.
+    
+    Args:
+        text_obj: dict with keys like {"male": "...", "female": "...", "neutral": "..."}
+                 or a plain string
+        gender: preferred gender ("male", "female", or "neutral")
+    
+    Returns:
+        str: resolved text, or empty string if no variant found
+    
+    Fallback order: requested gender -> neutral -> male -> female
+    """
+    if isinstance(text_obj, str):
+        return text_obj
+    
+    if not isinstance(text_obj, dict):
+        return ""
+    
+    # Try requested gender first
+    if gender in text_obj and isinstance(text_obj[gender], str):
+        return text_obj[gender]
+    
+    # Try neutral
+    if "neutral" in text_obj and isinstance(text_obj["neutral"], str):
+        return text_obj["neutral"]
+    
+    # Try male
+    if "male" in text_obj and isinstance(text_obj["male"], str):
+        return text_obj["male"]
+    
+    # Try female
+    if "female" in text_obj and isinstance(text_obj["female"], str):
+        return text_obj["female"]
+    
+    return ""
+
+
+def replace_tokens(text, **context):
+    """
+    Replace template tokens in text using context values.
+    
+    Args:
+        text: string with tokens like {{pet_name}}
+        **context: keyword arguments, e.g., pet_name="Fluffy"
+    
+    Returns:
+        str: text with tokens replaced, escaped for HTML safety
+    
+    Supported tokens:
+        {{pet_name}}: pet name from context
+    """
+    if not text or not isinstance(text, str):
+        return text
+    
+    # Simple replacement; values are escaped before insertion
+    result = text
+    for key, value in context.items():
+        if value is not None:
+            # Escape HTML special characters in user-provided values
+            escaped_value = str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            result = result.replace(f"{{{{{key}}}}}", escaped_value)
+    
+    return result
+
+
+def apply_personalization(obj, gender="neutral", **context):
+    """
+    Recursively apply gender resolution and token replacement to a quest object.
+    
+    Processes string values and dicts with gender variants.
+    
+    Args:
+        obj: string, dict, list, or other value
+        gender: preferred gender for variant resolution
+        **context: template context for token replacement
+    
+    Returns:
+        Personalized version of obj
+    """
+    if isinstance(obj, dict):
+        # Check if this dict is a gender variant object (has gender keys)
+        if any(k in obj for k in ("male", "female", "neutral")) and all(
+            isinstance(v, str) or v is None for v in obj.values()
+        ):
+            resolved = resolve_gender_variant(obj, gender)
+            return replace_tokens(resolved, **context)
+        
+        # Otherwise, recurse into dict values
+        return {k: apply_personalization(v, gender, **context) for k, v in obj.items()}
+    
+    elif isinstance(obj, list):
+        return [apply_personalization(item, gender, **context) for item in obj]
+    
+    elif isinstance(obj, str):
+        return replace_tokens(obj, **context)
+    
+    else:
+        return obj
+
+
+def load_and_personalize_quest(quest_id, locale="en", gender="neutral", pet_name=None, root_dir="quests"):
+    """
+    Load a quest and apply gender resolution and token replacement.
+    
+    Args:
+        quest_id: quest identifier
+        locale: language code (en, he, etc.)
+        gender: preferred gender for story text
+        pet_name: pet name for token replacement
+        root_dir: quest directory root
+    
+    Returns:
+        dict: personalized quest content
+    
+    Raises:
+        FileNotFoundError: if quest file not found
+        ValueError: if quest content is invalid
+    """
+    quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+    
+    context = {}
+    if pet_name:
+        context["pet_name"] = pet_name
+    
+    return apply_personalization(quest, gender, **context)
+
+
+def can_user_access_quest(user_id, quest_id, locale="en"):
+    """
+    Check if a user can access a quest based on their active pet type.
+    
+    Args:
+        user_id: user ID (requires active pet in session or DB)
+        quest_id: quest identifier
+        locale: language code for loading quest
+    
+    Returns:
+        (bool, str): (can_access, reason) where reason is None if accessible,
+                     else one of: "no_active_pet", "pet_type_not_allowed", "admin_bypass"
+    
+    Admin users always bypass restrictions.
+    """
+    # Import here to avoid circular dependency
+    from helpers import is_admin, get_active_pet_for_user
+    
+    if is_admin():
+        return (True, "admin_bypass")
+    
+    pet = get_active_pet_for_user(user_id)
+    if not pet:
+        return (False, "no_active_pet")
+    
+    quest = load_quest_content(quest_id, locale=locale)
+    allowed_pet_type_ids = quest.get("allowed_pet_type_ids", [])
+    
+    # Empty list means all pets allowed
+    if not allowed_pet_type_ids:
+        return (True, None)
+    
+    # Check if user's pet type is in allowed list
+    if pet.get("type_id") in allowed_pet_type_ids:
+        return (True, None)
+    else:
+        return (False, "pet_type_not_allowed")
