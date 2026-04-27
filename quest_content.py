@@ -41,6 +41,79 @@ def load_quest_content(quest_id, locale="en", root_dir="quests"):
         return json.load(file_obj)
 
 
+def list_quest_ids(locale="en", root_dir="quests"):
+    quest_dir = Path(root_dir) / locale
+    if not quest_dir.exists():
+        return []
+
+    return sorted(path.stem for path in quest_dir.glob("*.json"))
+
+
+def get_quest_board_entries(user_id, locale="en", root_dir="quests"):
+    from helpers import get_active_pet_for_user, get_owned_pet_type_ids_for_user
+
+    active_pet = get_active_pet_for_user(user_id)
+    active_pet_type_id = active_pet["type_id"] if active_pet else None
+    owned_pet_type_ids = set(get_owned_pet_type_ids_for_user(user_id))
+
+    allowed_pet_labels = {
+        1: "Dragon",
+        6: "Genie",
+        10: "Faun",
+        16: "Cyclops",
+        26: "Cerberus",
+    }
+
+    entries = []
+    for quest_id in list_quest_ids(locale=locale, root_dir=root_dir):
+        quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+        allowed_pet_type_ids = quest.get("allowed_pet_type_ids", [])
+
+        if not allowed_pet_type_ids:
+            allowed_pet_label = "All pets"
+        else:
+            allowed_pet_label = ", ".join(
+                allowed_pet_labels.get(int(pet_type_id), f"Pet type {pet_type_id}")
+                for pet_type_id in allowed_pet_type_ids
+            )
+
+        switchable = bool(
+            allowed_pet_type_ids
+            and owned_pet_type_ids.intersection(set(int(pet_type_id) for pet_type_id in allowed_pet_type_ids))
+        )
+
+        if active_pet_type_id is None:
+            state = "locked"
+            lock_reason_label = "Adopt a pet to start quests" if not switchable else f"Available if you switch to {allowed_pet_label}"
+        elif not allowed_pet_type_ids or active_pet_type_id in allowed_pet_type_ids:
+            state = "available"
+            switchable = False
+            lock_reason_label = ""
+        else:
+            state = "locked"
+            if switchable:
+                lock_reason_label = f"Available if you switch to {allowed_pet_label}"
+            else:
+                lock_reason_label = f"Requires {allowed_pet_label}"
+
+        entries.append(
+            {
+                "quest_id": quest["quest_id"],
+                "title": quest["title"],
+                "summary": quest["summary"],
+                "quest_line_id": quest["quest_line_id"],
+                "allowed_pet_type_ids": allowed_pet_type_ids,
+                "allowed_pet_label": allowed_pet_label,
+                "episode_count": len(quest.get("episodes", [])),
+                "state": state,
+                "switchable": switchable,
+                "lock_reason_label": lock_reason_label,
+            }
+        )
+
+    return entries
+
+
 def _has_neutral_variant(value):
     return isinstance(value, dict) and "neutral" in value and isinstance(value["neutral"], str)
 

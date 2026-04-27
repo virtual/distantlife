@@ -457,24 +457,49 @@ def get_active_pet_for_user(user_id):
     """
     Fetch the currently active pet for a user.
     
-    Returns a dict with id, type_id, name, gender, or None if no active pet.
-    
+    Returns a dict with id, type_id, name, and gender when available, or None if no active pet.
+
       :param int user_id - user's ID
       :returns:
           - dict with keys: id, type_id, name, gender
           - None if user has no active pet
     """
+    columns = table_columns("pets")
+    gender_column = "p.gender AS gender" if "gender" in columns else "NULL AS gender"
+    type_column = "p.type AS type_id" if "type" in columns else "p.type_id AS type_id"
+
     pet = db.execute(
-        """
-        SELECT p.id, p.type_id as type_id, p.name, p.gender
+        f"""
+        SELECT p.id, {type_column}, p.name, {gender_column}
         FROM pets p
-        JOIN owners o ON p.id = o.pet_id
-        WHERE o.owner_id = ? AND p.is_active = 1
+        JOIN users u ON u.active_pet_id = p.id
+        WHERE u.id = ?
         LIMIT 1
         """,
         (int(user_id),),
     ).fetchone()
     return dict(pet) if pet else None
+
+
+def get_owned_pet_type_ids_for_user(user_id):
+    """
+    Return a list of pet type IDs owned by the user.
+
+      :param int user_id - user's ID
+      :returns:
+          - list of integer pet type IDs
+    """
+    rows = db.execute(
+        """
+        SELECT DISTINCT p.type AS type_id
+        FROM owners o
+        JOIN pets p ON p.id = o.pet_id
+        WHERE o.owner_id = ?
+        ORDER BY p.type
+        """,
+        (int(user_id),),
+    ).fetchall()
+    return [int(row["type_id"]) for row in rows]
 
 
 def session_get_int(key):

@@ -1,5 +1,11 @@
 {% from "./macros.html" import progressbar, get_data with context %}
 <aside>
+  {% if session.get("user_id") %}
+  <p class="text-center">
+    <a href="/quests" class="btn text-center mx-auto">Quest Board</a>
+  </p>
+  {% endif %}
+
   {% if (session.get("active_pet")) %}
   <p class="text-center mx-auto pet-box ">
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />

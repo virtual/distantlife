@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Quest Board
+{% endblock %}
+
+{% block main %}
+<section class="quest-board-hero card">
+  <div class="quest-board-hero-copy">
+    <p class="eyebrow">Quest Board</p>
+    <h2>Choose the next adventure for {{ active_pet.name if active_pet else 'your pet' }}</h2>
+    {% if active_pet %}
+      <p class="lead">Your active pet is {{ active_pet.name }}. Open a quest to read the story, follow the episodes, and continue learning.</p>
+    {% else %}
+      <p class="lead">Adopt a pet first to fully personalize quest stories, then open a quest to begin.</p>
+    {% endif %}
+  </div>
+  <div class="quest-board-hero-actions">
+    {% if featured_quest %}
+      <a class="btn btn-primary" href="/quest/{{ featured_quest.quest_id }}">Open quest</a>
+    {% else %}
+      {% if switchable_quests %}
+        <a class="btn btn-primary" href="/pets">Switch pet to unlock</a>
+      {% elif not active_pet %}
+        <a class="btn btn-primary" href="/adopt">Adopt a pet</a>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+
+{% if available_quests %}
+  <section class="quest-section">
+    <h3>Available quests</h3>
+    <div class="quest-grid">
+      {% for quest in available_quests %}
+        <article class="quest-card quest-card-available card">
+          <div class="quest-card-meta">
+            <span class="quest-badge quest-badge-available">Available</span>
+            <span class="quest-badge">{{ quest.allowed_pet_label }}</span>
+          </div>
+          <h4>{{ quest.title }}</h4>
+          <p>{{ quest.summary }}</p>
+          <div class="quest-card-footer">
+            <span class="quest-card-small">{{ quest.episode_count }} episodes</span>
+            <a class="btn btn-secondary" href="/quest/{{ quest.quest_id }}">Open quest</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if locked_quests %}
+  <section class="quest-section">
+    <h3>Locked quests</h3>
+    <div class="quest-grid">
+      {% for quest in locked_quests %}
+        <article class="quest-card quest-card-locked card">
+          <div class="quest-card-meta">
+            <span class="quest-badge quest-badge-locked">Locked</span>
+            {% if quest.switchable %}
+              <span class="quest-badge quest-badge-available">Available</span>
+            {% endif %}
+            <span class="quest-badge">{{ quest.allowed_pet_label }}</span>
+          </div>
+          <h4>{{ quest.title }}</h4>
+          <p>{{ quest.summary }}</p>
+          <p class="quest-lock-reason">{{ quest.lock_reason_label }}</p>
+          <div class="quest-card-footer">
+            <span class="quest-card-small">{{ quest.episode_count }} episodes</span>
+            <span class="btn btn-outline-secondary disabled">Locked</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if not available_quests and not locked_quests %}
+  <div class="card">
+    <p>No quests have been published yet.</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ quest.title }}
+{% endblock %}
+
+{% block main %}
+<article class="quest-detail card">
+  <div class="quest-detail-header">
+    <p class="eyebrow">Quest Story</p>
+    <h2>{{ quest.title }}</h2>
+    <p class="lead">{{ quest.summary }}</p>
+    <div class="quest-detail-meta">
+      <span class="quest-badge">{{ quest.quest_line_id }}</span>
+      <span class="quest-badge">{{ quest.allowed_pet_label }}</span>
+      <span class="quest-badge">{{ quest.locale.upper() }}</span>
+    </div>
+  </div>
+
+  {% for episode in quest.episodes %}
+    <section class="quest-episode card">
+      <h3>{{ loop.index }}. {{ episode.title }}</h3>
+      <div class="quest-story-text">
+        <p>{{ episode.story_text }}</p>
+      </div>
+
+      {% if episode.vocabulary_targets %}
+        <div class="quest-section-inline">
+          <h4>Vocabulary targets</h4>
+          <p>{{ episode.vocabulary_targets | join(', ') }}</p>
+        </div>
+      {% endif %}
+
+      {% if episode.speech_bubble_lines %}
+        <div class="quest-section-inline">
+          <h4>Speech lines</h4>
+          <ul class="quest-bubble-list">
+            {% for line in episode.speech_bubble_lines %}
+              <li>{{ line }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if episode.sentences %}
+        <div class="quest-section-inline">
+          <h4>Sentence order</h4>
+          <ol>
+            {% for sentence in episode.sentences %}
+              <li>{{ sentence }}</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+
+      {% if episode.quiz and episode.quiz.questions %}
+        <div class="quest-section-inline">
+          <h4>Quiz</h4>
+          <div class="quest-quiz-list">
+            {% for question in episode.quiz.questions %}
+              <div class="quest-question card">
+                <p class="quest-question-type">{{ question.type }}</p>
+                <p>{{ question.prompt }}</p>
+                {% if question.options %}
+                  <ul>
+                    {% for option in question.options %}
+                      <li>{{ option }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  {% endfor %}
+
+  <div class="quest-detail-actions">
+    <a class="btn btn-secondary" href="/quests">Back to Quest Board</a>
+  </div>
+</article>
+{% endblock %}

@@ -15,7 +15,8 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user
+from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -210,6 +211,57 @@ def index():
         return render_template("dashboard.html", progress=progress)
     else:
         return render_template("index.html")
+
+
+@app.route("/quests")
+@login_required
+def quests():
+    """Quest board showing available and locked quest lines."""
+    user_id = session_get_int("user_id")
+    locale = session.get("language", {}).get("charcode", "en") if session.get("language") else "en"
+
+    board_entries = get_quest_board_entries(user_id, locale=locale)
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id)
+
+    available_quests = [quest for quest in board_entries if quest["state"] == "available"]
+    locked_quests = [quest for quest in board_entries if quest["state"] == "locked"]
+    switchable_quests = [quest for quest in locked_quests if quest.get("switchable")]
+    featured_quest = available_quests[0] if available_quests else None
+
+    return render_template(
+        "quests.html",
+        active_pet=active_pet,
+        available_quests=available_quests,
+        locked_quests=locked_quests,
+        switchable_quests=switchable_quests,
+        featured_quest=featured_quest,
+    )
+
+
+@app.route("/quest/<quest_id>")
+@login_required
+def quest_detail(quest_id):
+    """Quest detail page with story and quiz content."""
+    user_id = session_get_int("user_id")
+    locale = session.get("language", {}).get("charcode", "en") if session.get("language") else "en"
+
+    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
+    if not can_access:
+        if reason == "no_active_pet":
+            flash("Adopt a pet first to start quests.")
+            return redirect("/adopt")
+        flash("That quest is locked for your current pet.")
+        return redirect("/quests")
+
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
+    quest = load_and_personalize_quest(
+        quest_id,
+        locale=locale,
+        gender=active_pet.get("gender", "neutral") or "neutral",
+        pet_name=active_pet.get("name"),
+    )
+
+    return render_template("quest.html", quest=quest, active_pet=active_pet)
 
 
 @app.route("/pets")
