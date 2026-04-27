@@ -11,6 +11,9 @@ db = con
 r = get_redis_client()
 
 
+STARTER_PET_TYPE_IDS = (1, 6, 10, 26, 16) # Dragon, Genie, Faun, Cerberus, Cyclops
+
+
 def table_exists(table_name):
     row = db.execute(
         "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
@@ -363,6 +366,91 @@ def is_admin():
           - boolean - True if admin, False otherwise
     """
     return get_role() == 9
+
+
+def initialize_user_pet_unlocks(user_id):
+    """
+    Ensure a user has starter pet unlocks.
+
+      :param int user_id - user's ID
+    """
+    if not table_exists("user_pet_unlocks"):
+        return
+
+    for pet_type_id in STARTER_PET_TYPE_IDS:
+        db.execute(
+            "INSERT OR IGNORE INTO user_pet_unlocks (user_id, pet_type_id, unlocked_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+            (int(user_id), int(pet_type_id)),
+        )
+    con.commit()
+
+
+def unlock_pet_for_user(user_id, pet_type_id):
+    """
+    Unlock a pet type for a user.
+
+      :param int user_id - user's ID
+      :param int pet_type_id - pet type ID
+      :returns:
+          - boolean - True if unlock data is available and insert attempted
+    """
+    if not table_exists("user_pet_unlocks"):
+        return False
+
+    db.execute(
+        "INSERT OR IGNORE INTO user_pet_unlocks (user_id, pet_type_id, unlocked_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+        (int(user_id), int(pet_type_id)),
+    )
+    con.commit()
+    return True
+
+
+def can_user_adopt_pet_type(user_id, pet_type_id):
+    """
+    Return whether the user can adopt a given pet type.
+    Admin users bypass lock checks.
+
+      :param int user_id - user's ID
+      :param int pet_type_id - pet type ID
+      :returns:
+          - boolean
+    """
+    if is_admin():
+        return True
+
+    # Fallback while migration is rolling out.
+    if not table_exists("user_pet_unlocks"):
+        return True
+
+    unlocked = db.execute(
+        "SELECT 1 FROM user_pet_unlocks WHERE user_id = ? AND pet_type_id = ? LIMIT 1",
+        (int(user_id), int(pet_type_id)),
+    ).fetchone()
+    return unlocked is not None
+
+
+def get_adoptable_pet_types_for_user(user_id):
+    """
+    Return pet types adoptable by the active user.
+    Admin users see all pet types.
+
+      :param int user_id - user's ID
+      :returns:
+          - list of rows
+    """
+    if is_admin() or not table_exists("user_pet_unlocks"):
+        return db.execute("SELECT * FROM pet_types ORDER BY id").fetchall()
+
+    return db.execute(
+        """
+        SELECT pt.*
+        FROM pet_types pt
+        INNER JOIN user_pet_unlocks upu ON pt.id = upu.pet_type_id
+        WHERE upu.user_id = ?
+        ORDER BY pt.id
+        """,
+        (int(user_id),),
+    ).fetchall()
 
 
 def session_get_int(key):

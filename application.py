@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -573,6 +573,7 @@ def signup():
             session["user_id"] = lastrow
             session["username"] = username
             set_languages(session["user_id"])
+            initialize_user_pet_unlocks(session["user_id"])
             return redirect("/")
         else:
             return apology("username already taken", 400)
@@ -785,12 +786,22 @@ def updatepassword():
 def adopt():
     """Allows a user to add a new pet to their account """
     if request.method == "POST":
+        user_id = session_get_int("user_id")
         # Check if user bought a pet
         if not request.form.get("pet_type"):
             return apology("must choose pet type", 403)
-        pet_type_id = int(request.form.get("pet_type"))
+        try:
+            pet_type_id = int(request.form.get("pet_type"))
+        except (TypeError, ValueError):
+            return apology("invalid pet type", 403)
+
+        if not can_user_adopt_pet_type(user_id, pet_type_id):
+            return apology("pet type is locked", 403)
+
         petname = db.execute(
             "SELECT pet_type FROM pet_types WHERE id = ?", (pet_type_id, )).fetchall()
+        if len(petname) != 1:
+            return apology("invalid pet type", 403)
 
         # Create pet with default name as pet type
         petid = (db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
@@ -799,18 +810,18 @@ def adopt():
 
         # Add owner to pet
         db.execute("INSERT INTO owners(owner_id, pet_id) VALUES (?, ?)",
-                   (session_get_int("user_id"), petid))
+                   (user_id, petid))
         con.commit()
 
         # Set as user's active pet
         db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
-                   (petid, session_get_int("user_id") ))
+                   (petid, user_id ))
         con.commit()
-        set_active_pet_in_session(session_get_int("user_id"))
+        set_active_pet_in_session(user_id)
         return redirect("/pets")
 
     else:
-        rows = db.execute("SELECT * FROM pet_types").fetchall()
+        rows = get_adoptable_pet_types_for_user(session_get_int("user_id"))
         if len(rows) < 1:
             return apology("no pets", 403)
         return render_template("adopt.html", pet_types=rows)
