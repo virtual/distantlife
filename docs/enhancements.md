@@ -1,6 +1,6 @@
 # Pet Quests: Stories, Quizzes, and Quest Surfaces
 
-Pet Quests turn language learning into a story-driven campaign. The quest page, the sidebar HUD, and the top-of-page alert all reflect the same quest state so the experience stays cohesive instead of repeating the same narrative in multiple places.
+Pet Quests turn language learning into a story-driven campaign. The quest page, the sidebar, and the top-of-page alert all reflect the same quest state so the experience stays cohesive instead of repeating the same narrative in multiple places.
 
 ## Canonical Quest Loop
 
@@ -13,6 +13,62 @@ Use one quest flow everywhere in the product:
 5. **Reward** - The pet receives coins, items, or a permanent visual upgrade.
 
 This flow should be the single authoritative model. Other surfaces should mirror it, not redefine it.
+
+## Quest Board (Mission Hub)
+
+Add a dedicated Quest Board page as the primary destination for browsing active, locked, and completed quest lines.
+
+### Purpose
+
+- Give users one clear place to understand progression.
+- Reduce reliance on transient alerts for quest discovery.
+- Improve return-to-session behavior by surfacing a clear next action.
+
+### Recommended Page Layout
+
+Use a clear top-to-bottom layout with strong visual hierarchy:
+
+1. **Active Quest Hero**
+  - Large chapter card at the top with title, short narrative hook, and one primary action button (`Continue`).
+  - Include current progress (`episode x of y`) and reward preview.
+2. **Quest Gallery Grid**
+  - Responsive card grid for quest lines or chapters.
+  - Card states: `active`, `available`, `locked`, `completed`.
+3. **Progress + Requirements Layer**
+  - Show completion progress per quest line.
+  - For locked quests, show one explicit requirement badge (for example level, coins, or prerequisite quest).
+
+### Card Best Practices
+
+- Keep one clear CTA per card (`Start`, `Continue`, `Review`, or locked state).
+- Always show status in text, not color alone.
+- Use consistent badge placement for unlock requirements.
+- Include completion signals for finished quests (checkmark, completion date, or 100% indicator).
+- Keep visual noise low: icon, title, short description, progress, CTA.
+
+### Progress Visualization
+
+- Prefer simple progress bars or ring indicators that map directly to completed episodes.
+- Do not show multiple competing progress systems on the same card.
+- Keep progress definitions stable across surfaces (Quest Board, sidebar, quest page).
+
+### Accessibility and Mobile
+
+- Preserve keyboard focus order across hero and quest cards.
+- Ensure cards and buttons have accessible labels and sufficient contrast.
+- On mobile, use a single-column flow and defer secondary details to expandable sections.
+- Keep the sidebar offcanvas on mobile so the Quest Board remains the primary reading surface.
+
+### State Rules
+
+- Quest Board is the canonical list surface for quest availability.
+- Banner and sidebar can deep-link into the board or directly into the active quest, but should not redefine availability.
+- If a quest becomes newly available, it appears as `available` on the board and may trigger the one-time banner.
+
+### Suggested Routing
+
+- Add a dedicated route such as `/quests` for the board page.
+- Use server-provided quest state payloads and avoid recomputing access rules in the template.
 
 ## Quest Access Rules
 
@@ -123,13 +179,14 @@ else:
 
 ## Quest Announcement Banner
 
-The new quest alert should be a single high-impact banner that appears once, then collapses into the sidebar HUD after the user acknowledges it or navigates away.
+The new quest alert should be a single high-impact banner that appears once, then collapses into the sidebar after the user acknowledges it or navigates away.
 
 ### Behavior
 
 - The top banner is the initial attention surface.
-- The sidebar is the persistent mission surface.
+- The sidebar is the persistent quick-status surface.
 - The same backend quest state should drive both surfaces.
+- Only one unresolved quest banner can exist at a time (single-banner logic).
 - The banner should not duplicate quest logic; it should only present the current mission state.
 
 ### Content
@@ -141,28 +198,27 @@ The new quest alert should be a single high-impact banner that appears once, the
 
 ### Transition
 
-After the initial trigger, the banner should minimize into the sidebar HUD rather than remaining as a second competing notification.
+After the initial trigger, the banner should minimize into the sidebar rather than remaining as a second competing notification.
 
-## Sidebar as Quest HUD
+## Sidebar as Companion Panel
 
-The sidebar should act as a persistent HUD, not as an independent source of quest logic. It mirrors the active quest state and helps the user understand what to do next.
+The sidebar should be a lightweight companion UI, not a full quest surface. The Quest Board and quest page carry full detail, while the sidebar focuses on quick status and navigation.
 
 ### What the sidebar can show
 
-- **Pet growth**: experience and level
-- **Pet name with icon**: pet name shown with a gender icon for quick identity context
-- **Speech bubble**: a short mission-focused line that explains the next objective
-- **Mini quest tracker**: the current mission title and a checklist of steps
-- **Progress indicator**: a bar or ring showing how far the current quest has advanced
-- **Call-to-action buttons**: shortcuts such as "Start Adventure" or "Feed"
+- **Pet identity**: avatar + name (+ gender icon if used)
+- **Compact status**: one short line such as "Quest active" or "No active quest"
+- **Primary shortcut**: one action button (for example `Open Quest Board` or `Continue Quest`)
+- **Optional vitals**: a minimal level/EXP indicator if space allows
 
 ### Sidebar rules
 
 - The sidebar must reuse quest state from the server.
-- It should never calculate its own progress independently.
-- It can prompt the user, but it should not branch quest logic on its own.
-- Speech bubble lines should come from quest JSON content for the active episode or quest state.
-- If vitals are shown, they should be updated by quest completion or routine pet actions.
+- It should never calculate quest progress independently.
+- It should not render full mission text, episode summaries, or checklist detail.
+- It can provide one contextual hint, but all detailed narrative belongs on the Quest Board or quest page.
+- On mobile, the sidebar should use Bootstrap offcanvas behavior to reduce layout crowding during training.
+- If vitals are shown, they should be compact and updated from canonical pet state.
 
 ### Suggested sidebar layout
 
@@ -170,10 +226,9 @@ The sidebar should act as a persistent HUD, not as an independent source of ques
 | --- | --- |
 | Pet avatar | Emotional anchor and visual identity |
 | Pet name + gender icon | Fast identity signal and clearer character framing |
-| Speech bubble | Mission guidance and narrative tone |
-| Status bars | Quick read on pet health or readiness |
-| Quest HUD | Current objective and checklist |
-| Level or EXP badge | Secondary long-term progression metric |
+| Status line | Lightweight quest state at a glance |
+| Primary shortcut button | Fast navigation to the right quest surface |
+| Level or EXP badge (optional) | Secondary long-term progression metric |
 
 ## Story and Quiz Formats
 
@@ -182,6 +237,8 @@ The story content can support multiple quiz styles without changing the core que
 | Quiz Type | Description |
 | --- | --- |
 | Cloze tests | Fill in missing words from the story |
+| Flexible answer mode | Each question can be configured as multiple choice or type-in |
+| Recall production | Boss checks should include type-in answers without a word bank |
 | Sentence wizard | Build full sentences from a scrambled word bank |
 | Timed speed runs | Test recall speed for a bonus or multiplier |
 | Story re-telling | Sequence story sentences in the correct order |
@@ -256,8 +313,6 @@ For icon display, keep Font Awesome icon rendering in templates/UI, not inside J
 </span>
 ```
 
-This is not significantly more complicated if token usage stays small and explicit. It is usually a low-cost improvement with high player impact.
-
 ## Quest Pack Structure
 
 Quest content should be stored in a simple, reviewable structure. Keep the schema compact and make IDs stable across locales.
@@ -319,15 +374,18 @@ Quest content should be stored in a simple, reviewable structure. Keep the schem
         "questions": [
           {
             "type": "cloze",
+            "answer_mode": "type_in",
             "prompt": {
               "male": "He planted a ____.",
               "female": "She planted a ____.",
               "neutral": "{{pet_name}} planted a ____."
             },
-            "answer": "seed"
+            "answer": "seed",
+            "accepted_answers": ["seed"]
           },
           {
             "type": "mcq",
+            "answer_mode": "multiple_choice",
             "prompt": "What color was the carrot?",
             "options": ["orange", "blue", "green"],
             "answer": "orange"
@@ -345,6 +403,19 @@ Quest content should be stored in a simple, reviewable structure. Keep the schem
 ```
 
 Suggested metadata fields include locale, version, review status, stable episode IDs, numeric sentence order, quest type, quest line ID, allowed pet type IDs, stable personalization token names, and a consistent gender-variant shape so the English and Hebrew files can be checked for parity and the quest can enforce pet access cleanly.
+
+## Feedback Evaluation (April 2026)
+
+The items below summarize external feedback and whether each item improves this architecture.
+
+| Feedback Item | Decision | Why It Is or Is Not an Improvement | Result in This Doc |
+| --- | --- | --- | --- |
+| Add a Quest Board page as a mission hub | Adopt | Improves discoverability and progression clarity by giving users one place to see active, locked, and completed arcs. | Accepted as a recommended UI surface for quest browsing. |
+| Use a 3-stage AI generation pipeline (outline -> story -> quiz) | Partial | Good for scale and CEFR control, but requires human review and validation to avoid quality drift. | Keep as a future content tooling path, not a runtime dependency. |
+| Enforce 3-state quest notification lifecycle | Adopt | Improves focus and prevents UI clutter when state transitions are consistent. | Reinforced with single-banner logic and sidebar persistence model. |
+| Add hard currency sinks and diminishing returns | Partial | Strong long-term economy control, but should be introduced with telemetry to avoid early over-tuning. | Accepted as a future economy phase, not a blocker for quest launch. |
+| Replace multiple choice entirely with type-in recall | Reject as absolute; adopt as mix | Type-in improves recall, but removing multiple choice reduces accessibility and pacing variety. | Boss checks should include type-in, while question-level answer mode supports both multiple choice and type-in. |
+| Use offcanvas sidebar on mobile | Adopt | Reduces cognitive load and preserves learning space on smaller screens. | Added as a sidebar rule for mobile behavior. |
 
 ## Pet Types and IDs
 
@@ -404,10 +475,17 @@ Before broad rollout, the content model should pass a small but strict checklist
 - Quest titles, story text, quiz prompts, and reward labels should all render correctly in both locales.
 - A single pilot quest pack should be tested end to end before adding more content.
 
-## Open Decisions
+## Open Decisions and Considerations
 
 These choices can stay open until the implementation phase, but the document should call them out clearly.
 
 - Whether the sidebar shows vitals all the time or only during active missions.
 - How speech-bubble line selection is prioritized when both episode-level and quest-state lines are available.
 - Whether reward names are managed strictly as localized content labels or shared UI/content labels.
+- Content versioning should be tracked for quest packs and locale files so updates can be rolled back cleanly.
+- Missing quest packs, locale variants, or gender variants should have explicit fallback behavior.
+- AI-generated content should require human review before publish, with a clear approve/reject workflow.
+- Type-in answers, quest cards, and the sidebar should remain keyboard-friendly and screen-reader friendly, including RTL layouts.
+- Quest starts, completions, abandonments, and answer-mode performance should be tracked so difficulty and economy can be tuned later.
+- Schema changes for unlocks, gender defaults, and quest content should include a migration plan and backfill strategy.
+- The Quest Board should define explicit empty, loading, and no-active-quest states so the page does not feel broken.
