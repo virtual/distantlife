@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from "./macros.html" import progressbar with context %}
+{% from "./macros.html" import pet_summary with context %}
 
 {% block title %}
 {{ userinfo.full_name or userinfo.username }}
@@ -38,15 +38,7 @@
       <div class="col-list row p-0">
         {% for pet in pets_owned %}
           <div class="col-12">
-            <div>
-              <img src="/static/{{ pet.imgsrc }}" alt="{{ pet.pet_type }}" />
-              <h3 class="mt-1 mb-0">{{ pet.name }}
-                {% if pet.id == pet.active_pet_id %}
-                  <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
-                {% endif %}
-              </h3>
-              {{ progressbar((pet.exp)) }}
-            </div>
+            {{ pet_summary(pet, active_pet_id=pet.active_pet_id) }}
           </div>
         {% endfor %}
       </div>

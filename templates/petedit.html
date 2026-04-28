@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from "./macros.html" import progressbar, get_data with context %}
+{% from "./macros.html" import pet_summary with context %}
 
 {% block title %}
 {{ _('ui.edit') }}
@@ -9,24 +9,9 @@
 {% if (pet_info|length) > 0 %}
 
     {% for pet in pet_info %}
-    <h1>{{ pet.name }} 
-      {% if pet.id == pet.active_pet_id %}
-      <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
-      {% endif %} </h1>
-
     <div class="pet-edit-image">
-      <img src="/static/{{ pet.imgsrc }}" alt="" />
+      {{ pet_summary(pet, active_pet_id=pet.active_pet_id, show_created=true) }}
     </div>
-      
-        <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small><br/>
-          {{ _('ui.created') }}: {{ pet.created }}</p>
-        <p>
-          <span class="badge badge-secondary">
-            <span class="{{ pet.gender_icon_class }}" aria-hidden="true"></span>
-            {{ _('ui.gender') }}: {{ pet.gender_label }}
-          </span>
-        </p>
-        {{ progressbar((pet.exp)) }}
 
         {% if (pet.exp) >= 100 %}
         <form class="mx-auto centered" action="/pets/edit/" method="post">

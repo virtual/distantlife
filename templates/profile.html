@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "./macros.html" import csrf_field, form_group, language_options as render_language_options, password_field with context %}
 
 {% block title %}
 {{ _('ui.profile') }}  
@@ -39,98 +40,36 @@
     </div>
 
     <form class="mx-auto centered" action="/updatelanguage" method="post">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      {{ csrf_field() }}
       <fieldset>
           <legend>{{ _('ui.language_preferences') }}</legend>
-          <div class="form-group">
-            <label for="orig_language">{{ _('ui.my_native_language_is') }}:</label>
+          {% call form_group('orig_language', _('ui.my_native_language_is')) %}
             <select id="orig_language" name="orig_language">
-              {% for lang in language_options %}
-                {% if lang.id == userinfo.preferred_lang %}
-                  <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-                {% else %}
-                  <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-                {% endif %}
-              {% endfor %}
+              {{ render_language_options(language_options, userinfo.preferred_lang) }}
             </select>
-          </div>
-          <div class="form-group">
-            <label for="learning_lang">{{ _('ui.i_want_to_learn') }}:</label>
+          {% endcall %}
+          {% call form_group('learning_lang', _('ui.i_want_to_learn')) %}
             <select id="learning_lang" name="learning_lang">
-              {% for lang in language_options %}
-                {% if lang.id == userinfo.learning_lang %}
-                  <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-                {% else %}
-                  <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-                {% endif %}
-              {% endfor %}
+              {{ render_language_options(language_options, userinfo.learning_lang) }}
             </select>
-          </div>
+          {% endcall %}
           <button class="btn btn-primary" type="submit">{{ _('ui.save_preferences') }}</button>
       </fieldset>
     </form>
 
     <form class="mx-auto centered" action="/updatepassword" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        {{ csrf_field() }}
         <fieldset>
             <legend>{{ _('ui.auth.change_password') }}</legend>
-            <div class="form-group">
-              <label for="current_password">{{ _('ui.auth.current_password') }}</label>
-              <div class="password-field">
-                <input class="form-control has-password-toggle" name="current_password" id="current_password" placeholder="{{ _('ui.auth.current_password') }}" type="password">
-                <button
-                  type="button"
-                  class="password-toggle"
-                  data-toggle-password="current_password"
-                  data-show-label="{{ _('ui.auth.show_password') }}"
-                  data-hide-label="{{ _('ui.auth.hide_password') }}"
-                  aria-controls="current_password"
-                  aria-label="{{ _('ui.auth.show_password') }}"
-                  aria-pressed="false"
-                >
-                  <span class="far fa-eye" aria-hidden="true"></span>
-                  <span class="sr-only">{{ _('ui.auth.show_password') }}</span>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="password">{{ _('ui.auth.password') }}</label>
-              <div class="password-field">
-                <input class="form-control has-password-toggle" name="password" id="password" placeholder="{{ _('ui.auth.password') }}" type="password">
-                <button
-                  type="button"
-                  class="password-toggle"
-                  data-toggle-password="password"
-                  data-show-label="{{ _('ui.auth.show_password') }}"
-                  data-hide-label="{{ _('ui.auth.hide_password') }}"
-                  aria-controls="password"
-                  aria-label="{{ _('ui.auth.show_password') }}"
-                  aria-pressed="false"
-                >
-                  <span class="far fa-eye" aria-hidden="true"></span>
-                  <span class="sr-only">{{ _('ui.auth.show_password') }}</span>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="confirmation">{{ _('ui.auth.retype_password') }}</label>
-              <div class="password-field">
-                <input class="form-control has-password-toggle" name="confirmation" id="confirmation" placeholder="{{ _('ui.auth.retype_password') }}" type="password">
-                <button
-                  type="button"
-                  class="password-toggle"
-                  data-toggle-password="confirmation"
-                  data-show-label="{{ _('ui.auth.show_password') }}"
-                  data-hide-label="{{ _('ui.auth.hide_password') }}"
-                  aria-controls="confirmation"
-                  aria-label="{{ _('ui.auth.show_password') }}"
-                  aria-pressed="false"
-                >
-                  <span class="far fa-eye" aria-hidden="true"></span>
-                  <span class="sr-only">{{ _('ui.auth.show_password') }}</span>
-                </button>
-              </div>
-            </div>
+            {% call form_group('current_password', _('ui.auth.current_password')) %}
+              {{ password_field('current_password', 'current_password', _('ui.auth.show_password'), _('ui.auth.hide_password'), placeholder=_('ui.auth.current_password')) }}
+            {% endcall %}
+            {% call form_group('password', _('ui.auth.password')) %}
+              {{ password_field('password', 'password', _('ui.auth.show_password'), _('ui.auth.hide_password'), placeholder=_('ui.auth.password')) }}
+            {% endcall %}
+            {% call form_group('confirmation', _('ui.auth.retype_password')) %}
+              {{ password_field('confirmation', 'confirmation', _('ui.auth.show_password'), _('ui.auth.hide_password'), placeholder=_('ui.auth.retype_password')) }}
+            {% endcall %}
             <button class="btn btn-primary" type="submit">{{ _('ui.auth.update_password') }}</button>
         </fieldset>
     </form>

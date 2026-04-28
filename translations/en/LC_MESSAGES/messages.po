@@ -161,7 +161,6 @@ msgid "ui.word_set"
 msgstr "Word Set"
 
 #: templates/editsets.html:19
-#, fuzzy
 msgid "ui.count"
 msgstr "Count"
 

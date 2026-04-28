@@ -1,31 +1,26 @@
-{% from "./macros.html" import progressbar, get_data with context %}
+{% from "./macros.html" import pet_summary with context %}
 <aside>
-  {% if session.get("user_id") %}
-  <p class="text-center">
-    <a href="/quests" class="btn text-center mx-auto">{{ _('ui.quests.quest_board') }}</a>
-  </p>
-  {% endif %}
-
   {% if (session.get("active_pet")) %}
   {% set active_pet_gender_label = session['active_pet'].get('gender_label', _('ui.gender.unknown')) %}
   {% set active_pet_gender_icon_class = session['active_pet'].get('gender_icon_class') %}
-  <p class="text-center mx-auto pet-box ">
+  <div class="text-center mx-auto pet-box">
     <img width="200" height="200" src="{{ url_for('static', filename=session['active_pet']['imgsrc']) }}" alt="{{session['active_pet']['type']}}" />
-  </p>
-  <h3>{{session["active_pet"]["name"]}}</h3>
-  <p class="text-center">
-    <span class="badge badge-secondary">
-      <span class="{{ active_pet_gender_icon_class }}" aria-hidden="true"></span>
-      {{ _('ui.gender') }}: {{ active_pet_gender_label }}
-    </span>
-  </p>
-  {{ progressbar(session["active_pet"]["exp"]) }}
+  </div>
+  <div class="sidebar-summary">
+    {{ pet_summary(session['active_pet'], image_alt=session['active_pet']['type'], show_progress=true, show_image=false, show_type=false) }}
+  </div>
   {% elif session.get("user_id") %}
   <p class="text-center mx-auto pet-box pet-hidden sidebar-empty-pet-box">
     <img width="200" height="200" src="{{ url_for('static', filename='pets/031-frog.png') }}" alt="frog" />
   </p>
   <p class="text-center">
     <a href="/adopt" class="btn text-center mx-auto">{{ _('ui.adopt_your_first_pet') }}</a>
+  </p>
+  {% endif %}
+
+  {% if session.get("user_id") %}
+  <p class="text-center">
+    <a href="/quests" class="btn text-center mx-auto">{{ _('ui.quests.quest_board') }}</a>
   </p>
   {% endif %}
 </aside>

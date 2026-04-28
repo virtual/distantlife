@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% if (session.get("language")) %}
+  <html lang="{{session['language']['charcode']}}" dir="{{session['language']['dir']}}">
+{% else %}
+  <html lang="en">
+{% endif %}
+{% set title_s %}{% block title %}{% endblock %}{% endset %}
+{% if session.username %}
+  {% set username %}{{ session['username'] }}{% endset %}
+{% endif %}
+{% if session.user_id %}
+  {% set user_id %}{{ session['user_id'] }}{% endset %}
+{% endif %}
+{% include 'global/head.html' %}
+
+{% if (session.get("language")) %}
+  <body class="text-gray-900 font-sans antialiased dir-{{session['language']['dir']}}">
+{% else %}
+  <body class="text-gray-900 font-sans antialiased">
+{% endif %}
+
+  {% include 'global/header.html' %}
+  {% block page_shell %}{% endblock %}
+
+  {% include 'global/footer.html' %}
+</body>
+</html>

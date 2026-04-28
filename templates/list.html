@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from "./macros.html" import progressbar, get_data with context %}
+{% from "./macros.html" import pet_summary with context %}
 
 
 {% block title %}
@@ -17,19 +17,7 @@
     {% for pet in pets_owned %}
 
     <div class="col-12">
-      <img src="/static/{{ pet.imgsrc }}" alt="" />
-      <h2>{{ pet.name }} 
-        {% if pet.id == pet.active_pet_id %}
-        <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
-        {% endif %} </h2>
-        <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
-        <p class="pet-gender">
-          <span class="badge badge-secondary">
-            <span class="{{ pet.gender_icon_class }}" aria-hidden="true"></span>
-            {{ _('ui.gender') }}: {{ pet.gender_label }}
-          </span>
-        </p>
-        {{ progressbar((pet.exp)) }}
+      {{ pet_summary(pet, active_pet_id=pet.active_pet_id) }}
 
         <ul class="element-options">
           <li class="has-dropdown"><button class="btn-secondary" aria-haspopup="true">

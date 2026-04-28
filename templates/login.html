@@ -1,4 +1,5 @@
 {% extends "layout-1col.html" %}
+{% from "./macros.html" import csrf_field, form_group, password_field with context %}
 
 {% block title %}
 {{ _('ui.auth.log_in') }}  
@@ -6,15 +7,13 @@
 
 {% block main %}
     <form class="mx-auto centered" action="/login" method="post">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <div class="form-group">
-        <label for="username">{{ _('ui.auth.username') }}</label>
+      {{ csrf_field() }}
+      {% call form_group('username', _('ui.auth.username')) %}
         <input required id="username" name="username" type="text" />
-      </div> 
-      <div class="form-group">
-        <label for="password">{{ _('ui.auth.password') }}</label>
-        <input required id="password" name="password" type="password" />
-      </div>
+      {% endcall %}
+      {% call form_group('password', _('ui.auth.password')) %}
+        {{ password_field('password', 'password', _('ui.auth.show_password'), _('ui.auth.hide_password'), required=true) }}
+      {% endcall %}
       <button type="submit">{{ _('ui.auth.log_in') }}</button>
     </form>
 {% endblock %}
