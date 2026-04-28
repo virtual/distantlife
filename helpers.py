@@ -1,6 +1,7 @@
 from flask import flash, redirect, render_template, session
 from functools import wraps
 from datetime import datetime
+import random
 from flask_babel import gettext as _
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
@@ -107,18 +108,61 @@ def set_active_pet_in_session(user_id):
       :returns: 
       - id of active pet
     """
-    active_pet_info = db.execute("SELECT pets.id, name, pet_types.pet_type, exp, pet_types.imgsrc FROM pets JOIN users ON users.active_pet_id = pets.id JOIN pet_types ON pet_types.id = pets.type WHERE users.id = ?",
-                                 (user_id, )).fetchall()
+    pet_columns = table_columns("pets")
+    gender_column = "pets.gender AS gender" if "gender" in pet_columns else "NULL AS gender"
+    active_pet_info = db.execute(
+        f"SELECT pets.id, pets.name, pet_types.pet_type, pets.exp, pet_types.imgsrc, {gender_column} FROM pets JOIN users ON users.active_pet_id = pets.id JOIN pet_types ON pet_types.id = pets.type WHERE users.id = ?",
+        (user_id, ),
+    ).fetchall()
     if (len(active_pet_info) == 1):
+        gender = active_pet_info[0]["gender"] or "neutral"
         active_pet = {
             "name": active_pet_info[0]['name'],
             "type": active_pet_info[0]['pet_type'],
             "exp": active_pet_info[0]['exp'],
             "id": active_pet_info[0]['id'],
-            "imgsrc": active_pet_info[0]['imgsrc']
+            "imgsrc": active_pet_info[0]['imgsrc'],
+            "gender": gender,
+            "gender_label": get_pet_gender_label(gender),
+            "gender_icon_class": get_pet_gender_icon_class(gender),
         }
         session["active_pet"] = active_pet
         return active_pet['id']
+
+
+def normalize_pet_gender(gender):
+    """Normalize a pet gender value for display and personalization."""
+    if gender in ("male", "female"):
+        return gender
+    return "neutral"
+
+
+def choose_pet_gender(default_gender=None):
+    """Choose a gender for a new pet."""
+    normalized_default = normalize_pet_gender(default_gender)
+    if normalized_default in ("male", "female"):
+        return normalized_default
+    return random.choice(["male", "female"])
+
+
+def get_pet_gender_label(gender):
+    """Return a translated pet gender label."""
+    normalized_gender = normalize_pet_gender(gender)
+    if normalized_gender == "male":
+        return _("ui.gender.male")
+    if normalized_gender == "female":
+        return _("ui.gender.female")
+    return _("ui.gender.unknown")
+
+
+def get_pet_gender_icon_class(gender):
+    """Return the icon class used to render the pet gender."""
+    normalized_gender = normalize_pet_gender(gender)
+    if normalized_gender == "male":
+        return "fa fa-solid fa-mars"
+    if normalized_gender == "female":
+        return "fa fa-solid fa-venus"
+    return "fa fa-solid fa-genderless"
 
 
 def set_languages(user_id):

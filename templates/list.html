@@ -23,6 +23,12 @@
         <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
         {% endif %} </h2>
         <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small></p>
+        <p class="pet-gender">
+          <span class="badge badge-secondary">
+            <span class="{{ pet.gender_icon_class }}" aria-hidden="true"></span>
+            {{ _('ui.gender') }}: {{ pet.gender_label }}
+          </span>
+        </p>
         {{ progressbar((pet.exp)) }}
 
         <ul class="element-options">

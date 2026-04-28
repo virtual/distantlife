@@ -300,9 +300,9 @@ For icon display, keep Font Awesome icon rendering in templates/UI, not inside J
 
 **Recommended icon mapping (Font Awesome):**
 
-- `male` -> `fa-solid fa-mars`
-- `female` -> `fa-solid fa-venus`
-- unknown/legacy-null fallback -> `fa-solid fa-genderless`
+- `male` -> `fa fa-solid fa-mars`
+- `female` -> `fa fa-solid fa-venus`
+- unknown/legacy-null fallback -> `fa fa-solid fa-genderless`
 
 **Template example (name + icon):**
 

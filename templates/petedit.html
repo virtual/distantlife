@@ -20,6 +20,12 @@
       
         <p>{{ pet.pet_type }} <small>(#{{ pet.id }})</small><br/>
           {{ _('ui.created') }}: {{ pet.created }}</p>
+        <p>
+          <span class="badge badge-secondary">
+            <span class="{{ pet.gender_icon_class }}" aria-hidden="true"></span>
+            {{ _('ui.gender') }}: {{ pet.gender_label }}
+          </span>
+        </p>
         {{ progressbar((pet.exp)) }}
 
         {% if (pet.exp) >= 100 %}

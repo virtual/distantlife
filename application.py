@@ -16,7 +16,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -269,7 +269,18 @@ def quest_detail(quest_id):
 def pets():
     """Lists all of user's pets"""
     
-    pets_owned = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", (session_get_int("user_id"), )).fetchall()
+    pet_columns = table_columns("pets")
+    gender_column = ", pets.gender" if "gender" in pet_columns else ""
+    pets_owned = db.execute(f"SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name{gender_column}, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ?", (session_get_int("user_id"), )).fetchall()
+    pets_owned = [
+        {
+            **dict(pet),
+            "gender": dict(pet).get("gender") or "neutral",
+            "gender_label": get_pet_gender_label(dict(pet).get("gender")),
+            "gender_icon_class": get_pet_gender_icon_class(dict(pet).get("gender")),
+        }
+        for pet in pets_owned
+    ]
     return render_template("list.html", pets_owned=pets_owned)
 
 
@@ -754,9 +765,20 @@ def petedit():
         pet_id = int(request.args.get('id'))
 
         # This ensures the current user owns the pet being renamed
-        pet_info = db.execute("SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ? AND pet_id = ?", 
-                (session_get_int("user_id"), pet_id, )).fetchall()
+        pet_columns = table_columns("pets")
+        gender_column = ", pets.gender" if "gender" in pet_columns else ""
+        pet_info = db.execute(f"SELECT pets.id, pet_types.imgsrc, pet_types.pet_type, pets.created, pets.exp, pets.name{gender_column}, users.active_pet_id FROM owners JOIN pets ON pets.id = owners.pet_id JOIN pet_types ON pets.type = pet_types.id JOIN users ON users.id = owners.owner_id WHERE owner_id = ? AND pet_id = ?", 
+            (session_get_int("user_id"), pet_id, )).fetchall()
         if len(pet_info) == 1:
+            pet_info = [
+                {
+                    **dict(pet),
+                    "gender": dict(pet).get("gender") or "neutral",
+                    "gender_label": get_pet_gender_label(dict(pet).get("gender")),
+                    "gender_icon_class": get_pet_gender_icon_class(dict(pet).get("gender")),
+                }
+                for pet in pet_info
+            ]
             return render_template("petedit.html", pet_info=pet_info)
         else:
             return apology("Error getting pet info", 403)
@@ -851,13 +873,20 @@ def adopt():
             return apology("pet type is locked", 403)
 
         petname = db.execute(
-            "SELECT pet_type FROM pet_types WHERE id = ?", (pet_type_id, )).fetchall()
+            "SELECT pet_type, default_gender FROM pet_types WHERE id = ?", (pet_type_id, )).fetchall()
         if len(petname) != 1:
             return apology("invalid pet type", 403)
 
+        pet_gender = choose_pet_gender(petname[0]["default_gender"] if "default_gender" in petname[0].keys() else None)
+
         # Create pet with default name as pet type
-        petid = (db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-                           (pet_type_id, petname[0]['pet_type'], 0 ))).lastrowid
+        pet_columns = table_columns("pets")
+        if "gender" in pet_columns:
+            petid = (db.execute("INSERT INTO pets(type, name, exp, created, gender) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                               (pet_type_id, petname[0]['pet_type'], 0, pet_gender ))).lastrowid
+        else:
+            petid = (db.execute("INSERT INTO pets(type, name, exp, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+                               (pet_type_id, petname[0]['pet_type'], 0 ))).lastrowid
         con.commit()
 
         # Add owner to pet

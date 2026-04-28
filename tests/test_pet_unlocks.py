@@ -10,6 +10,7 @@ from helpers import (
     STARTER_PET_TYPE_IDS,
     get_adoptable_pet_types_for_user,
     initialize_user_pet_unlocks,
+    table_columns,
 )
 
 
@@ -140,6 +141,24 @@ class PetUnlockTestCase(unittest.TestCase):
             (self.user_id, 1),
         ).fetchone()
         self.assertGreaterEqual(int(owned["count"]), 1)
+
+        if "gender" in table_columns("pets"):
+            gender_row = self.db.execute(
+                """
+                SELECT p.gender
+                FROM owners o
+                JOIN pets p ON p.id = o.pet_id
+                WHERE o.owner_id = ? AND p.type = ?
+                ORDER BY p.id DESC
+                LIMIT 1
+                """,
+                (self.user_id, 1),
+            ).fetchone()
+            self.assertIn(gender_row["gender"], {"male", "female"})
+
+            with self.client.session_transaction() as sess:
+                self.assertEqual(sess["active_pet"]["gender"], gender_row["gender"])
+                self.assertIn(sess["active_pet"]["gender_label"], {"Male", "Female"})
 
 
 if __name__ == "__main__":

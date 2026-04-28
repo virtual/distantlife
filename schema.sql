@@ -45,6 +45,7 @@ CREATE TABLE `pets` (
   `name` varchar(255),
   `created` timestamp,
   `exp` integer,
+  `gender` varchar(255) DEFAULT 'neutral',
   PRIMARY KEY(id)
 );
 
@@ -53,6 +54,7 @@ CREATE TABLE `pet_types` (
   `imgsrc` varchar(255),
   `pet_type` varchar(255),
   `exp_required` integer,
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 
@@ -122,6 +124,7 @@ CREATE TABLE `pet_types` (
   `id` integer,
   `imgsrc` varchar(255),
   `pet_type` varchar(255),
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 
@@ -277,12 +280,15 @@ CREATE TABLE `pets` (
   `name` varchar(255),
   `created` timestamp,
   `exp` integer,
+  `gender` varchar(255) DEFAULT 'neutral',
   PRIMARY KEY(id)
 );
 CREATE TABLE `pet_types` (
   `id` integer,
   `imgsrc` varchar(255),
-  `pet_type` varchar(255), `exp_required` integer,
+  `pet_type` varchar(255),
+  `exp_required` integer,
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 CREATE TABLE `word_sets` (

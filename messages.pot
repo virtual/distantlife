@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-27 15:26-0600\n"
+"POT-Creation-Date: 2026-04-27 20:25-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: helpers.py:74 templates/global/sidebar.html:20 templates/quests.html:25
+#: helpers.py:75 templates/global/sidebar.html:26 templates/quests.html:25
 msgid "ui.adopt_your_first_pet"
+msgstr ""
+
+#: helpers.py:152
+msgid "ui.gender.male"
+msgstr ""
+
+#: helpers.py:154
+msgid "ui.gender.female"
+msgstr ""
+
+#: helpers.py:155
+msgid "ui.gender.unknown"
 msgstr ""
 
 #: templates/about.html:5 templates/about.html:11
@@ -26,7 +38,7 @@ msgstr ""
 msgid "ui.about"
 msgstr ""
 
-#: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:55
+#: templates/adopt.html:5 templates/adopt.html:11 templates/list.html:61
 msgid "ui.adopt_a_pet"
 msgstr ""
 
@@ -42,7 +54,7 @@ msgstr ""
 msgid "ui.adopt"
 msgstr ""
 
-#: templates/adopt.html:41 templates/list.html:52
+#: templates/adopt.html:41 templates/list.html:58
 msgid "ui.no_pets"
 msgstr ""
 
@@ -111,7 +123,7 @@ msgstr ""
 msgid "ui.word"
 msgstr ""
 
-#: templates/editset.html:18 templates/editsets.html:20 templates/list.html:30
+#: templates/editset.html:18 templates/editsets.html:20 templates/list.html:36
 #: templates/train.html:31
 msgid "ui.options"
 msgstr ""
@@ -168,16 +180,21 @@ msgstr ""
 msgid "ui.active_pet"
 msgstr ""
 
-#: templates/list.html:33 templates/petedit.html:42
+#: templates/global/sidebar.html:17 templates/list.html:29
+#: templates/petedit.html:26
+msgid "ui.gender"
+msgstr ""
+
+#: templates/list.html:39 templates/petedit.html:48
 msgid "ui.make_active_pet"
 msgstr ""
 
-#: templates/list.html:35 templates/list.html:40 templates/petedit.html:31
-#: templates/petedit.html:32
+#: templates/list.html:41 templates/list.html:46 templates/petedit.html:37
+#: templates/petedit.html:38
 msgid "ui.rename"
 msgstr ""
 
-#: templates/list.html:42 templates/petedit.html:44
+#: templates/list.html:48 templates/petedit.html:50
 msgid "ui.abandon"
 msgstr ""
 
@@ -206,15 +223,15 @@ msgstr ""
 msgid "ui.created"
 msgstr ""
 
-#: templates/petedit.html:29
+#: templates/petedit.html:35
 msgid "ui.update_pet"
 msgstr ""
 
-#: templates/petedit.html:35
+#: templates/petedit.html:41
 msgid "ui.change_name"
 msgstr ""
 
-#: templates/petedit.html:50
+#: templates/petedit.html:56
 msgid "ui.you_do_not_have_a_pet_with_that_id"
 msgstr ""
 
@@ -318,7 +335,8 @@ msgstr ""
 msgid "ui.quests.back_to_board"
 msgstr ""
 
-#: templates/quests.html:10
+#: templates/global/header.html:18 templates/global/sidebar.html:5
+#: templates/quests.html:4 templates/quests.html:10
 msgid "ui.quests.quest_board"
 msgstr ""
 
