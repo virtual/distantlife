@@ -562,3 +562,63 @@ msgstr "Logout"
 msgid "ui.auth.login_link"
 msgstr "Login"
 
+#: templates/quest_episode.html:12
+msgid "ui.quests.back_to_quest"
+msgstr "Back to quest"
+
+#: templates/quest_episode.html:15
+msgid "ui.quests.of"
+msgstr "of"
+
+#: templates/quest_episode.html:43
+msgid "ui.quests.reorder_instruction"
+msgstr "Drag the sentences to reorder them correctly, or use the up/down buttons."
+
+#: templates/quest_episode.html:48
+msgid "ui.quests.move_up"
+msgstr "Up"
+
+#: templates/quest_episode.html:52
+msgid "ui.quests.move_down"
+msgstr "Down"
+
+#: templates/quest_episode.html:59
+msgid "ui.quests.previous_episode"
+msgstr "Previous Episode"
+
+#: templates/quest.html:23
+msgid "ui.quests.read_story"
+msgstr "Read Story"
+
+#: templates/quest.html:27
+msgid "ui.quests.take_quiz"
+msgstr "Take Quiz"
+
+#: templates/quest_episode.html:70
+msgid "ui.quests.next_episode"
+msgstr "Next Episode"
+
+#: templates/quiz.html:8
+msgid "ui.quests.submit_quiz"
+msgstr "Submit Quiz"
+
+#: templates/quiz.html:15
+msgid "ui.quests.question"
+msgstr "Question"
+
+#: templates/quiz.html:20
+msgid "ui.quests.type_answer"
+msgstr "Type your answer..."
+
+#: templates/quiz.html:35
+msgid "ui.quests.select_correct_order"
+msgstr "Select the correct order:"
+
+#: templates/quiz.html:50
+msgid "ui.quests.drag_to_reorder"
+msgstr "Drag items to reorder them."
+
+#: templates/quiz.html:65
+msgid "ui.quests.back_to_story"
+msgstr "Back to story"
+

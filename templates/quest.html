@@ -5,79 +5,175 @@
 {% endblock %}
 
 {% block main %}
-<article class="quest-detail card">
-  <div class="quest-detail-header">
+<article class="quest-overview card" dir="{{ session.language.dir | to_direction }}">
+      <div class="quest-overview-header">
     <p class="eyebrow">{{ _('ui.quests.quest_story') }}</p>
-    <h2>{{ quest.title }}</h2>
-    <p class="lead">{{ quest.summary }}</p>
-    <div class="quest-detail-meta">
+    <h2 dir="{{ session.language.learning_charcode | to_direction }}">{{ quest.title }}</h2>
+    <p class="lead" dir="{{ session.language.learning_charcode | to_direction }}">{{ quest.summary }}</p>
+    <div class="quest-overview-meta">
       <span class="quest-badge">{{ quest.quest_line_id }}</span>
       <span class="quest-badge">{{ quest.allowed_pet_label }}</span>
       <span class="quest-badge">{{ quest.locale.upper() }}</span>
     </div>
   </div>
 
-  {% for episode in quest.episodes %}
-    <section class="quest-episode card">
-      <h3>{{ _('ui.quests.episode') }} {{ loop.index }}: {{ episode.title }}</h3>
-      <div class="quest-story-text">
-        <p>{{ episode.story_text }}</p>
-      </div>
-
-      {% if episode.vocabulary_targets %}
-        <div class="quest-section-inline">
-          <h4>{{ _('ui.quests.vocabulary_targets') }}</h4>
-          <p>{{ episode.vocabulary_targets | join(', ') }}</p>
-        </div>
-      {% endif %}
-
-      {% if episode.speech_bubble_lines %}
-        <div class="quest-section-inline">
-          <h4>{{ _('ui.quests.speech_lines') }}</h4>
-          <ul class="quest-bubble-list">
-            {% for line in episode.speech_bubble_lines %}
-              <li>{{ line }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-
-      {% if episode.sentences %}
-        <div class="quest-section-inline">
-          <h4>{{ _('ui.quests.sentence_order') }}</h4>
-          <ol>
-            {% for sentence in episode.sentences %}
-              <li>{{ sentence }}</li>
-            {% endfor %}
-          </ol>
-        </div>
-      {% endif %}
-
-      {% if episode.quiz and episode.quiz.questions %}
-        <div class="quest-section-inline">
-          <h4>{{ _('ui.quests.quiz') }}</h4>
-          <div class="quest-quiz-list">
-            {% for question in episode.quiz.questions %}
-              <div class="quest-question card">
-                <p class="quest-question-type">{{ question.type }}</p>
-                <p>{{ question.prompt }}</p>
-                {% if question.options %}
-                  <ul>
-                    {% for option in question.options %}
-                      <li>{{ option }}</li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </div>
-            {% endfor %}
+  <!-- Episodes Navigation -->
+  <section class="quest-episodes-section">
+    <h3>{{ _('ui.quests.episodes') }}</h3>
+    <div class="episodes-list">
+      {% for episode in quest.episodes %}
+        <div class="episode-card card-clickable">
+          <div class="episode-number">{{ loop.index }}</div>
+            <div class="episode-content">
+            <h4 dir="{{ session.language.learning_charcode | to_direction }}">{{ episode.title }}</h4>
+            {% if episode.story_text %}
+              <p class="episode-preview" dir="{{ session.language.learning_charcode | to_direction }}">{{ episode.story_text[:150] }}...</p>
+            {% endif %}
+          </div>
+          <div class="episode-actions">
+            <a class="btn btn-secondary" href="/quest/{{ quest.quest_id }}/{{ episode.episode_id }}">
+              {{ _('ui.quests.read_story') }}
+            </a>
+            <a class="btn btn-primary" href="/quiz/{{ quest.quest_id }}/{{ episode.episode_id }}">
+              {{ _('ui.quests.take_quiz') }}
+            </a>
           </div>
         </div>
-      {% endif %}
-    </section>
-  {% endfor %}
+      {% endfor %}
+    </div>
+  </section>
 
-  <div class="quest-detail-actions">
+  <div class="quest-overview-actions">
     <a class="btn btn-secondary" href="/quests">{{ _('ui.quests.back_to_board') }}</a>
   </div>
 </article>
+
+<style>
+  .quest-overview {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .quest-overview-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .quest-overview-meta {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .quest-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .quest-episodes-section {
+    margin: 2rem 0;
+  }
+
+  .quest-episodes-section h3 {
+    margin-bottom: 1.5rem;
+  }
+
+  .episodes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .episode-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .episode-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .episode-number {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+
+  .episode-content {
+    flex: 1;
+    margin-top: 1rem;
+  }
+
+  .episode-content h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    padding-right: 3rem;
+  }
+
+  .episode-preview {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .episode-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .episode-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .quest-overview-actions {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .episodes-list {
+      grid-template-columns: 1fr;
+    }
+
+    .episode-actions {
+      flex-direction: column;
+    }
+
+    .episode-actions .btn {
+      min-width: unset;
+    }
+  }
+</style>
 {% endblock %}
+

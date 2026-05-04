@@ -35,18 +35,106 @@ def get_quest_file_path(quest_id, locale="en", root_dir="quests"):
     return Path(root_dir) / locale / f"{quest_id}.json"
 
 
+def list_quest_ids(locale="en", root_dir="quests"):
+    """
+    List all available quest IDs for a given locale.
+    
+    Args:
+        locale: language code (en, he, etc.)
+        root_dir: quest directory root
+    
+    Returns:
+        list: quest IDs (filenames without .json extension)
+    """
+    quest_dir = Path(root_dir) / locale
+    if not quest_dir.exists():
+        return []
+    
+    return sorted([f.stem for f in quest_dir.glob("*.json")])
+
+
 def load_quest_content(quest_id, locale="en", root_dir="quests"):
     quest_path = get_quest_file_path(quest_id, locale=locale, root_dir=root_dir)
     with quest_path.open("r", encoding="utf-8") as file_obj:
         return json.load(file_obj)
 
 
-def list_quest_ids(locale="en", root_dir="quests"):
-    quest_dir = Path(root_dir) / locale
-    if not quest_dir.exists():
-        return []
+def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, preferred_lang_id):
+    """
+    Get vocabulary targets with translations using the lemma-based schema.
+    
+    Args:
+        vocabulary_targets: list of words in the learning language
+        learning_lang_id: language ID of the learning language
+        preferred_lang_id: language ID of the preferred language
+    
+    Returns:
+        list of dicts with 'word' (learning lang) and 'translation' (preferred lang)
+    """
+    from connections import get_db_connection
+    
+    db = get_db_connection()
+    vocabulary_with_translations = []
+    
+    for word_str in vocabulary_targets:
+        if not isinstance(word_str, str):
+            word_str = str(word_str)
+        
+        # Find the lemma_form matching the vocabulary word in the learning language
+        result = db.execute("""
+            SELECT lf.lemma_id
+            FROM lemma_form lf
+            WHERE lf.language_id = ? AND LOWER(lf.value) = LOWER(?)
+            LIMIT 1
+        """, (learning_lang_id, word_str)).fetchone()
+        
+        translation = None
+        if result:
+            lemma_id = result['lemma_id']
+            
+            # Get the primary sense for this lemma
+            sense_result = db.execute("""
+                SELECT s.id
+                FROM sense s
+                WHERE s.lemma_id = ? AND s.is_primary = 1
+                LIMIT 1
+            """, (lemma_id,)).fetchone()
+            
+            if sense_result:
+                source_sense_id = sense_result['id']
+                
+                # Find the translated sense via sense_translation
+                trans_sense_result = db.execute("""
+                    SELECT st.target_sense_id
+                    FROM sense_translation st
+                    WHERE st.source_sense_id = ?
+                    LIMIT 1
+                """, (source_sense_id,)).fetchone()
+                
+                if trans_sense_result:
+                    target_sense_id = trans_sense_result['target_sense_id']
+                    
+                    # Get the lemma for the target sense and find its form in preferred language
+                    trans_form_result = db.execute("""
+                        SELECT lf.value
+                        FROM lemma_form lf
+                        JOIN sense s ON s.lemma_id = lf.lemma_id
+                        WHERE s.id = ? AND lf.language_id = ? AND lf.is_primary = 1
+                        LIMIT 1
+                    """, (target_sense_id, preferred_lang_id)).fetchone()
+                    
+                    if trans_form_result:
+                        translation = trans_form_result['value']
+        
+        vocabulary_with_translations.append({
+            'word': word_str,
+            'translation': translation or '?'
+        })
+    
+    return vocabulary_with_translations
 
-    return sorted(path.stem for path in quest_dir.glob("*.json"))
+
+
 
 
 def get_quest_board_entries(user_id, locale="en", root_dir="quests"):
@@ -379,6 +467,73 @@ def load_and_personalize_quest(quest_id, locale="en", gender="neutral", pet_name
         context["pet_name"] = pet_name
     
     return apply_personalization(quest, gender, **context)
+
+
+def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral", pet_name=None, root_dir="quests"):
+    """
+    Load a specific episode from a quest and apply personalization.
+    
+    Args:
+        quest_id: quest identifier
+        episode_id: episode identifier within the quest
+        locale: language code (en, he, etc.)
+        gender: preferred gender for story text
+        pet_name: pet name for token replacement
+        root_dir: quest directory root
+    
+    Returns:
+        tuple: (quest_metadata, episode) where quest_metadata contains quest-level info
+               and episode is the personalized episode dict with episode index
+    
+    Raises:
+        FileNotFoundError: if quest file not found
+        ValueError: if episode not found or quest content is invalid
+    """
+    quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+    
+    episodes = quest.get("episodes", [])
+    episode_index = None
+    episode = None
+    
+    for idx, ep in enumerate(episodes):
+        if ep.get("episode_id") == episode_id:
+            episode_index = idx
+            episode = ep
+            break
+    
+    if episode is None:
+        raise ValueError(f"Episode '{episode_id}' not found in quest '{quest_id}'")
+    
+    context = {}
+    if pet_name:
+        context["pet_name"] = pet_name
+    
+    personalized_episode = apply_personalization(episode, gender, **context)
+    
+    # Add navigation info
+    quest_metadata = {
+        "quest_id": quest["quest_id"],
+        "quest_line_id": quest.get("quest_line_id"),
+        "title": quest["title"],
+        "allowed_pet_label": quest.get("allowed_pet_label", ""),
+        "locale": quest.get("locale", locale),
+        "total_episodes": len(episodes),
+        "episode_number": episode_index + 1,  # 1-based index for display
+        "episode_index": episode_index,  # 0-based index for navigation
+    }
+    
+    # Add episode navigation
+    personalized_episode["episode_number"] = episode_index + 1
+    personalized_episode["total_episodes"] = len(episodes)
+    personalized_episode["has_previous"] = episode_index > 0
+    personalized_episode["has_next"] = episode_index < len(episodes) - 1
+    
+    if episode_index > 0:
+        personalized_episode["previous_episode_id"] = episodes[episode_index - 1].get("episode_id")
+    if episode_index < len(episodes) - 1:
+        personalized_episode["next_episode_id"] = episodes[episode_index + 1].get("episode_id")
+    
+    return (quest_metadata, personalized_episode)
 
 
 def can_user_access_quest(user_id, quest_id, locale="en"):

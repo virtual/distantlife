@@ -556,3 +556,63 @@ msgstr "התנתק"
 msgid "ui.auth.login_link"
 msgstr "התחבר"
 
+#: templates/quest_episode.html:12
+msgid "ui.quests.back_to_quest"
+msgstr "חזור לחקר"
+
+#: templates/quest_episode.html:15
+msgid "ui.quests.of"
+msgstr "של"
+
+#: templates/quest_episode.html:43
+msgid "ui.quests.reorder_instruction"
+msgstr "גרור את המשפטים כדי לסדר אותם מחדש בצורה נכונה, או השתמש בכפתורים למעלה/למטה."
+
+#: templates/quest_episode.html:48
+msgid "ui.quests.move_up"
+msgstr "למעלה"
+
+#: templates/quest_episode.html:52
+msgid "ui.quests.move_down"
+msgstr "למטה"
+
+#: templates/quest_episode.html:59
+msgid "ui.quests.previous_episode"
+msgstr "הפרק הקודם"
+
+#: templates/quest.html:23
+msgid "ui.quests.read_story"
+msgstr "קרא סיפור"
+
+#: templates/quest.html:27
+msgid "ui.quests.take_quiz"
+msgstr "בחן את הידע שלך"
+
+#: templates/quest_episode.html:70
+msgid "ui.quests.next_episode"
+msgstr "הפרק הבא"
+
+#: templates/quiz.html:8
+msgid "ui.quests.submit_quiz"
+msgstr "הגש בחינה"
+
+#: templates/quiz.html:15
+msgid "ui.quests.question"
+msgstr "שאלה"
+
+#: templates/quiz.html:20
+msgid "ui.quests.type_answer"
+msgstr "הקלד את תשובתך..."
+
+#: templates/quiz.html:35
+msgid "ui.quests.select_correct_order"
+msgstr "בחר את הסדר הנכון:"
+
+#: templates/quiz.html:50
+msgid "ui.quests.drag_to_reorder"
+msgstr "גרור פריטים כדי לסדר אותם מחדש."
+
+#: templates/quiz.html:65
+msgid "ui.quests.back_to_story"
+msgstr "חזור לסיפור"
+

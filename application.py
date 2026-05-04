@@ -15,8 +15,8 @@ from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
-from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class
+from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -46,12 +46,50 @@ def get_locale():
 babel = Babel(app, locale_selector=get_locale)
 
 
+@app.template_filter('to_direction')
+def to_direction(charcode):
+    """
+    Jinja2 filter to convert language charcode to text direction.
+    
+    Args:
+        charcode: Language character code (e.g., 'he', 'en')
+    
+    Returns:
+        'rtl' for right-to-left languages (Hebrew), 'ltr' for others
+    """
+    if not charcode:
+        return 'ltr'
+    s = str(charcode).lower()
+    # If a direction was already provided, return it as-is
+    if s in ('rtl', 'ltr'):
+        return s
+    # Otherwise treat as a language charcode
+    return 'rtl' if s == 'he' else 'ltr'
+
+
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@app.before_request
+def ensure_language_session():
+    """
+    Ensure `session['language']` contains learning language metadata (including `learning_dir`).
+    This helps existing sessions created before recent schema/template changes to render direction correctly.
+    """
+    # Only attempt to set languages for authenticated users
+    try:
+        if session_get_int('user_id') is not None:
+            lang = session.get('language') or {}
+            if not lang.get('learning_dir') or not lang.get('learning_charcode'):
+                set_languages(session_get_int('user_id'))
+    except Exception:
+        # Do not raise during request handling; best-effort refresh only
+        pass
 
 
 UPLOAD_FOLDER = 'static/files'
@@ -218,7 +256,7 @@ def index():
 def quests():
     """Quest board showing available and locked quest lines."""
     user_id = session_get_int("user_id")
-    locale = session.get("language", {}).get("charcode", "en") if session.get("language") else "en"
+    locale = get_learning_language_charcode(user_id)
 
     board_entries = get_quest_board_entries(user_id, locale=locale)
     active_pet = session.get("active_pet") or get_active_pet_for_user(user_id)
@@ -243,7 +281,7 @@ def quests():
 def quest_detail(quest_id):
     """Quest detail page with story and quiz content."""
     user_id = session_get_int("user_id")
-    locale = session.get("language", {}).get("charcode", "en") if session.get("language") else "en"
+    locale = get_learning_language_charcode(user_id)
 
     can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
     if not can_access:
@@ -262,6 +300,263 @@ def quest_detail(quest_id):
     )
 
     return render_template("quest.html", quest=quest, active_pet=active_pet)
+
+
+@app.route("/quest/<quest_id>/<episode_id>")
+@login_required
+def quest_episode(quest_id, episode_id):
+    """Quest episode detail page showing story and sentences for a single episode."""
+    user_id = session_get_int("user_id")
+    locale = get_learning_language_charcode(user_id)
+
+    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
+    if not can_access:
+        if reason == "no_active_pet":
+            flash("Adopt a pet first to start quests.")
+            return redirect("/adopt")
+        flash("That quest is locked for your current pet.")
+        return redirect("/quests")
+
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
+    
+    try:
+        quest_metadata, episode = load_episode_from_quest(
+            quest_id,
+            episode_id,
+            locale=locale,
+            gender=active_pet.get("gender", "neutral") or "neutral",
+            pet_name=active_pet.get("name"),
+        )
+    except ValueError as e:
+        flash(str(e))
+        return redirect(f"/quest/{quest_id}")
+    
+    # Get vocabulary with translations
+    vocabulary_with_translations = []
+    if episode.get("vocabulary_targets"):
+        learning_lang_id = session.get("language", {}).get("learning")
+        preferred_lang_id = session.get("language", {}).get("preferred")
+        if learning_lang_id and preferred_lang_id:
+            vocabulary_with_translations = get_vocabulary_with_translations(
+                episode.get("vocabulary_targets"),
+                learning_lang_id,
+                preferred_lang_id
+            )
+
+    return render_template(
+        "quest_episode.html",
+        quest_metadata=quest_metadata,
+        episode=episode,
+        active_pet=active_pet,
+        vocabulary_with_translations=vocabulary_with_translations
+    )
+
+
+def _normalize_quiz_text(value):
+    if value is None:
+        return ""
+    return re.sub(r"\s+", " ", str(value)).strip().lower()
+
+
+def _parse_reorder_submission(value):
+    if not value:
+        return []
+    try:
+        return [int(part) for part in str(value).split(",") if str(part).strip() != ""]
+    except (TypeError, ValueError):
+        return []
+
+
+def _grade_quiz_submission(questions, form_data):
+    results = []
+    correct_count = 0
+
+    for question_index, question in enumerate(questions):
+        q_type = question.get("type")
+        submitted_value = form_data.get(f"answer_{question_index}", "")
+        is_correct = False
+
+        if q_type == "cloze":
+            accepted_answers = question.get("accepted_answers")
+            if not isinstance(accepted_answers, list) or not accepted_answers:
+                accepted_answers = [question.get("answer")]
+            normalized_submission = _normalize_quiz_text(submitted_value)
+            is_correct = any(
+                normalized_submission == _normalize_quiz_text(answer)
+                for answer in accepted_answers
+                if answer is not None
+            )
+
+        elif q_type == "multiple_choice":
+            is_correct = _normalize_quiz_text(submitted_value) == _normalize_quiz_text(question.get("answer"))
+
+        elif q_type == "count_sequence":
+            selected_index = None
+            try:
+                selected_index = int(submitted_value)
+            except (TypeError, ValueError):
+                selected_index = None
+
+            options = question.get("options")
+            answer = question.get("answer")
+            if isinstance(options, list) and isinstance(answer, list) and selected_index is not None:
+                if 0 <= selected_index < len(options):
+                    selected_option = options[selected_index]
+                    if isinstance(selected_option, list):
+                        is_correct = [str(item) for item in selected_option] == [str(item) for item in answer]
+
+        elif q_type == "reorder":
+            correct_order = question.get("correct_order")
+            submitted_order = _parse_reorder_submission(submitted_value)
+            if isinstance(correct_order, list):
+                try:
+                    expected_order = [int(item) for item in correct_order]
+                except (TypeError, ValueError):
+                    expected_order = []
+                is_correct = submitted_order == expected_order
+
+        if is_correct:
+            correct_count += 1
+
+        results.append({
+            "index": question_index,
+            "type": q_type,
+            "correct": is_correct,
+        })
+
+    return {
+        "correct": correct_count,
+        "total": len(questions),
+        "results": results,
+    }
+
+
+@app.route("/quiz/<quest_id>/<episode_id>")
+@login_required
+def quiz_episode(quest_id, episode_id):
+    """Quiz page for a specific episode - focuses on quiz questions."""
+    user_id = session_get_int("user_id")
+    locale = get_learning_language_charcode(user_id)
+
+    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
+    if not can_access:
+        if reason == "no_active_pet":
+            flash("Adopt a pet first to start quests.")
+            return redirect("/adopt")
+        flash("That quest is locked for your current pet.")
+        return redirect("/quests")
+
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
+    
+    try:
+        quest_metadata, episode = load_episode_from_quest(
+            quest_id,
+            episode_id,
+            locale=locale,
+            gender=active_pet.get("gender", "neutral") or "neutral",
+            pet_name=active_pet.get("name"),
+        )
+    except ValueError as e:
+        flash(str(e))
+        return redirect(f"/quest/{quest_id}")
+
+    # Extract quiz from episode
+    quiz = episode.get("quiz", {})
+    if not isinstance(quiz, dict):
+        flash("Quiz data is malformed.")
+        return redirect(f"/quest/{quest_id}/{episode_id}")
+    
+    questions = quiz.get("questions", [])
+    if not isinstance(questions, list):
+        flash("Quiz questions are malformed.")
+        return redirect(f"/quest/{quest_id}/{episode_id}")
+    
+    if not questions:
+        flash("No quiz questions found for this episode.")
+        return redirect(f"/quest/{quest_id}/{episode_id}")
+    
+    # Get vocabulary with translations
+    vocabulary_with_translations = []
+    if episode.get("vocabulary_targets"):
+        learning_lang_id = session.get("language", {}).get("learning")
+        preferred_lang_id = session.get("language", {}).get("preferred")
+        if learning_lang_id and preferred_lang_id:
+            vocabulary_with_translations = get_vocabulary_with_translations(
+                episode.get("vocabulary_targets"),
+                learning_lang_id,
+                preferred_lang_id
+            )
+
+    return render_template(
+        "quiz.html",
+        quest_metadata=quest_metadata,
+        episode=episode,
+        quiz=quiz,
+        questions=questions,
+        active_pet=active_pet,
+        vocabulary_with_translations=vocabulary_with_translations
+    )
+
+
+@app.route("/quiz/<quest_id>/<episode_id>/submit", methods=["POST"])
+@login_required
+def quiz_episode_submit(quest_id, episode_id):
+    """Validate a quiz submission for a quest episode."""
+    user_id = session_get_int("user_id")
+    locale = get_learning_language_charcode(user_id)
+
+    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
+    if not can_access:
+        if reason == "no_active_pet":
+            flash("Adopt a pet first to start quests.")
+            return redirect("/adopt")
+        flash("That quest is locked for your current pet.")
+        return redirect("/quests")
+
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
+
+    try:
+        quest_metadata, episode = load_episode_from_quest(
+            quest_id,
+            episode_id,
+            locale=locale,
+            gender=active_pet.get("gender", "neutral") or "neutral",
+            pet_name=active_pet.get("name"),
+        )
+    except ValueError as e:
+        flash(str(e))
+        return redirect(f"/quest/{quest_id}")
+
+    quiz = episode.get("quiz", {})
+    questions = quiz.get("questions", []) if isinstance(quiz, dict) else []
+    if not isinstance(questions, list) or not questions:
+        flash("No quiz questions found for this episode.")
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    submission = _grade_quiz_submission(questions, request.form)
+    flash(f"You got {submission['correct']} of {submission['total']} correct.")
+
+    vocabulary_with_translations = []
+    if episode.get("vocabulary_targets"):
+        learning_lang_id = session.get("language", {}).get("learning")
+        preferred_lang_id = session.get("language", {}).get("preferred")
+        if learning_lang_id and preferred_lang_id:
+            vocabulary_with_translations = get_vocabulary_with_translations(
+                episode.get("vocabulary_targets"),
+                learning_lang_id,
+                preferred_lang_id,
+            )
+
+    return render_template(
+        "quiz.html",
+        quest_metadata=quest_metadata,
+        episode=episode,
+        quiz=quiz,
+        questions=questions,
+        active_pet=active_pet,
+        vocabulary_with_translations=vocabulary_with_translations,
+        quiz_result=submission,
+    )
 
 
 @app.route("/pets")

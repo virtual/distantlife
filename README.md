@@ -124,7 +124,52 @@ Other files:
 
 ![database structure map](./static/readme/Distantlifedb.png)
 
-Tables were created to allow for users to own multiple pets, translate words, create word sets and quizzes, and more.
+### Database Schema
+
+The lexical data structure was migrated from a simple word/translation model to a **lemma-based linguistic model** (see `migrations/001_big_bang_lemma_cutover.sql`). This supports richer linguistic relationships and better supports different word forms across languages.
+
+#### Core Tables
+
+- **lemma** - The base form of a word. Contains language_id, part-of-speech, pronunciation, and audiopath. Each lemma has multiple forms.
+  
+- **lemma_form** - Surface forms and variants of a lemma in a specific language. Stores:
+  - `value`: The actual word text
+  - `form_type`: Typically 'surface' for main forms
+  - `script`: Writing system (e.g., 'Hebr' for Hebrew, 'Latn' for Latin)
+  - `search_key`: Lowercase normalized form for searching
+  - `is_primary`: Flag to identify the main form for a language
+
+- **sense** - A meaning or definition of a lemma. One lemma can have multiple senses. Contains:
+  - `gloss`: Definition text
+  - `part_of_speech`: Part-of-speech category
+  - `is_primary`: Flag for the primary sense
+
+- **sense_translation** - Maps senses between languages. Enables translation relationships such as:
+  - Exact translations
+  - Broader/narrower meanings
+  - Related concepts
+
+- **set_item** - Links senses to word sets for learning modules.
+
+#### Other Tables
+
+- **users** - User accounts with preferred language and learning language preferences
+- **pets** / **pet_types** - Pet ownership and pet definitions
+- **word_sets** - Collections of words for learning
+- **word_type** - Parts of speech (noun, verb, etc.)
+- **languages** - Available languages with character codes, text direction, and CSS classes
+- **sets_learned** / **words_learned** - User progress tracking
+
+#### Translation Workflow
+
+To find a translation for a vocabulary word:
+
+1. Find the `lemma_form` matching the word in the learning language
+2. Get the `sense` for that lemma
+3. Find the translated `sense` via `sense_translation`
+4. Retrieve the primary `lemma_form` for the translated sense in the preferred language
+
+This is implemented in `quest_content.py`'s `get_vocabulary_with_translations()` function.
 
 ------
 

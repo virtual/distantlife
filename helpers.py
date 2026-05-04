@@ -172,18 +172,59 @@ def set_languages(user_id):
       :param int user_id - user's ID
     """
 
-    language_info = db.execute("SELECT preferred_lang, learning_lang, dir, charcode, localization FROM users JOIN languages ON users.preferred_lang = languages.id WHERE users.id = ?",
-                               (user_id, )).fetchall()
+    language_info = db.execute("""
+        SELECT 
+            users.preferred_lang,
+            users.learning_lang,
+            pl.dir,
+            pl.charcode,
+            pl.localization,
+            ll.charcode as learning_charcode,
+            ll.dir as learning_dir
+        FROM users 
+        JOIN languages pl ON users.preferred_lang = pl.id 
+        JOIN languages ll ON users.learning_lang = ll.id 
+        WHERE users.id = ?
+    """, (user_id, )).fetchall()
+    
     if (len(language_info) == 1):
         language = {
             "preferred": language_info[0]['preferred_lang'],
             "learning": language_info[0]['learning_lang'],
             "dir": language_info[0]['dir'],
+            "learning_dir": language_info[0]['learning_dir'],
             "charcode": language_info[0]['charcode'],
+            "learning_charcode": language_info[0]['learning_charcode'],
             "localization": language_info[0]['localization']
         }
         session["language"] = language
         return True
+
+
+def get_learning_language_charcode(user_id=None):
+    """
+    Get the charcode for the user's target learning language.
+    Uses session data if available, otherwise queries the database.
+    
+    :param user_id: User ID (optional, uses current session user if not provided)
+    :return: Language charcode (e.g., 'he', 'en') or 'en' as fallback
+    """
+    # Try to get from session first
+    if session.get("language") and session.get("language").get("learning_charcode"):
+        return session.get("language").get("learning_charcode")
+    
+    # Fallback to database query if user_id provided
+    if user_id:
+        result = db.execute("""
+            SELECT ll.charcode 
+            FROM users 
+            JOIN languages ll ON users.learning_lang = ll.id 
+            WHERE users.id = ?
+        """, (user_id,)).fetchone()
+        if result:
+            return result['charcode']
+    
+    return 'en'  # Default fallback
 
 
 def get_word_translation(word_id, orig_lang='', trans_lang=''):
