@@ -33,6 +33,13 @@ def save_words(csvf, word_set_id, orig_set_id=''):
     """
     words = []
     headings = []
+    additional_set_id = None
+
+    if orig_set_id not in ('', None):
+        try:
+            additional_set_id = int(orig_set_id)
+        except (TypeError, ValueError):
+            additional_set_id = None
 
     with open(csvf, "r", encoding='utf-8-sig') as file:
         reader = csv.reader(file, delimiter=',')
@@ -79,8 +86,19 @@ def save_words(csvf, word_set_id, orig_set_id=''):
     trans_lang_code = (trans_lang_row['charcode'] or '').lower()
 
     for w in words:
-        word_type_id = (db.execute(
-            "SELECT id FROM word_type WHERE type = ?", (w[wtype], )).fetchall())[0]['id']
+        # Normalize and validate word_type value from CSV row.
+        wt_val = (w.get(wtype) or '').strip()
+        if wt_val == '':
+            raise ValueError(f"CSV missing word_type value for row: {w}")
+
+        # Lookup existing word_type; if missing, create it so uploads don't fail.
+        wt_row = db.execute("SELECT id FROM word_type WHERE type = ?", (wt_val,)).fetchone()
+        if wt_row is None:
+            new_wt = db.execute("INSERT INTO word_type (type) VALUES (?)", (wt_val,))
+            con.commit()
+            word_type_id = int(new_wt.lastrowid)
+        else:
+            word_type_id = int(wt_row['id'])
 
         if using_lemma_schema():
             new_orig_lemma_id = db.execute(
@@ -129,10 +147,10 @@ def save_words(csvf, word_set_id, orig_set_id=''):
                 "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
                 (int(word_set_id), new_trans_sense_id, 'show_all_forms'),
             )
-            if (orig_set_id != ''):
+            if additional_set_id is not None:
                 db.execute(
                     "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
-                    (int(orig_set_id), new_orig_sense_id, 'show_all_forms'),
+                    (additional_set_id, new_orig_sense_id, 'show_all_forms'),
                 )
 
             db.execute(

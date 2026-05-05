@@ -1003,8 +1003,11 @@ def uploadFiles():
             word_set_id = request.form.get("word_set_id")
 
             if uploaded_file.filename != '':
-                safe_filename = secure_filename(uploaded_file.filename)
-                _, extension = os.path.splitext(safe_filename.lower())
+                original_filename = uploaded_file.filename
+                _, extension = os.path.splitext(original_filename)
+                extension = extension.lower()
+                safe_root = secure_filename(os.path.splitext(original_filename)[0])
+                safe_filename = f"{safe_root}{extension}" if safe_root else f"upload{extension}"
                 if not safe_filename or extension not in ALLOWED_UPLOAD_EXTENSIONS:
                     return apology("invalid file type", 400)
 
@@ -1013,8 +1016,9 @@ def uploadFiles():
                     app.config['UPLOAD_FOLDER'], safe_filename)
                 uploaded_file.save(file_path)
 
-                if request.form.get("additional_set"):
-                    orig_set_id = request.form.get("additional_set")
+                additional_set = (request.form.get("additional_set") or "").strip()
+                if additional_set and additional_set.isdigit():
+                    orig_set_id = additional_set
                     num_words = save_words(file_path, word_set_id, orig_set_id)
                 else:
                     num_words = save_words(file_path, word_set_id)
