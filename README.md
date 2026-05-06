@@ -24,6 +24,7 @@ Future enhancements include:
 - Customized pets (colors)
 - Customizable avatars
 - Location backgrounds for different areas
+- Fix paths to use dash instead of underscore for better SEO and readability (for example, `/quest/hungry-faun-01/ep1` instead of `/quest/hungry_faun_01/hungry_faun_01_ep1`)
 
 ### 📔 Administration
 
