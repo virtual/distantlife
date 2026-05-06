@@ -4,10 +4,12 @@ from pathlib import Path
 from quest_content import (
     load_quest_content,
     validate_quest_file,
+    validate_quest_content,
     resolve_gender_variant,
     replace_tokens,
     apply_personalization,
     load_and_personalize_quest,
+    load_episode_from_quest,
 )
 
 
@@ -138,6 +140,65 @@ class QuestRuntimeTestCase(unittest.TestCase):
         first_bubble = quest["episodes"][0]["speech_bubble_lines"][0]
         # Gender-neutral first bubble doesn't differ, but let's check it's a string not a dict
         self.assertIsInstance(first_bubble, str)
+
+    def test_load_episode_exposes_resolved_vocabulary_target_ids(self):
+        _, episode = load_episode_from_quest(
+            "hungry_faun_01",
+            "hungry_faun_01_ep1",
+            locale="en",
+            pet_name="Cerbie",
+        )
+        self.assertIn("resolved_vocabulary_target_ids", episode)
+        self.assertIsInstance(episode["resolved_vocabulary_target_ids"], list)
+        self.assertGreater(len(episode["resolved_vocabulary_target_ids"]), 0)
+
+
+class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
+    def _minimal_valid_quest(self):
+        return {
+            "quest_id": "demo_quest",
+            "locale": "en",
+            "version": 1,
+            "review_status": "draft",
+            "theme": "demo",
+            "quest_type": "story_quest",
+            "quest_line_id": "demo_line",
+            "allowed_pet_type_ids": [10],
+            "title": "Demo",
+            "summary": "Demo summary",
+            "episodes": [
+                {
+                    "episode_id": "demo_ep_1",
+                    "title": "Episode 1",
+                    "story_text": {"neutral": "Story."},
+                    "quiz": {
+                        "questions": [
+                            {
+                                "type": "multiple_choice",
+                                "prompt": "Choose",
+                                "options": ["a", "b"],
+                                "answer": "a",
+                            }
+                        ]
+                    },
+                }
+            ],
+        }
+
+    def test_vocab_target_ids_accepts_integer_ids(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["vocabulary_target_ids"] = [101, 202, 303]
+        errors = validate_quest_content(quest)
+        self.assertEqual([], errors)
+
+    def test_vocab_target_ids_rejects_non_integer_values(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["vocabulary_target_ids"] = [101, "bad-id", 303]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("vocabulary_target_ids" in err for err in errors),
+            f"Expected vocabulary_target_ids validation error, got: {errors}",
+        )
 
 
 if __name__ == "__main__":

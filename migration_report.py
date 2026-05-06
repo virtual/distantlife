@@ -4,17 +4,17 @@ import sys
 
 REPORT_QUERIES = {
     "row_counts": """
-        SELECT (SELECT COUNT(*) FROM words_old) AS old_words,
-               (SELECT COUNT(*) FROM lemma) AS lemma_count,
-               (SELECT COUNT(*) FROM sense WHERE is_primary = 1) AS primary_sense_count
+     SELECT (SELECT COUNT(*) FROM lemma) AS lemma_count,
+         (SELECT COUNT(*) FROM sense) AS sense_count,
+         (SELECT COUNT(*) FROM lemma_form) AS lemma_form_count
     """,
     "translation_counts": """
-        SELECT (SELECT COUNT(*) FROM word_translation_old) AS old_translation_rows,
-               (SELECT COUNT(*) FROM sense_translation) AS sense_translation_rows
+     SELECT (SELECT COUNT(*) FROM sense_translation) AS sense_translation_rows,
+         (SELECT COUNT(*) FROM set_item) AS set_item_rows
     """,
     "set_counts": """
-        SELECT (SELECT COUNT(*) FROM word_set_words_old) AS old_set_rows,
-               (SELECT COUNT(*) FROM set_item) AS set_item_rows
+     SELECT (SELECT COUNT(*) FROM word_sets) AS word_set_rows,
+         (SELECT COUNT(*) FROM set_item) AS set_item_rows
     """,
     "orphan_lemma_forms": """
         SELECT COUNT(*) AS orphan_lemma_forms
@@ -77,13 +77,7 @@ def run_query(db, name, sql):
     return rows
 
 
-def main():
-    args = parse_args()
-
-    con = sqlite3.connect(args.db)
-    con.row_factory = sqlite3.Row
-    db = con
-
+def run_report(db):
     has_errors = False
 
     for name, sql in REPORT_QUERIES.items():
@@ -101,6 +95,18 @@ def main():
             "words_learned_without_sense",
         } and rows and int(rows[0][0]) > 0:
             has_errors = True
+
+    return has_errors
+
+
+def main():
+    args = parse_args()
+
+    con = sqlite3.connect(args.db)
+    con.row_factory = sqlite3.Row
+    db = con
+
+    has_errors = run_report(db)
 
     con.close()
     if has_errors:

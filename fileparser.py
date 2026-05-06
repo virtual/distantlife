@@ -1,23 +1,10 @@
 import csv
 from connections import get_db_connection, get_redis_client
 from normalization import compute_search_key
-
 con = get_db_connection()
 db = con
 
 r = get_redis_client()
-
-
-def table_exists(table_name):
-    row = db.execute(
-        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
-        (table_name,),
-    ).fetchone()
-    return row is not None
-
-
-def using_lemma_schema():
-    return table_exists("lemma") and table_exists("set_item")
 
 
 def save_words(csvf, word_set_id, orig_set_id=''):
@@ -100,92 +87,66 @@ def save_words(csvf, word_set_id, orig_set_id=''):
         else:
             word_type_id = int(wt_row['id'])
 
-        if using_lemma_schema():
-            new_orig_lemma_id = db.execute(
-                "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
-                (orig_lang_id, word_type_id, w[lang1p], None),
-            ).lastrowid
-            db.execute(
-                "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    new_orig_lemma_id,
-                    orig_lang_id,
-                    'surface',
-                    'Hebr' if orig_lang_code == 'he' else 'Latn',
-                    w[lang1],
-                    compute_search_key(w[lang1], orig_lang_code),
-                    1,
-                ),
-            )
-            new_orig_sense_id = db.execute(
-                "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
-                (new_orig_lemma_id, word_type_id, 1),
-            ).lastrowid
+        new_orig_lemma_id = db.execute(
+            "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+            (orig_lang_id, word_type_id, w[lang1p], None),
+        ).lastrowid
+        db.execute(
+            "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                new_orig_lemma_id,
+                orig_lang_id,
+                'surface',
+                'Hebr' if orig_lang_code == 'he' else 'Latn',
+                w[lang1],
+                compute_search_key(w[lang1], orig_lang_code),
+                1,
+            ),
+        )
+        new_orig_sense_id = db.execute(
+            "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+            (new_orig_lemma_id, word_type_id, 1),
+        ).lastrowid
 
-            new_trans_lemma_id = db.execute(
-                "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
-                (trans_lang_id, word_type_id, w[lang2p], None),
-            ).lastrowid
-            db.execute(
-                "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    new_trans_lemma_id,
-                    trans_lang_id,
-                    'surface',
-                    'Hebr' if trans_lang_code == 'he' else 'Latn',
-                    w[lang2],
-                    compute_search_key(w[lang2], trans_lang_code),
-                    1,
-                ),
-            )
-            new_trans_sense_id = db.execute(
-                "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
-                (new_trans_lemma_id, word_type_id, 1),
-            ).lastrowid
+        new_trans_lemma_id = db.execute(
+            "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+            (trans_lang_id, word_type_id, w[lang2p], None),
+        ).lastrowid
+        db.execute(
+            "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                new_trans_lemma_id,
+                trans_lang_id,
+                'surface',
+                'Hebr' if trans_lang_code == 'he' else 'Latn',
+                w[lang2],
+                compute_search_key(w[lang2], trans_lang_code),
+                1,
+            ),
+        )
+        new_trans_sense_id = db.execute(
+            "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+            (new_trans_lemma_id, word_type_id, 1),
+        ).lastrowid
 
+        db.execute(
+            "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
+            (int(word_set_id), new_trans_sense_id, 'show_all_forms'),
+        )
+        if additional_set_id is not None:
             db.execute(
                 "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
-                (int(word_set_id), new_trans_sense_id, 'show_all_forms'),
+                (additional_set_id, new_orig_sense_id, 'show_all_forms'),
             )
-            if additional_set_id is not None:
-                db.execute(
-                    "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
-                    (additional_set_id, new_orig_sense_id, 'show_all_forms'),
-                )
 
-            db.execute(
-                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
-                (new_orig_sense_id, new_trans_sense_id, 'exact'),
-            )
-            db.execute(
-                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
-                (new_trans_sense_id, new_orig_sense_id, 'exact'),
-            )
-            con.commit()
-        else:
-            new_orig_word_id = (db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
-                                        (w[lang1], orig_lang_id, word_type_id, w[lang1p])
-                                        )).lastrowid
-            con.commit()
-            new_translated_word_id = (db.execute("INSERT INTO words ('wordstr', 'language_id', 'type', 'pronunciation') VALUES (?, ?, ?, ?)",
-                                                (w[lang2], trans_lang_id, word_type_id,  w[lang2p])
-                                                )).lastrowid
-            con.commit()
-            db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)",
-                    (word_set_id, new_translated_word_id))
-            con.commit()
-            # if orig_set_id is set
-            if (orig_set_id != ''):
-                db.execute("INSERT INTO word_set_words (word_set_id, word_id) VALUES (?, ?)",
-                        (int(orig_set_id), new_orig_word_id))
-                con.commit()
-            # insert orig and its translation equivalent
-            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                    (orig_lang_id, trans_lang_id, new_orig_word_id, new_translated_word_id))
-            con.commit()
-            # reverse orig & translation
-            db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                    (trans_lang_id, orig_lang_id, new_translated_word_id, new_orig_word_id))
-            con.commit()
+        db.execute(
+            "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+            (new_orig_sense_id, new_trans_sense_id, 'exact'),
+        )
+        db.execute(
+            "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+            (new_trans_sense_id, new_orig_sense_id, 'exact'),
+        )
+        con.commit()
     file.close()
     return len(words)

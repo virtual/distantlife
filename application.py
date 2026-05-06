@@ -16,7 +16,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, using_lemma_schema, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode
 from fileparser import save_words
 from normalization import compute_search_key
 
@@ -333,12 +333,13 @@ def quest_episode(quest_id, episode_id):
     
     # Get vocabulary with translations
     vocabulary_with_translations = []
-    if episode.get("vocabulary_targets"):
+    episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")
+    if episode_targets:
         learning_lang_id = session.get("language", {}).get("learning")
         preferred_lang_id = session.get("language", {}).get("preferred")
         if learning_lang_id and preferred_lang_id:
             vocabulary_with_translations = get_vocabulary_with_translations(
-                episode.get("vocabulary_targets"),
+                episode_targets,
                 learning_lang_id,
                 preferred_lang_id
             )
@@ -477,12 +478,13 @@ def quiz_episode(quest_id, episode_id):
     
     # Get vocabulary with translations
     vocabulary_with_translations = []
-    if episode.get("vocabulary_targets"):
+    episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")
+    if episode_targets:
         learning_lang_id = session.get("language", {}).get("learning")
         preferred_lang_id = session.get("language", {}).get("preferred")
         if learning_lang_id and preferred_lang_id:
             vocabulary_with_translations = get_vocabulary_with_translations(
-                episode.get("vocabulary_targets"),
+                episode_targets,
                 learning_lang_id,
                 preferred_lang_id
             )
@@ -537,12 +539,13 @@ def quiz_episode_submit(quest_id, episode_id):
     flash(f"You got {submission['correct']} of {submission['total']} correct.")
 
     vocabulary_with_translations = []
-    if episode.get("vocabulary_targets"):
+    episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")
+    if episode_targets:
         learning_lang_id = session.get("language", {}).get("learning")
         preferred_lang_id = session.get("language", {}).get("preferred")
         if learning_lang_id and preferred_lang_id:
             vocabulary_with_translations = get_vocabulary_with_translations(
-                episode.get("vocabulary_targets"),
+                episode_targets,
                 learning_lang_id,
                 preferred_lang_id,
             )
@@ -633,16 +636,12 @@ def edit_word():
         flash("Missing word id")
         return redirect("/edit/set")
 
+    canonical_sense_id = resolve_canonical_sense_id(word_id)
     set_row = None
-    if using_lemma_schema():
+    if canonical_sense_id is not None:
         set_row = db.execute(
             "SELECT word_set_id FROM set_item WHERE sense_id = ? ORDER BY id ASC LIMIT 1",
-            (int(word_id),),
-        ).fetchone()
-    else:
-        set_row = db.execute(
-            "SELECT word_set_id FROM word_set_words WHERE word_id = ? ORDER BY id ASC LIMIT 1",
-            (int(word_id),),
+            (canonical_sense_id,),
         ).fetchone()
 
     flash("Word inline editing is not implemented yet; opened the set editor instead.")
@@ -735,98 +734,73 @@ def createset():
             plang_setname = request.form.get('plang_setname')
             preferred_lang = int(request.form.get('preferred_lang'))
 
-            if using_lemma_schema():
-                language_rows = db.execute(
-                    "SELECT id, charcode FROM languages WHERE id IN (?, ?)",
-                    (learning_lang, preferred_lang),
-                ).fetchall()
-                lang_code_map = {int(row['id']): (row['charcode'] or '') for row in language_rows}
+            language_rows = db.execute(
+                "SELECT id, charcode FROM languages WHERE id IN (?, ?)",
+                (learning_lang, preferred_lang),
+            ).fetchall()
+            lang_code_map = {int(row['id']): (row['charcode'] or '') for row in language_rows}
 
-                learning_lemma_id = db.execute(
-                    "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
-                    (learning_lang, 1, '', None),
-                ).lastrowid
-                db.execute(
-                    "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        learning_lemma_id,
-                        learning_lang,
-                        'surface',
-                        'Hebr' if lang_code_map.get(learning_lang, '').lower() == 'he' else 'Latn',
-                        setname,
-                        compute_search_key(setname, lang_code_map.get(learning_lang, '')),
-                        1,
-                    ),
-                )
-                learning_sense_id = db.execute(
-                    "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
-                    (learning_lemma_id, 1, 1),
-                ).lastrowid
+            learning_lemma_id = db.execute(
+                "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+                (learning_lang, 1, '', None),
+            ).lastrowid
+            db.execute(
+                "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    learning_lemma_id,
+                    learning_lang,
+                    'surface',
+                    'Hebr' if lang_code_map.get(learning_lang, '').lower() == 'he' else 'Latn',
+                    setname,
+                    compute_search_key(setname, lang_code_map.get(learning_lang, '')),
+                    1,
+                ),
+            )
+            learning_sense_id = db.execute(
+                "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+                (learning_lemma_id, 1, 1),
+            ).lastrowid
 
-                preferred_lemma_id = db.execute(
-                    "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
-                    (preferred_lang, 1, '', None),
-                ).lastrowid
-                db.execute(
-                    "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        preferred_lemma_id,
-                        preferred_lang,
-                        'surface',
-                        'Hebr' if lang_code_map.get(preferred_lang, '').lower() == 'he' else 'Latn',
-                        plang_setname,
-                        compute_search_key(plang_setname, lang_code_map.get(preferred_lang, '')),
-                        1,
-                    ),
-                )
-                preferred_sense_id = db.execute(
-                    "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
-                    (preferred_lemma_id, 1, 1),
-                ).lastrowid
+            preferred_lemma_id = db.execute(
+                "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+                (preferred_lang, 1, '', None),
+            ).lastrowid
+            db.execute(
+                "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    preferred_lemma_id,
+                    preferred_lang,
+                    'surface',
+                    'Hebr' if lang_code_map.get(preferred_lang, '').lower() == 'he' else 'Latn',
+                    plang_setname,
+                    compute_search_key(plang_setname, lang_code_map.get(preferred_lang, '')),
+                    1,
+                ),
+            )
+            preferred_sense_id = db.execute(
+                "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+                (preferred_lemma_id, 1, 1),
+            ).lastrowid
 
-                db.execute(
-                    "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
-                    (preferred_sense_id, learning_sense_id, 'exact'),
-                )
-                db.execute(
-                    "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
-                    (learning_sense_id, preferred_sense_id, 'exact'),
-                )
+            db.execute(
+                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                (preferred_sense_id, learning_sense_id, 'exact'),
+            )
+            db.execute(
+                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                (learning_sense_id, preferred_sense_id, 'exact'),
+            )
 
-                insert_word_set = db.execute(
-                    "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
-                    ("/sets/fruits.png", None, learning_lang, learning_sense_id),
-                ).lastrowid
-                insert_word_set_orig = db.execute(
-                    "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
-                    ("/sets/fruits.png", None, preferred_lang, preferred_sense_id),
-                ).lastrowid
-                con.commit()
-
-            else:
-                # Sets will usually be a noun
-                learning_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                            (learning_lang, 1, '', setname, ))).lastrowid
-                con.commit()
-
-                preferred_wordid = (db.execute("INSERT INTO words (language_id, type, pronunciation, wordstr) VALUES (?, ?, ?, ?)",
-                                            (preferred_lang, 1, '', plang_setname, ))).lastrowid
-                con.commit()
-
-                db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                        (preferred_lang, learning_lang, preferred_wordid, learning_wordid, )).fetchall()
-                db.execute("INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (?, ?, ?, ?)",
-                        (learning_lang, preferred_lang, learning_wordid, preferred_wordid, )).fetchall()
-                con.commit()
-
-                # TODO Set a default image here
-                insert_word_set = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                            ("/sets/fruits.png", learning_wordid, learning_lang, ))).lastrowid
-                con.commit()
-
-                insert_word_set_orig = (db.execute("INSERT INTO word_sets (imgsrc, set_name_word_id, language_id) VALUES (?, ?, ?)",
-                                                ("/sets/fruits.png", preferred_wordid, preferred_lang, ))).lastrowid
-                con.commit()
+            # TODO: Default image for sets, or allow upload during set creation
+            insert_word_set = db.execute(
+                "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
+                ("/sets/fruits.png", None, learning_lang, learning_sense_id),
+            ).lastrowid
+            insert_word_set_orig = db.execute(
+                "INSERT INTO word_sets (imgsrc, set_name_word_id, language_id, set_name_sense_id) VALUES (?, ?, ?, ?)",
+                ("/sets/fruits.png", None, preferred_lang, preferred_sense_id),
+            ).lastrowid
+            con.commit()
 
             if (insert_word_set > 0):
                 flash("New set created: " + setname)
@@ -853,17 +827,15 @@ def delete_word():
     if request.method == "POST":
         if request.form.get('word_id') is not None:
             if request.form.get('word_set_id') is not None:
-                if using_lemma_schema():
+                canonical_sense_id = resolve_canonical_sense_id(request.form.get("word_id"))
+                deleteqry = None
+                if canonical_sense_id is not None:
                     deleteqry = db.execute(
                         "DELETE FROM set_item WHERE sense_id = ? and word_set_id = ?",
-                        (request.form.get("word_id"), request.form.get("word_set_id")),
+                        (canonical_sense_id, request.form.get("word_set_id")),
                     )
-                else:
-                    # delete word from word_sets
-                    deleteqry = db.execute("DELETE FROM word_set_words WHERE word_id = ? and word_set_id = ?",
-                                        (request.form.get("word_id"), request.form.get("word_set_id")))
                 con.commit()
-                if (deleteqry.rowcount > 0):
+                if deleteqry is not None and (deleteqry.rowcount > 0):
                     flash('delete successful')
     return redirect("/edit/set")
 

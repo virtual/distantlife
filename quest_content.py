@@ -76,29 +76,53 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
     db = get_db_connection()
     vocabulary_with_translations = []
     
-    for word_str in vocabulary_targets:
-        if not isinstance(word_str, str):
-            word_str = str(word_str)
-        
-        # Find the lemma_form matching the vocabulary word in the learning language
-        result = db.execute("""
-            SELECT lf.lemma_id
-            FROM lemma_form lf
-            WHERE lf.language_id = ? AND LOWER(lf.value) = LOWER(?)
-            LIMIT 1
-        """, (learning_lang_id, word_str)).fetchone()
+    for target in vocabulary_targets:
+        lemma_id = None
+        word_str = None
+
+        # New canonical contract: vocabulary target is a lemma ID.
+        if isinstance(target, int):
+            lemma_id = target
+        elif isinstance(target, str) and target.strip().isdigit():
+            lemma_id = int(target.strip())
+        else:
+            word_str = str(target)
+
+        if lemma_id is not None:
+            primary_form = db.execute(
+                """
+                SELECT value
+                FROM lemma_form
+                WHERE lemma_id = ? AND language_id = ? AND is_primary = 1
+                LIMIT 1
+                """,
+                (lemma_id, learning_lang_id),
+            ).fetchone()
+            if primary_form is not None:
+                word_str = primary_form['value']
+            else:
+                # Keep deterministic fallback text in UI for bad references.
+                word_str = f"#{lemma_id}"
+        else:
+            # Legacy contract: vocabulary target is surface text.
+            result = db.execute("""
+                SELECT lf.lemma_id
+                FROM lemma_form lf
+                WHERE lf.language_id = ? AND LOWER(lf.value) = LOWER(?)
+                LIMIT 1
+            """, (learning_lang_id, word_str)).fetchone()
+            if result is not None:
+                lemma_id = int(result['lemma_id'])
         
         translation = None
-        if result:
-            lemma_id = result['lemma_id']
-            
-            # Get the primary sense for this lemma
+        if lemma_id is not None:
+            # Get the primary sense for this lemma.
             sense_result = db.execute("""
                 SELECT s.id
                 FROM sense s
                 WHERE s.lemma_id = ? AND s.is_primary = 1
                 LIMIT 1
-            """, (lemma_id,)).fetchone()
+            """, (int(lemma_id),)).fetchone()
             
             if sense_result:
                 source_sense_id = sense_result['id']
@@ -132,6 +156,39 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
         })
     
     return vocabulary_with_translations
+
+
+def _resolve_vocabulary_target_ids(vocabulary_targets, learning_lang_id):
+    from connections import get_db_connection
+
+    db = get_db_connection()
+    resolved_ids = []
+
+    for target in vocabulary_targets or []:
+        if isinstance(target, int):
+            resolved_ids.append(int(target))
+            continue
+
+        if isinstance(target, str) and target.strip().isdigit():
+            resolved_ids.append(int(target.strip()))
+            continue
+
+        if not isinstance(target, str):
+            target = str(target)
+
+        result = db.execute(
+            """
+            SELECT lf.lemma_id
+            FROM lemma_form lf
+            WHERE lf.language_id = ? AND LOWER(lf.value) = LOWER(?)
+            LIMIT 1
+            """,
+            (learning_lang_id, target),
+        ).fetchone()
+        if result is not None:
+            resolved_ids.append(int(result["lemma_id"]))
+
+    return resolved_ids
 
 
 
@@ -308,6 +365,22 @@ def validate_quest_content(quest):
                     errors.append(
                         f"speech_bubble_lines[{i}] must include neutral variant in episode '{episode_id}'"
                     )
+
+        vocabulary_targets = episode.get("vocabulary_targets")
+        vocabulary_target_ids = episode.get("vocabulary_target_ids")
+        if vocabulary_targets is not None and not isinstance(vocabulary_targets, list):
+            errors.append(f"vocabulary_targets must be a list in episode '{episode_id}'")
+        if vocabulary_target_ids is not None:
+            if not isinstance(vocabulary_target_ids, list):
+                errors.append(f"vocabulary_target_ids must be a list in episode '{episode_id}'")
+            else:
+                for i, target_id in enumerate(vocabulary_target_ids, start=1):
+                    if not isinstance(target_id, int) and not (
+                        isinstance(target_id, str) and target_id.strip().isdigit()
+                    ):
+                        errors.append(
+                            f"vocabulary_target_ids[{i}] must be an integer ID in episode '{episode_id}'"
+                        )
 
         quiz = episode.get("quiz")
         if not isinstance(quiz, dict):
@@ -509,6 +582,25 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
         context["pet_name"] = pet_name
     
     personalized_episode = apply_personalization(episode, gender, **context)
+
+    learning_lang_id = None
+    from connections import get_db_connection
+
+    db = get_db_connection()
+    locale_row = db.execute("SELECT id FROM languages WHERE charcode = ? LIMIT 1", (locale,)).fetchone()
+    if locale_row is not None:
+        learning_lang_id = int(locale_row["id"])
+
+    vocabulary_target_ids = episode.get("vocabulary_target_ids")
+    if learning_lang_id is not None:
+        resolved_target_ids = _resolve_vocabulary_target_ids(episode.get("vocabulary_targets"), learning_lang_id)
+    else:
+        resolved_target_ids = []
+
+    if vocabulary_target_ids is not None:
+        personalized_episode["vocabulary_target_ids"] = [int(target_id) for target_id in vocabulary_target_ids]
+
+    personalized_episode["resolved_vocabulary_target_ids"] = resolved_target_ids
     
     # Add navigation info
     quest_metadata = {

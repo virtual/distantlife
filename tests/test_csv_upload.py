@@ -1,10 +1,13 @@
 import io
 import unittest
+import os
+from unittest.mock import patch
 
 from werkzeug.security import generate_password_hash
 
 from application import app
 from connections import get_db_connection
+from helpers import canonical_vocab_enabled, get_word_translation, resolve_canonical_sense_id
 
 
 class CsvUploadTestCase(unittest.TestCase):
@@ -118,6 +121,67 @@ class CsvUploadTestCase(unittest.TestCase):
                 self.db.execute("DELETE FROM lemma_form WHERE lemma_id = ?", (int(row["lemma_id"]),))
                 self.db.execute("DELETE FROM lemma WHERE id = ?", (int(row["lemma_id"]),))
             self.db.commit()
+
+    def test_legacy_word_id_resolves_to_canonical_sense_translation(self):
+        source_legacy_word_id = int(self.db.execute("SELECT ABS(RANDOM()) % 100000000 AS value").fetchone()["value"]) + 500000
+
+        source_lemma_id = self.db.execute(
+            "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath, legacy_word_id) VALUES (?, ?, ?, ?, ?)",
+            (1, 1, "", None, source_legacy_word_id),
+        ).lastrowid
+        source_sense_id = self.db.execute(
+            "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+            (source_lemma_id, 1, 1),
+        ).lastrowid
+        self.db.execute(
+            "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (source_lemma_id, 1, "surface", "Latn", "shim-source", "shim-source", 1),
+        )
+
+        target_lemma_id = self.db.execute(
+            "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+            (2, 1, "", None),
+        ).lastrowid
+        target_sense_id = self.db.execute(
+            "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
+            (target_lemma_id, 1, 1),
+        ).lastrowid
+        self.db.execute(
+            "INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (target_lemma_id, 2, "surface", "Latn", "shim-target", "shim-target", 1),
+        )
+        self.db.execute(
+            "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+            (source_sense_id, target_sense_id, "exact"),
+        )
+        self.db.commit()
+
+        with app.test_request_context("/"):
+            self.assertEqual(source_sense_id, resolve_canonical_sense_id(source_legacy_word_id))
+            self.assertEqual(
+                "shim-target",
+                get_word_translation(source_legacy_word_id, orig_lang=2, trans_lang=1),
+            )
+
+        self.db.execute("DELETE FROM sense_translation WHERE source_sense_id = ? OR target_sense_id = ?", (source_sense_id, source_sense_id))
+        self.db.execute("DELETE FROM sense_translation WHERE source_sense_id = ? OR target_sense_id = ?", (target_sense_id, target_sense_id))
+        self.db.execute("DELETE FROM sense WHERE id = ?", (source_sense_id,))
+        self.db.execute("DELETE FROM sense WHERE id = ?", (target_sense_id,))
+        self.db.execute("DELETE FROM lemma_form WHERE lemma_id = ?", (source_lemma_id,))
+        self.db.execute("DELETE FROM lemma_form WHERE lemma_id = ?", (target_lemma_id,))
+        self.db.execute("DELETE FROM lemma WHERE id = ?", (source_lemma_id,))
+        self.db.execute("DELETE FROM lemma WHERE id = ?", (target_lemma_id,))
+        self.db.commit()
+
+    def test_canonical_vocab_feature_flag_defaults_to_schema_presence(self):
+        self.assertTrue(canonical_vocab_enabled())
+
+    def test_canonical_vocab_feature_flag_respects_env_override(self):
+        with patch.dict(os.environ, {"VOCAB_CANONICAL_ENABLED": "0"}, clear=False):
+            self.assertFalse(canonical_vocab_enabled())
+
+        with patch.dict(os.environ, {"VOCAB_CANONICAL_ENABLED": "true"}, clear=False):
+            self.assertTrue(canonical_vocab_enabled())
 
 
 if __name__ == "__main__":
