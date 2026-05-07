@@ -58,6 +58,7 @@ def save_words(csvf, word_set_id, orig_set_id=''):
     lang2p = headings[3]  # Translation transliteration
     wtype = headings[4]  # Type of word (noun, verb)
 
+    # Get char code from language
     orig_lang_row = db.execute(
         "SELECT id, charcode FROM languages WHERE name = ?",
         (lang1,),
@@ -124,6 +125,8 @@ def save_words(csvf, word_set_id, orig_set_id=''):
                 1,
             ),
         )
+
+        # Create sense translation and set items for the new words
         new_trans_sense_id = db.execute(
             "INSERT INTO sense (lemma_id, part_of_speech, is_primary) VALUES (?, ?, ?)",
             (new_trans_lemma_id, word_type_id, 1),
@@ -133,6 +136,9 @@ def save_words(csvf, word_set_id, orig_set_id=''):
             "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",
             (int(word_set_id), new_trans_sense_id, 'show_all_forms'),
         )
+
+        # If an additional original set ID was provided and is valid, 
+        # add the original sense to that set as well.
         if additional_set_id is not None:
             db.execute(
                 "INSERT INTO set_item (word_set_id, sense_id, prompt_mode) VALUES (?, ?, ?)",

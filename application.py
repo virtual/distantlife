@@ -2,6 +2,7 @@ import os
 import random
 import re
 from datetime import datetime
+from urllib.parse import urlencode
 
 from flask import Flask, flash, redirect, render_template, request, session, has_request_context
 from flask_session import Session
@@ -16,9 +17,9 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin
 from fileparser import save_words
-from normalization import compute_search_key
+from normalization import compute_search_key, has_nikkud
 
 r = get_redis_client()
 
@@ -121,6 +122,11 @@ csrf = CSRFProtect(app)
 def inject_csrf_token():
     # Keep csrf_token available in templates even if extension init order changes.
     return {"csrf_token": generate_csrf}
+
+
+@app.context_processor
+def inject_admin_flag():
+    return {"is_admin_user": is_admin() if session_get_int("user_id") is not None else False}
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -630,24 +636,23 @@ def edit_set():
 @login_required
 @admin_required
 def edit_word():
-    """Admin: Placeholder word edit route that redirects to the containing set editor."""
+    """Admin: Backward-compatible redirect to canonical admin vocabulary edit."""
     word_id = request.values.get("word_id")
     if not word_id:
         flash("Missing word id")
-        return redirect("/edit/set")
+        return redirect("/admin/vocabulary/")
 
     canonical_sense_id = resolve_canonical_sense_id(word_id)
-    set_row = None
     if canonical_sense_id is not None:
-        set_row = db.execute(
-            "SELECT word_set_id FROM set_item WHERE sense_id = ? ORDER BY id ASC LIMIT 1",
-            (canonical_sense_id,),
+        lemma_row = db.execute(
+            "SELECT lemma_id FROM sense WHERE id = ? LIMIT 1",
+            (int(canonical_sense_id),),
         ).fetchone()
+        if lemma_row is not None:
+            return redirect(f"/admin/vocabulary/edit/{int(lemma_row['lemma_id'])}/")
 
-    flash("Word inline editing is not implemented yet; opened the set editor instead.")
-    if set_row is not None:
-        return redirect(f"/edit/set/?set_id={int(set_row['word_set_id'])}")
-    return redirect("/edit/set")
+    flash("Word not found in canonical vocabulary.")
+    return redirect("/admin/vocabulary/")
 
 
 @app.route("/quiz/set/", methods=["GET", "POST"])
@@ -867,6 +872,540 @@ def login():
         return render_template("login.html")
 
 
+@app.route("/admin/", methods=["GET"])
+@login_required
+@admin_required
+def admin_home():
+    """Admin landing page."""
+    summary = {
+        "lemmas": db.execute("SELECT COUNT(*) AS count FROM lemma").fetchone()["count"],
+        "senses": db.execute("SELECT COUNT(*) AS count FROM sense").fetchone()["count"],
+        "sets": db.execute("SELECT COUNT(*) AS count FROM word_sets").fetchone()["count"],
+    }
+    return render_template("admin/index.html", summary=summary)
+
+
+@app.route("/admin/vocabulary/", methods=["GET"])
+@login_required
+@admin_required
+def admin_vocabulary():
+    """Admin: Vocabulary list (canonical lemma view).
+
+    Supports server-side pagination, basic search, and rows-per-page selection.
+    """
+    page = int(request.args.get('page') or 1)
+    per_page = int(request.args.get('per_page') or 20)
+    search = (request.args.get('q') or '').strip()
+    language_id = int(request.args.get('language_id') or 0)
+    pos_id = int(request.args.get('pos_id') or 0)
+    status = (request.args.get('status') or '').strip().lower()
+    sort = (request.args.get('sort') or 'name-asc').strip().lower()
+
+    offset = (page - 1) * per_page
+
+    # Detect schema features at runtime so admin UI is resilient across environments
+    pragma = db.execute("PRAGMA table_info(lemma)").fetchall()
+    cols = [r['name'] for r in pragma]
+    has_image = 'image_path' in cols
+    has_state = 'state' in cols
+
+    image_select = "l.image_path AS image_path" if has_image else "NULL AS image_path"
+    state_select = "l.state AS state" if has_state else "'published' AS state"
+    preferred_lang_id = session.get("language", {}).get("preferred") or 1
+    translation_select = f"""
+        (
+            SELECT lf2.value
+            FROM sense s
+            JOIN sense_translation st ON st.source_sense_id = s.id
+            JOIN sense s2 ON s2.id = st.target_sense_id
+            JOIN lemma_form lf2 ON lf2.lemma_id = s2.lemma_id
+            WHERE s.lemma_id = l.id
+              AND s.is_primary = 1
+              AND lf2.language_id = ?
+              AND lf2.is_primary = 1
+            LIMIT 1
+        ) AS translation
+    """
+
+    base_sql = f"""
+        SELECT l.id AS lemma_id,
+               lf.value AS lemma_value,
+               {image_select},
+               {state_select},
+               {translation_select},
+               COALESCE(ll.charcode, '') AS lang_code,
+               COALESCE(ll.name, '') AS language_name,
+               CASE l.pos_id WHEN 1 THEN 'noun' WHEN 2 THEN 'verb' WHEN 3 THEN 'adj' ELSE CAST(l.pos_id AS TEXT) END AS pos_label,
+               (SELECT COUNT(*) FROM set_item si JOIN sense s ON s.id = si.sense_id WHERE s.lemma_id = l.id) AS uses
+        FROM lemma l
+        JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
+        LEFT JOIN languages ll ON ll.id = l.language_id
+    """
+
+    params = [preferred_lang_id]
+    where_clauses = []
+    if search:
+        where_clauses.append(
+            "(" \
+            "LOWER(lf.value) LIKE LOWER(?) OR " \
+            "EXISTS (SELECT 1 FROM lemma_form lf_search WHERE lf_search.lemma_id = l.id AND LOWER(lf_search.value) LIKE LOWER(?)) OR " \
+            "EXISTS (SELECT 1 FROM sense s_search JOIN sense_translation st_search ON st_search.source_sense_id = s_search.id JOIN sense s_target ON s_target.id = st_search.target_sense_id JOIN lemma_form lf_target ON lf_target.lemma_id = s_target.lemma_id WHERE s_search.lemma_id = l.id AND lf_target.language_id = ? AND LOWER(lf_target.value) LIKE LOWER(?))" \
+            ")"
+        )
+        params.extend([f"%{search}%", f"%{search}%", preferred_lang_id, f"%{search}%"])
+    if language_id:
+        where_clauses.append("l.language_id = ?")
+        params.append(language_id)
+    if pos_id:
+        where_clauses.append("l.pos_id = ?")
+        params.append(pos_id)
+    if has_state and status in {"published", "draft", "review", "approved", "archived"}:
+        where_clauses.append("l.state = ?")
+        params.append(status)
+
+    if where_clauses:
+        base_sql += " WHERE " + " AND ".join(where_clauses)
+
+    count_sql = f"SELECT COUNT(*) AS count FROM ({base_sql})"
+    total = db.execute(count_sql, params).fetchone()["count"]
+
+    sort_clauses = {
+        "name-asc": "lf.value COLLATE NOCASE ASC",
+        "name-desc": "lf.value COLLATE NOCASE DESC",
+        "recent": "l.id DESC",
+        "status": "l.state ASC, lf.value COLLATE NOCASE ASC",
+    }
+    order_by = sort_clauses.get(sort, sort_clauses["name-asc"])
+    if sort == "status" and not has_state:
+        order_by = sort_clauses["name-asc"]
+
+    page_sql = base_sql + f" ORDER BY {order_by} LIMIT ? OFFSET ?"
+    params.extend([per_page, offset])
+    rows = db.execute(page_sql, params).fetchall()
+
+    total_pages = max(1, (total + per_page - 1) // per_page)
+
+    filter_params = {}
+    if search:
+        filter_params["q"] = search
+    if language_id:
+        filter_params["language_id"] = language_id
+    if pos_id:
+        filter_params["pos_id"] = pos_id
+    if has_state and status:
+        filter_params["status"] = status
+    if sort and sort != "name-asc":
+        filter_params["sort"] = sort
+    if per_page != 20:
+        filter_params["per_page"] = per_page
+
+    pagination_query = urlencode(filter_params)
+
+    languages = db.execute("SELECT id, name, charcode FROM languages ORDER BY name ASC").fetchall()
+    pos_options = db.execute("SELECT id, type FROM word_type ORDER BY type ASC").fetchall()
+
+    return render_template(
+        "admin/vocabulary.html",
+        lemmas=rows,
+        page=page,
+        per_page=per_page,
+        total=total,
+        total_pages=total_pages,
+        q=search,
+        has_state=has_state,
+        languages=languages,
+        pos_options=pos_options,
+        language_id=language_id,
+        pos_id=pos_id,
+        status=status,
+        sort=sort,
+        pagination_query=pagination_query,
+    )
+
+
+@app.route("/admin/vocabulary/bulk-action/", methods=["POST"])
+@login_required
+@admin_required
+def admin_vocabulary_bulk_action():
+    """Admin: Apply a bulk action to selected vocabulary lemmas."""
+    lemma_columns = table_columns("lemma")
+    has_state = "state" in lemma_columns
+    has_archived_at = "archived_at" in lemma_columns
+
+    action = (request.form.get("action") or "").strip().lower()
+    lemma_ids_raw = request.form.getlist("lemma_ids")
+
+    lemma_ids = []
+    for value in lemma_ids_raw:
+        try:
+            lemma_ids.append(int(value))
+        except (TypeError, ValueError):
+            continue
+
+    redirect_url = (
+        f"/admin/vocabulary/?page={int(request.form.get('page') or 1)}"
+        f"&per_page={int(request.form.get('per_page') or 20)}"
+        f"&q={(request.form.get('q') or '').strip()}"
+    )
+
+    if len(lemma_ids) == 0:
+        flash("Select at least one vocabulary row.")
+        return redirect(redirect_url)
+
+    if not has_state:
+        flash("Bulk state actions are not available on this schema.")
+        return redirect(redirect_url)
+
+    if action not in {"publish", "archive"}:
+        flash("Choose a valid bulk action.")
+        return redirect(redirect_url)
+
+    placeholders = ",".join(["?"] * len(lemma_ids))
+
+    if action == "publish":
+        if has_archived_at:
+            sql = f"UPDATE lemma SET state = 'published', archived_at = NULL WHERE id IN ({placeholders})"
+        else:
+            sql = f"UPDATE lemma SET state = 'published' WHERE id IN ({placeholders})"
+    else:
+        if has_archived_at:
+            sql = f"UPDATE lemma SET state = 'archived', archived_at = CURRENT_TIMESTAMP WHERE id IN ({placeholders})"
+        else:
+            sql = f"UPDATE lemma SET state = 'archived' WHERE id IN ({placeholders})"
+
+    result = db.execute(sql, tuple(lemma_ids))
+    con.commit()
+    flash(f"Updated {result.rowcount} vocabulary rows.")
+    return redirect(redirect_url)
+
+
+@app.route("/admin/vocabulary/edit/<int:lemma_id>/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_vocabulary_edit(lemma_id):
+    """Admin: Edit a single canonical vocabulary lemma."""
+    lemma_columns = table_columns("lemma")
+    has_image = "image_path" in lemma_columns
+    has_state = "state" in lemma_columns
+
+    pos_options = db.execute(
+        "SELECT id, type FROM word_type ORDER BY type ASC"
+    ).fetchall()
+
+    image_select = "l.image_path AS image_path" if has_image else "NULL AS image_path"
+    state_select = "l.state AS state" if has_state else "'published' AS state"
+
+    base_select = f"""
+        SELECT l.id AS lemma_id,
+               l.language_id,
+               l.pos_id,
+               {image_select},
+               {state_select},
+               s.id AS sense_id,
+               s.gloss AS definition,
+               lf.value AS lemma_value,
+               COALESCE(ll.charcode, '') AS lang_code,
+               COALESCE(ll.name, '') AS language_name,
+               (SELECT COUNT(*) FROM set_item si JOIN sense s ON s.id = si.sense_id WHERE s.lemma_id = l.id) AS uses
+        FROM lemma l
+        JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
+        JOIN sense s ON s.lemma_id = l.id AND s.is_primary = 1
+        LEFT JOIN languages ll ON ll.id = l.language_id
+        WHERE l.id = ?
+        LIMIT 1
+    """
+
+    lemma = db.execute(base_select, (lemma_id,)).fetchone()
+    if lemma is None:
+        flash("Vocabulary item not found.")
+        return redirect("/admin/vocabulary/")
+
+    vocalization_rows = db.execute(
+        """
+        SELECT id, value, is_primary
+        FROM lemma_form
+        WHERE lemma_id = ? AND language_id = ?
+        ORDER BY is_primary DESC, id ASC
+        """,
+        (lemma_id, lemma["language_id"]),
+    ).fetchall()
+    vocalization_row = None
+    fallback_vocalization_row = None
+    for row in vocalization_rows:
+        if int(row["is_primary"] or 0) == 1:
+            continue
+        if has_nikkud(row["value"]):
+            vocalization_row = row
+            break
+        if fallback_vocalization_row is None:
+            fallback_vocalization_row = row
+    if vocalization_row is None:
+        vocalization_row = fallback_vocalization_row
+
+    state_options = ["draft", "review", "approved", "published", "archived"]
+
+    if request.method == "POST":
+        new_value = (request.form.get("lemma_value") or "").strip()
+        vocalization = (request.form.get("vocalization") or "").strip()
+        definition = (request.form.get("definition") or "").strip()
+        new_pos_id = int(request.form.get("pos_id") or lemma["pos_id"])
+        image_path = (request.form.get("image_path") or "").strip()
+        new_state = (request.form.get("state") or "published").strip()
+
+        if not new_value:
+            flash("Lemma value is required.")
+            return render_template(
+                "admin/vocabulary_edit.html",
+                lemma=lemma,
+                pos_options=pos_options,
+                has_image=has_image,
+                vocalization=vocalization,
+                definition=definition,
+            )
+
+        db.execute("UPDATE lemma SET pos_id = ?, state = ? WHERE id = ?", (new_pos_id, new_state, lemma_id))
+
+        if has_image:
+            db.execute("UPDATE lemma SET image_path = ? WHERE id = ?", (image_path or None, lemma_id))
+
+        db.execute(
+            """
+            UPDATE lemma_form
+            SET value = ?, search_key = ?
+            WHERE lemma_id = ? AND is_primary = 1
+            """,
+            (new_value, compute_search_key(new_value, lemma["lang_code"]), lemma_id),
+        )
+
+        if vocalization:
+            if vocalization_row is not None:
+                db.execute(
+                    """
+                    UPDATE lemma_form
+                    SET value = ?, search_key = ?
+                    WHERE id = ?
+                    """,
+                    (vocalization, compute_search_key(vocalization, lemma["lang_code"]), int(vocalization_row["id"])),
+                )
+            else:
+                db.execute(
+                    """
+                    INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        lemma_id,
+                        lemma["language_id"],
+                        "surface",
+                        "Hebr" if (lemma["lang_code"] or "").lower() == "he" else "Latn",
+                        vocalization,
+                        compute_search_key(vocalization, lemma["lang_code"]),
+                        0,
+                    ),
+                )
+        elif vocalization_row is not None and has_nikkud(vocalization_row["value"]):
+            db.execute("DELETE FROM lemma_form WHERE id = ?", (int(vocalization_row["id"]),))
+
+        db.execute(
+            "UPDATE sense SET gloss = ? WHERE id = ?",
+            (definition or None, int(lemma["sense_id"])),
+        )
+
+        # Admin helper: link a translation by primary form in the preferred language
+        translation_word = (request.form.get("translation_word") or "").strip()
+        if translation_word:
+            # Prefer English as the admin helper target; fall back to any available 'en' row
+            pref_row = db.execute("SELECT id FROM languages WHERE charcode = 'en' LIMIT 1").fetchone()
+            if pref_row:
+                pref_lang_id = pref_row["id"]
+                target_lemma_row = db.execute(
+                    """
+                    SELECT lf.lemma_id
+                    FROM lemma_form lf
+                    WHERE lf.language_id = ? AND lf.is_primary = 1 AND LOWER(lf.value) = LOWER(?)
+                    LIMIT 1
+                    """,
+                    (pref_lang_id, translation_word),
+                ).fetchone()
+                if target_lemma_row is not None:
+                    target_lemma_id = int(target_lemma_row["lemma_id"])
+                    source_sense_row = db.execute(
+                        "SELECT id FROM sense WHERE lemma_id = ? AND is_primary = 1 LIMIT 1",
+                        (lemma_id,),
+                    ).fetchone()
+                    target_sense_row = db.execute(
+                        "SELECT id FROM sense WHERE lemma_id = ? AND is_primary = 1 LIMIT 1",
+                        (target_lemma_id,),
+                    ).fetchone()
+                    if source_sense_row and target_sense_row:
+                        src_id = int(source_sense_row["id"])
+                        tgt_id = int(target_sense_row["id"])
+                        exists = db.execute(
+                            "SELECT 1 FROM sense_translation WHERE source_sense_id = ? AND target_sense_id = ? LIMIT 1",
+                            (src_id, tgt_id),
+                        ).fetchone()
+                        if not exists:
+                            db.execute(
+                                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                                (src_id, tgt_id, "exact"),
+                            )
+                        # ensure reciprocal mapping exists
+                        rev_exists = db.execute(
+                            "SELECT 1 FROM sense_translation WHERE source_sense_id = ? AND target_sense_id = ? LIMIT 1",
+                            (tgt_id, src_id),
+                        ).fetchone()
+                        if not rev_exists:
+                            db.execute(
+                                "INSERT INTO sense_translation (source_sense_id, target_sense_id, relation_type) VALUES (?, ?, ?)",
+                                (tgt_id, src_id, "exact"),
+                            )
+
+        con.commit()
+        flash("Vocabulary updated.")
+        return redirect(f"/admin/vocabulary/edit/{lemma_id}/")
+
+    return render_template(
+        "admin/vocabulary_edit.html",
+        lemma=lemma,
+        pos_options=pos_options,
+        state_options=state_options,
+        has_image=has_image,
+        vocalization=vocalization_row["value"] if vocalization_row is not None else "",
+        definition=lemma["definition"] or "",
+    )
+
+
+@app.route("/admin/vocabulary/create/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_vocabulary_create():
+    """Admin: Create a new canonical vocabulary lemma."""
+    lemma_columns = table_columns("lemma")
+    has_image = "image_path" in lemma_columns
+
+    languages = db.execute(
+        "SELECT id, name, charcode FROM languages ORDER BY name ASC"
+    ).fetchall()
+    pos_options = db.execute(
+        "SELECT id, type FROM word_type ORDER BY type ASC"
+    ).fetchall()
+    state_options = ["draft", "review", "approved", "published", "archived"]
+
+    if request.method == "POST":
+        lemma_value = (request.form.get("lemma_value") or "").strip()
+        vocalization = (request.form.get("vocalization") or "").strip()
+        definition = (request.form.get("definition") or "").strip()
+        language_id = int(request.form.get("language_id") or 0)
+        pos_id = int(request.form.get("pos_id") or 0)
+        image_path = (request.form.get("image_path") or "").strip()
+        state = (request.form.get("state") or "draft").strip()
+
+        if not lemma_value or not language_id or not pos_id:
+            flash("Lemma, language, and part of speech are required.")
+            return render_template(
+                "admin/vocabulary_create.html",
+                languages=languages,
+                pos_options=pos_options,
+                state_options=state_options,
+                has_image=has_image,
+                vocalization=vocalization,
+                definition=definition,
+            )
+
+        language_row = db.execute(
+            "SELECT id, charcode FROM languages WHERE id = ? LIMIT 1",
+            (language_id,),
+        ).fetchone()
+        if language_row is None:
+            flash("Invalid language.")
+            return render_template(
+                "admin/vocabulary_create.html",
+                languages=languages,
+                pos_options=pos_options,
+                state_options=state_options,
+                has_image=has_image,
+                vocalization=vocalization,
+                definition=definition,
+            )
+
+        lemma_id = db.execute(
+            "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
+            (language_id, pos_id, "", None),
+        ).lastrowid
+
+        if has_image:
+            db.execute(
+                "UPDATE lemma SET image_path = ? WHERE id = ?",
+                (image_path or None, lemma_id),
+            )
+
+        lang_code = (language_row["charcode"] or "")
+        db.execute(
+            """
+            INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                lemma_id,
+                language_id,
+                "surface",
+                "Hebr" if lang_code.lower() == "he" else "Latn",
+                lemma_value,
+                compute_search_key(lemma_value, lang_code),
+                1,
+            ),
+        )
+
+        if vocalization:
+            db.execute(
+                """
+                INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    lemma_id,
+                    language_id,
+                    "surface",
+                    "Hebr" if lang_code.lower() == "he" else "Latn",
+                    vocalization,
+                    compute_search_key(vocalization, lang_code),
+                    0,
+                ),
+            )
+
+        db.execute(
+            "INSERT INTO sense (lemma_id, part_of_speech, is_primary, gloss) VALUES (?, ?, ?, ?)",
+            (lemma_id, pos_id, 1, definition or None),
+        )
+
+        db.execute("UPDATE lemma SET state = ? WHERE id = ?", (state, lemma_id))
+
+        con.commit()
+        flash("Vocabulary created.")
+        return redirect(f"/admin/vocabulary/edit/{lemma_id}/")
+
+    return render_template(
+        "admin/vocabulary_create.html",
+        languages=languages,
+        pos_options=pos_options,
+        state_options=state_options,
+        has_image=has_image,
+        vocalization="",
+        definition="",
+    )
+
+
+@app.route("/admin/upload/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_upload():
+    """Admin: CSV upload entry point for vocabulary sets."""
+    sets = get_sets()
+    if request.method == "POST":
+        return _handle_uploadwordset_post()
+    return render_template("admin/upload.html", sets=sets)
+
+
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -963,46 +1502,47 @@ def public_profile(identifier):
     )
 
 
-@app.route("/uploadwordset", methods=["GET", "POST"])
+@app.route("/uploadwordset", methods=["POST"])
 @login_required
 @admin_required
 def uploadFiles():
     """Admin: Allows an admin to upload a CSV to add more words to a word set"""
-    if request.method == "POST":
-        uploaded_file = request.files['file']
+    return _handle_uploadwordset_post()
 
-        if request.form.get("word_set_id"):
-            word_set_id = request.form.get("word_set_id")
 
-            if uploaded_file.filename != '':
-                original_filename = uploaded_file.filename
-                _, extension = os.path.splitext(original_filename)
-                extension = extension.lower()
-                safe_root = secure_filename(os.path.splitext(original_filename)[0])
-                safe_filename = f"{safe_root}{extension}" if safe_root else f"upload{extension}"
-                if not safe_filename or extension not in ALLOWED_UPLOAD_EXTENSIONS:
-                    return apology("invalid file type", 400)
+def _handle_uploadwordset_post():
+    uploaded_file = request.files['file']
 
-                # Set the file path and save
-                file_path = os.path.join(
-                    app.config['UPLOAD_FOLDER'], safe_filename)
-                uploaded_file.save(file_path)
+    if request.form.get("word_set_id"):
+        word_set_id = request.form.get("word_set_id")
 
-                additional_set = (request.form.get("additional_set") or "").strip()
-                if additional_set and additional_set.isdigit():
-                    orig_set_id = additional_set
-                    num_words = save_words(file_path, word_set_id, orig_set_id)
-                else:
-                    num_words = save_words(file_path, word_set_id)
-                flash(str(num_words) + " words added to word set")
-                
-                # Delete file from static after parsing
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                return redirect("/edit/set/?set_id=" + word_set_id)
-        return redirect("/")
-    else:
-        return redirect("/")
+        if uploaded_file.filename != '':
+            original_filename = uploaded_file.filename
+            _, extension = os.path.splitext(original_filename)
+            extension = extension.lower()
+            safe_root = secure_filename(os.path.splitext(original_filename)[0])
+            safe_filename = f"{safe_root}{extension}" if safe_root else f"upload{extension}"
+            if not safe_filename or extension not in ALLOWED_UPLOAD_EXTENSIONS:
+                return apology("invalid file type", 400)
+
+            # Set the file path and save
+            file_path = os.path.join(
+                app.config['UPLOAD_FOLDER'], safe_filename)
+            uploaded_file.save(file_path)
+
+            additional_set = (request.form.get("additional_set") or "").strip()
+            if additional_set and additional_set.isdigit():
+                orig_set_id = additional_set
+                num_words = save_words(file_path, word_set_id, orig_set_id)
+            else:
+                num_words = save_words(file_path, word_set_id)
+            flash(str(num_words) + " words added to word set")
+
+            # Delete file from static after parsing
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            return redirect("/edit/set/?set_id=" + word_set_id)
+    return redirect("/")
 
 
 @app.route("/pets/edit/", methods=["GET", "POST"])
