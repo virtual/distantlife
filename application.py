@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import sqlite3
 from datetime import datetime
 from urllib.parse import urlencode
 
@@ -1163,19 +1164,52 @@ def admin_vocabulary_edit(lemma_id):
                 definition=definition,
             )
 
+        if has_nikkud(new_value):
+            flash("Primary form cannot contain vowel marks (nikkud). Please use the vocalization field for vowelized forms.")
+            return render_template(
+                "admin/vocabulary_edit.html",
+                lemma=lemma,
+                pos_options=pos_options,
+                state_options=state_options,
+                has_image=has_image,
+                vocalization=vocalization_row["value"] if vocalization_row is not None else "",
+                definition=lemma["definition"] or "",
+            )
+
         db.execute("UPDATE lemma SET pos_id = ?, state = ? WHERE id = ?", (new_pos_id, new_state, lemma_id))
 
         if has_image:
             db.execute("UPDATE lemma SET image_path = ? WHERE id = ?", (image_path or None, lemma_id))
 
-        db.execute(
-            """
-            UPDATE lemma_form
-            SET value = ?, search_key = ?
-            WHERE lemma_id = ? AND is_primary = 1
-            """,
-            (new_value, compute_search_key(new_value, lemma["lang_code"]), lemma_id),
-        )
+        # Delete any non-primary forms with the same value as the new primary form to avoid UNIQUE constraint violation
+        try:
+            db.execute(
+                """
+                DELETE FROM lemma_form
+                WHERE lemma_id = ? AND is_primary = 0 AND value = ?
+                """,
+                (lemma_id, new_value),
+            )
+
+            db.execute(
+                """
+                UPDATE lemma_form
+                SET value = ?, search_key = ?
+                WHERE lemma_id = ? AND is_primary = 1
+                """,
+                (new_value, compute_search_key(new_value, lemma["lang_code"]), lemma_id),
+            )
+        except sqlite3.IntegrityError as e:
+            flash(f"Cannot update primary form: this value already exists. Please choose a different form or delete the conflicting entry.", 400)
+            return render_template(
+                "admin/vocabulary_edit.html",
+                lemma=lemma,
+                pos_options=pos_options,
+                state_options=state_options,
+                has_image=has_image,
+                vocalization=vocalization_row["value"] if vocalization_row is not None else "",
+                definition=lemma["definition"] or "",
+            )
 
         if vocalization:
             if vocalization_row is not None:

@@ -273,6 +273,16 @@ memurai.exe --service-start # run once to ensure service is started
 bash scripts/dev.sh
 ```
 
+## Testing
+
+Run the test suite:
+
+```sh
+bash scripts/test.sh
+```
+
+Tests are located in the `tests/` directory and use Python's unittest framework.
+
 ## Translations
 
 Get translation keys:
