@@ -1,0 +1,572 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ _('ui.quests.quiz') }} - {{ quest_metadata.title }}
+{% endblock %}
+
+{% block main %}
+<article class="quiz-container card">
+  <div class="quiz-header">
+    <p class="eyebrow">{{ _('ui.quests.quiz') }}</p>
+    <h2>{{ quest_metadata.title }}</h2>
+    <div class="quiz-episode-info">
+      <span>{{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}</span>
+    </div>
+  </div>
+
+  {% if quiz_result %}
+    <section class="quiz-result card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
+      <h3>Quiz results</h3>
+      <p>{{ quiz_result.correct }} / {{ quiz_result.total }} {{ _('ui.quests.question') }}{% if quiz_result.total != 1 %}s{% endif %} correct</p>
+    </section>
+  {% endif %}
+
+  <!-- Episode Summary -->
+  <section class="quiz-summary card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
+    <h3>{{ episode.title }}</h3>
+    {% if episode.story_text %}
+      <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
+    {% endif %}
+  </section>
+
+  <!-- Vocabulary Reference -->
+  {% if vocabulary_with_translations or episode.vocabulary_targets %}
+    <section class="quiz-vocabulary-reference">
+      <h4>{{ _('ui.quests.vocabulary_targets') }}</h4>
+      {% if vocabulary_with_translations %}
+        <table class="vocabulary-table">
+          <thead>
+            <tr>
+              <th dir="{{ session.language.learning_charcode | to_direction }}">{{ quest_metadata.locale.upper() }}</th>
+              <th>{{ session.language.charcode.upper() if session.language else 'EN' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vocab in vocabulary_with_translations %}
+              <tr>
+                <td class="vocab-word" dir="{{ session.language.learning_charcode | to_direction }}">{{ vocab.word }}</td>
+                <td class="vocab-translation">{{ vocab.translation }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>{{ episode.vocabulary_targets | join(', ') }}</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <!-- Quiz Questions -->
+  <section class="quiz-questions">
+    <form id="quizForm" method="POST" action="/quiz/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}/submit">
+      {% if questions and questions is iterable %}
+        {% for question in questions %}
+          {% set question_index = loop.index0 %}
+          <div class="quiz-question card" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ session.language.learning_charcode | to_direction }}">
+            <div class="question-number">
+              <span>{{ _('ui.quests.question') }} {{ loop.index }} {{ _('ui.quests.of') }} {{ questions | length }}</span>
+            </div>
+            
+            <div class="question-content">
+              {% set prompt = question.prompt %}
+              {% if prompt is string and prompt | length %}
+                <p class="question-prompt">{{ prompt }}</p>
+              {% elif prompt is mapping %}
+                {% if prompt.neutral and prompt.neutral | length %}
+                  <p class="question-prompt">{{ prompt.neutral }}</p>
+                {% elif prompt.male and prompt.male | length %}
+                  <p class="question-prompt">{{ prompt.male }}</p>
+                {% elif prompt.female and prompt.female | length %}
+                  <p class="question-prompt">{{ prompt.female }}</p>
+                {% endif %}
+              {% endif %}
+
+              {% if question.type == 'cloze' %}
+                <div class="question-cloze">
+                  <input 
+                    type="text" 
+                    name="answer_{{ loop.index0 }}" 
+                    class="cloze-input"
+                    placeholder="{{ _('ui.quests.type_answer') }}"
+                    aria-label="Answer for question {{ loop.index }}"
+                    required
+                  />
+                </div>
+
+              {% elif question.type == 'multiple_choice' %}
+                <div class="question-multiple-choice">
+                  {% if question.options and question.options is iterable and question.options is not string %}
+                    {% for option in question.options %}
+                      {% set opt_text = option if option is string else (option.neutral or option.male or option.female or option | string) %}
+                      {% if opt_text and opt_text | length %}
+                        <label class="choice-label">
+                          <input 
+                            type="radio" 
+                            name="answer_{{ question_index }}" 
+                            value="{{ opt_text }}"
+                            class="choice-input"
+                            required
+                          />
+                          <span class="choice-text">{{ opt_text }}</span>
+                        </label>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </div>
+
+              {% elif question.type == 'count_sequence' %}
+                <div class="question-count-sequence">
+                  <p class="sequence-instruction">{{ _('ui.quests.select_correct_order') }}</p>
+                  <div class="sequence-options">
+                    {% if question.options and question.options is iterable and question.options is not string %}
+                      {% for option in question.options %}
+                        {% if option is iterable and option is not string %}
+                          <label class="sequence-label">
+                            <input 
+                              type="radio" 
+                              name="answer_{{ question_index }}" 
+                              value="{{ loop.index0 }}"
+                              class="sequence-input"
+                              required
+                            />
+                            <span class="sequence-text">
+                              {% for item in option %}
+                                {% if item is string %}{{ item }}{% else %}{{ item | string }}{% endif %}{% if not loop.last %}, {% endif %}
+                              {% endfor %}
+                            </span>
+                          </label>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </div>
+                </div>
+
+              {% elif question.type == 'reorder' %}
+                <div class="question-reorder">
+                  <p class="reorder-instruction">{{ _('ui.quests.drag_to_reorder') }}</p>
+                  {% set reorder_items = question.get('items') %}
+                  {% if reorder_items and reorder_items is iterable and reorder_items is not string %}
+                    <ol class="reorder-list" data-question-index="{{ loop.index0 }}">
+                      {% for item in reorder_items %}
+                        {% set item_text = item if item is string else (item | string) %}
+                        {% if item_text and item_text | length %}
+                          <li class="reorder-item" draggable="true" data-item-index="{{ loop.index0 + 1 }}">{{ item_text }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ol>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="quiz-actions">
+        <button type="submit" class="btn btn-primary btn-lg">{{ _('ui.quests.submit_quiz') }}</button>
+        <a href="/quest/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}" class="btn btn-secondary">{{ _('ui.quests.back_to_story') }}</a>
+      </div>
+    </form>
+  </section>
+</article>
+
+<style>
+  .quiz-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .quiz-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-episode-info {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+  }
+
+  .quiz-summary {
+    background: var(--color-bg-accent);
+    border-left: 4px solid var(--color-primary);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 6px;
+  }
+
+  .quiz-summary h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .quiz-summary p {
+    margin: 0;
+  }
+
+  .quiz-result {
+    background: var(--color-bg-accent);
+    border-left: 4px solid var(--color-primary);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 6px;
+  }
+
+  .quiz-vocabulary-reference {
+    background: var(--color-bg-secondary);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
+
+  .quiz-vocabulary-reference h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  /* Vocabulary Table */
+  .vocabulary-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .vocabulary-table thead {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .vocabulary-table th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .vocabulary-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .vocabulary-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .vocabulary-table tbody tr:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .vocab-word {
+    font-weight: 500;
+  }
+
+  .vocab-translation {
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+
+  .quiz-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .quiz-question {
+    background: var(--color-bg-secondary);
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    scroll-margin-top: 2rem;
+  }
+
+  .quiz-question:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+  }
+
+  .question-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .question-content {
+    margin-top: 1rem;
+  }
+
+  .question-prompt {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0 0 1.5rem 0;
+  }
+
+  /* Cloze Input */
+  .question-cloze .cloze-input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 300px;
+    transition: border-color 0.2s ease;
+  }
+
+  .question-cloze .cloze-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  /* Multiple Choice */
+  .question-multiple-choice {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .choice-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .choice-label:hover {
+    background: var(--color-bg-hover);
+    border-color: var(--color-primary);
+  }
+
+  .choice-input {
+    margin-right: 0.75rem;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+  }
+
+  .choice-text {
+    flex: 1;
+  }
+
+  .choice-label.selected {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
+
+  /* Count Sequence */
+  .sequence-instruction {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .sequence-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sequence-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .sequence-label:hover {
+    background: var(--color-bg-hover);
+    border-color: var(--color-primary);
+  }
+
+  .sequence-input {
+    margin-right: 0.75rem;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+  }
+
+  .sequence-text {
+    flex: 1;
+    word-break: break-word;
+  }
+
+  /* Reorder */
+  .reorder-instruction {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .reorder-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: white;
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .reorder-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    cursor: move;
+    background: white;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+
+  .reorder-item:last-child {
+    border-bottom: none;
+  }
+
+  .reorder-item:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .reorder-item.dragging {
+    opacity: 0.5;
+    background: var(--color-bg-muted);
+  }
+
+  .reorder-item.drag-over {
+    border-top: 3px solid var(--color-primary);
+  }
+
+  /* Quiz Actions */
+  .quiz-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+  }
+
+  @media (max-width: 600px) {
+    .quiz-question {
+      padding: 1rem;
+    }
+
+    .question-prompt {
+      font-size: 1rem;
+    }
+
+    .quiz-actions {
+      flex-direction: column;
+    }
+
+    .quiz-actions .btn {
+      width: 100%;
+    }
+
+    .vocabulary-table {
+      font-size: 0.875rem;
+    }
+
+    .vocabulary-table th,
+    .vocabulary-table td {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const quizForm = document.getElementById('quizForm');
+
+  // Handle reorder questions
+  document.querySelectorAll('.reorder-list').forEach(list => {
+    const items = Array.from(list.querySelectorAll('.reorder-item'));
+    let draggedElement = null;
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', function() {
+        draggedElement = this;
+        this.classList.add('dragging');
+      });
+
+      item.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+        items.forEach(i => i.classList.remove('drag-over'));
+        draggedElement = null;
+      });
+
+      item.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (draggedElement && draggedElement !== this) {
+          this.classList.add('drag-over');
+        }
+      });
+
+      item.addEventListener('dragleave', function() {
+        this.classList.remove('drag-over');
+      });
+
+      item.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (draggedElement && draggedElement !== this) {
+          const allItems = Array.from(list.querySelectorAll('.reorder-item'));
+          const draggedIndex = allItems.indexOf(draggedElement);
+          const targetIndex = allItems.indexOf(this);
+
+          if (draggedIndex < targetIndex) {
+            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+          } else {
+            this.parentNode.insertBefore(draggedElement, this);
+          }
+        }
+      });
+    });
+  });
+
+  if (quizForm) {
+    quizForm.addEventListener('submit', function() {
+      this.querySelectorAll('input[type="hidden"][data-generated-reorder-answer="true"]').forEach(input => input.remove());
+
+      document.querySelectorAll('.reorder-list').forEach(list => {
+        const questionIndex = list.dataset.questionIndex;
+        const currentOrder = Array.from(list.querySelectorAll('.reorder-item')).map(item => item.dataset.itemIndex);
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = `answer_${questionIndex}`;
+        hiddenInput.value = currentOrder.join(',');
+        hiddenInput.dataset.generatedReorderAnswer = 'true';
+        this.appendChild(hiddenInput);
+      });
+    });
+  }
+
+  // Update selected styling for multiple choice
+  document.querySelectorAll('.choice-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const parent = this.closest('.choice-label');
+      const allLabels = parent.parentElement.querySelectorAll('.choice-label');
+      allLabels.forEach(label => label.classList.remove('selected'));
+      if (this.checked) {
+        parent.classList.add('selected');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
+

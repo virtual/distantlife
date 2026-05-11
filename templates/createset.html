@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "./macros.html" import csrf_field, form_group, language_options as render_language_options with context %}
 
 {% block title %}
   {{ _('ui.admin') }}  
@@ -8,44 +9,28 @@
 <header><h1>{{title_s}}</h1></header>
 
 <form class="mx-auto centered" action="/create/set/" method="post">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  {{ csrf_field() }}
   <fieldset>
     <legend>{{ _('ui.word_set_shown_in_translated_language') }}</legend>
-    <div class="form-group">
-      <label for="setname">{{ _('ui.set_name') }}</label>
+    {% call form_group('setname', _('ui.set_name')) %}
       <input required id="setname" name="setname" type="text" />
-    </div> 
-    <div class="form-group">
-      <label for="learning_lang">{{ _('ui.language') }}:</label>
+    {% endcall %}
+    {% call form_group('learning_lang', _('ui.language')) %}
       <select id="learning_lang" name="learning_lang">
-        {% for lang in language_options %}
-          {% if lang.id == userinfo.learning_lang %}
-          <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-          {% else %}
-            <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-          {% endif %}
-        {% endfor %}
+        {{ render_language_options(language_options, userinfo.learning_lang) }}
       </select>
-    </div>
+    {% endcall %}
   </fieldset>
   <fieldset>
     <legend>{{ _('ui.help_text_shown_in_native_language') }}</legend>
-    <div class="form-group">
-      <label for="plang_setname">{{ _('ui.set_name') }}</label>
+    {% call form_group('plang_setname', _('ui.set_name')) %}
       <input required id="plang_setname" name="plang_setname" type="text" />
-    </div> 
-    <div class="form-group">
-      <label for="preferred_lang">{{ _('ui.language') }}:</label>
+    {% endcall %}
+    {% call form_group('preferred_lang', _('ui.language')) %}
       <select id="preferred_lang" name="preferred_lang">
-        {% for lang in language_options %}
-          {% if lang.id == userinfo.preferred_lang %}
-            <option selected data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-          {% else %}
-            <option data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
-          {% endif %}
-        {% endfor %}
+        {{ render_language_options(language_options, userinfo.preferred_lang) }}
       </select>
-    </div>
+    {% endcall %}
   </fieldset>
   <button>{{ _('ui.create_new_set') }}</button>
 </form>

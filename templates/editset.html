@@ -65,7 +65,7 @@
       <div class="form-group">
         <label for="additional_set">Add first column to additional set: </label>
         <select id="additional_set" name="additional_set">
-          <option>---------</option>
+          <option value="" selected disabled>---------</option>
             {% for set in sets %}
               <option value="{{set.id}}">{{set.set_name}} (#{{set.id}})</option>
             {% endfor %}

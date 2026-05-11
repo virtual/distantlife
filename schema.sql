@@ -45,6 +45,7 @@ CREATE TABLE `pets` (
   `name` varchar(255),
   `created` timestamp,
   `exp` integer,
+  `gender` varchar(255) DEFAULT 'neutral',
   PRIMARY KEY(id)
 );
 
@@ -53,6 +54,7 @@ CREATE TABLE `pet_types` (
   `imgsrc` varchar(255),
   `pet_type` varchar(255),
   `exp_required` integer,
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 
@@ -122,6 +124,7 @@ CREATE TABLE `pet_types` (
   `id` integer,
   `imgsrc` varchar(255),
   `pet_type` varchar(255),
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 
@@ -277,12 +280,15 @@ CREATE TABLE `pets` (
   `name` varchar(255),
   `created` timestamp,
   `exp` integer,
+  `gender` varchar(255) DEFAULT 'neutral',
   PRIMARY KEY(id)
 );
 CREATE TABLE `pet_types` (
   `id` integer,
   `imgsrc` varchar(255),
-  `pet_type` varchar(255), `exp_required` integer,
+  `pet_type` varchar(255),
+  `exp_required` integer,
+  `default_gender` varchar(255) DEFAULT 'random',
   PRIMARY KEY(id)
 );
 CREATE TABLE `word_sets` (
@@ -374,3 +380,42 @@ INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALU
 INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 2, 6);
 INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 3, 7);
 INSERT INTO word_translation (orig_lang, trans_lang, orig_word, trans_word) VALUES (2, 1, 4, 8);
+-- canonical vocabulary hardening (2026-05)
+ALTER TABLE lemma ADD COLUMN image_path TEXT;
+ALTER TABLE lemma ADD COLUMN state TEXT NOT NULL DEFAULT 'draft' CHECK (state IN ('draft', 'review', 'approved', 'published', 'archived'));
+ALTER TABLE lemma ADD COLUMN source_type TEXT NOT NULL DEFAULT 'manual' CHECK (source_type IN ('manual', 'csv-import', 'quest-generated', 'legacy-migration'));
+ALTER TABLE lemma ADD COLUMN source_ref TEXT;
+ALTER TABLE lemma ADD COLUMN created_by INTEGER;
+ALTER TABLE lemma ADD COLUMN updated_by INTEGER;
+ALTER TABLE lemma ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE lemma ADD COLUMN archived_at TIMESTAMP;
+
+CREATE TABLE lemma_version (
+  id INTEGER PRIMARY KEY,
+  lemma_id INTEGER NOT NULL,
+  version_number INTEGER NOT NULL,
+  state TEXT NOT NULL,
+  changed_by INTEGER,
+  change_note TEXT,
+  payload_json TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(lemma_id, version_number)
+);
+
+CREATE TABLE quest_episode_vocab (
+  id INTEGER PRIMARY KEY,
+  quest_id TEXT NOT NULL,
+  episode_id TEXT NOT NULL,
+  lemma_id INTEGER NOT NULL,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'quest-generated', 'import')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(quest_id, episode_id, lemma_id)
+);
+
+CREATE INDEX idx_lemma_state ON lemma(state);
+CREATE INDEX idx_lemma_source_type ON lemma(source_type);
+CREATE INDEX idx_lemma_updated_at ON lemma(updated_at);
+CREATE INDEX idx_lemma_version_lemma ON lemma_version(lemma_id);
+CREATE INDEX idx_qev_quest_episode ON quest_episode_vocab(quest_id, episode_id);
+CREATE INDEX idx_qev_lemma ON quest_episode_vocab(lemma_id);

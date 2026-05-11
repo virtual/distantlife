@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Admin{% endblock %}
+{% block main %}
+<h1>Admin</h1>
+<p class="lead">Vocabulary and cutover tools.</p>
+
+<div class="admin-grid">
+  <div class="admin-card">
+    <h2>Vocabulary</h2>
+    <p>{{ summary['lemmas'] }} lemmas, {{ summary['senses'] }} senses</p>
+    <p><a href="/admin/vocabulary/">Open vocabulary list</a></p>
+    <p><a href="/admin/vocabulary/create/">Create vocabulary</a></p>
+  </div>
+
+  <div class="admin-card">
+    <h2>Sets</h2>
+    <p>{{ summary['sets'] }} word sets</p>
+    <p><a href="/edit/set/">Open set editor</a></p>
+  </div>
+
+  <div class="admin-card">
+    <h2>Uploads</h2>
+    <p>CSV import for vocabulary sets.</p>
+    <p><a href="/admin/upload/">Open upload form</a></p>
+  </div>
+</div>
+{% endblock %}

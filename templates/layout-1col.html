@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  {% set title_s %}{% block title %}{% endblock %}{% endset %}
-  {% include 'global/head.html' %}
-<body class="text-gray-900 font-sans antialiased">
-  {% include 'global/header.html' %}
+{% extends "base.html" %}
+
+{% block page_shell %}
   <div class="main-container">
     <main class="main container py-5">
       {% include 'global/alert.html' %}
       {% block main %}{% endblock %}
     </main>
   </div>
-
-  {% include 'global/footer.html' %}
-</body>
-</html>
+{% endblock %}

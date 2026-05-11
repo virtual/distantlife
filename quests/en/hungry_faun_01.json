@@ -1,0 +1,213 @@
+{
+  "quest_id": "hungry_faun_01",
+  "locale": "en",
+  "version": 1,
+  "review_status": "draft",
+  "theme": "food_and_garden",
+  "quest_type": "story_quest",
+  "quest_line_id": "hungry_faun",
+  "allowed_pet_type_ids": [10],
+  "unlock_cost": 0,
+  "title": "The Hungry Faun and the Missing Lunch",
+  "summary": "A hungry faun learns food words while finding and growing carrots in a village garden.",
+  "episodes": [
+    {
+      "episode_id": "hungry_faun_01_ep1",
+      "title": "The Empty Basket",
+      "story_text": {
+        "male": "{{pet_name}} woke up hungry. He checked his basket, but it was empty. He walked to the village garden and saw dry soil. A gardener gave him a carrot seed and said, 'Plant it, water it, and be patient.'",
+        "female": "{{pet_name}} woke up hungry. She checked her basket, but it was empty. She walked to the village garden and saw dry soil. A gardener gave her a carrot seed and said, 'Plant it, water it, and be patient.'",
+        "neutral": "{{pet_name}} woke up hungry. {{pet_name}} checked the basket, but it was empty. {{pet_name}} walked to the village garden and saw dry soil. A gardener gave {{pet_name}} a carrot seed and said, 'Plant it, water it, and be patient.'"
+      },
+      "vocabulary_targets": [
+        "hungry",
+        "basket",
+        "garden",
+        "seed",
+        "soil",
+        "plant",
+        "water",
+        "carrot"
+      ],
+      "speech_bubble_lines": [
+        {
+          "male": "I am very hungry.",
+          "female": "I am very hungry.",
+          "neutral": "I am very hungry."
+        },
+        {
+          "male": "My basket is empty.",
+          "female": "My basket is empty.",
+          "neutral": "My basket is empty."
+        },
+        {
+          "male": "I will plant this seed.",
+          "female": "I will plant this seed.",
+          "neutral": "I will plant this seed."
+        }
+      ],
+      "sentences": [
+        {
+          "order": 1,
+          "text": {
+            "neutral": "{{pet_name}} woke up hungry."
+          }
+        },
+        {
+          "order": 2,
+          "text": {
+            "neutral": "The basket was empty."
+          }
+        },
+        {
+          "order": 3,
+          "text": {
+            "neutral": "The gardener gave a carrot seed."
+          }
+        }
+      ],
+      "quiz": {
+        "questions": [
+          {
+            "type": "cloze",
+            "answer_mode": "type_in",
+            "prompt": {
+              "male": "He planted a ____.",
+              "female": "She planted a ____.",
+              "neutral": "{{pet_name}} planted a ____."
+            },
+            "answer": "seed",
+            "accepted_answers": [
+              "seed",
+              "a seed"
+            ]
+          },
+          {
+            "type": "multiple_choice",
+            "answer_mode": "multiple_choice",
+            "prompt": "Where did {{pet_name}} go to find food?",
+            "options": [
+              "library",
+              "village garden",
+              "castle tower"
+            ],
+            "answer": "village garden"
+          },
+          {
+            "type": "reorder",
+            "prompt": "Put the story events in order.",
+            "items": [
+              "A gardener gives a seed.",
+              "The basket is empty.",
+              "{{pet_name}} goes to the garden."
+            ],
+            "correct_order": [
+              2,
+              3,
+              1
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "episode_id": "hungry_faun_01_ep2",
+      "title": "The First Harvest",
+      "story_text": {
+        "male": "After a few days, {{pet_name}} returned to the garden. He saw a small green leaf, then a strong orange carrot. He pulled it from the soil, washed it, and shared soup with friends.",
+        "female": "After a few days, {{pet_name}} returned to the garden. She saw a small green leaf, then a strong orange carrot. She pulled it from the soil, washed it, and shared soup with friends.",
+        "neutral": "After a few days, {{pet_name}} returned to the garden. {{pet_name}} saw a small green leaf, then a strong orange carrot. {{pet_name}} pulled it from the soil, washed it, and shared soup with friends."
+      },
+      "vocabulary_targets": [
+        "leaf",
+        "orange",
+        "pull",
+        "wash",
+        "cook",
+        "soup",
+        "share",
+        "friend"
+      ],
+      "speech_bubble_lines": [
+        {
+          "male": "The carrot is ready!",
+          "female": "The carrot is ready!",
+          "neutral": "The carrot is ready!"
+        },
+        {
+          "male": "I will wash and cook it.",
+          "female": "I will wash and cook it.",
+          "neutral": "I will wash and cook it."
+        },
+        {
+          "male": "Let us share this soup.",
+          "female": "Let us share this soup.",
+          "neutral": "Let us share this soup."
+        }
+      ],
+      "sentences": [
+        {
+          "order": 1,
+          "text": {
+            "neutral": "{{pet_name}} returned to the garden."
+          }
+        },
+        {
+          "order": 2,
+          "text": {
+            "neutral": "A carrot grew from the seed."
+          }
+        },
+        {
+          "order": 3,
+          "text": {
+            "neutral": "{{pet_name}} shared soup with friends."
+          }
+        }
+      ],
+      "quiz": {
+        "questions": [
+          {
+            "type": "cloze",
+            "answer_mode": "type_in",
+            "prompt": {
+              "male": "He shared carrot ____ with friends.",
+              "female": "She shared carrot ____ with friends.",
+              "neutral": "{{pet_name}} shared carrot ____ with friends."
+            },
+            "answer": "soup",
+            "accepted_answers": [
+              "soup",
+              "carrot soup"
+            ]
+          },
+          {
+            "type": "multiple_choice",
+            "answer_mode": "multiple_choice",
+            "prompt": "What color was the carrot?",
+            "options": [
+              "orange",
+              "purple",
+              "gray"
+            ],
+            "answer": "orange"
+          },
+          {
+            "type": "reorder",
+            "prompt": "Put the final actions in order.",
+            "items": [
+              "Share soup",
+              "Wash the carrot",
+              "Pull the carrot"
+            ],
+            "correct_order": [
+              3,
+              2,
+              1
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

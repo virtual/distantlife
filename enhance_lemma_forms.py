@@ -5,6 +5,8 @@ from normalization import compute_search_key, has_nikkud, strip_nikkud
 
 
 def get_hebrew_language_ids(db):
+    """Fetch language IDs for Hebrew based on charcode or name. 
+    Returns a set of language IDs. """
     rows = db.execute(
         "SELECT id FROM languages WHERE lower(charcode) = 'he' OR lower(name) = 'hebrew' OR name = 'עברית'"
     ).fetchall()
@@ -12,6 +14,10 @@ def get_hebrew_language_ids(db):
 
 
 def parse_args():
+    """Parse command-line arguments for the lemma form enhancement script.
+    Returns:
+        argparse.Namespace: Parsed arguments with 'db' attribute for database path.
+    """
     parser = argparse.ArgumentParser(
         description="Enhance lemma forms by adding plain Hebrew variants for niqqud forms."
     )
@@ -24,6 +30,11 @@ def parse_args():
 
 
 def main():
+    """Main function to enhance lemma forms in the database. 
+    It identifies primary Hebrew forms with niqqud, 
+    computes their search keys, and inserts corresponding 
+    plain forms if they don't already exist.
+    """
     args = parse_args()
 
     con = sqlite3.connect(args.db)

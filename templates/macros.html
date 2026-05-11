@@ -7,3 +7,79 @@
       <span class="sr-only">{{percent}}</span>
     </div>
 {% endmacro %}
+
+{% macro csrf_field() %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+{% endmacro %}
+
+{% macro form_group(label_for, label_text, class_name='form-group') %}
+<div class="{{ class_name }}">
+  <label for="{{ label_for }}">{{ label_text }}</label>
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro password_field(field_id, field_name, show_label, hide_label, placeholder=None, required=false, minlength=None, autocomplete=None, describedby=None, input_class='form-control has-password-toggle') %}
+<div class="password-field">
+  <input
+    class="{{ input_class }}"
+    id="{{ field_id }}"
+    name="{{ field_name }}"
+    type="password"
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if required %}required{% endif %}
+    {% if minlength is not none %}minlength="{{ minlength }}"{% endif %}
+    {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+    {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
+  />
+  <button
+    type="button"
+    class="password-toggle"
+    data-toggle-password="{{ field_id }}"
+    data-show-label="{{ show_label }}"
+    data-hide-label="{{ hide_label }}"
+    aria-controls="{{ field_id }}"
+    aria-label="{{ show_label }}"
+    aria-pressed="false"
+  >
+    <span class="far fa-eye" aria-hidden="true"></span>
+    <span class="sr-only">{{ show_label }}</span>
+  </button>
+</div>
+{% endmacro %}
+
+{% macro language_options(options, selected_id) %}
+  {% for lang in options %}
+    <option {% if lang.id == selected_id %}selected{% endif %} data-char="{{ lang.charcode }}" value="{{ lang.id }}">{{ lang.name }}</option>
+  {% endfor %}
+{% endmacro %}
+
+{% macro pet_summary(pet, active_pet_id=None, image_alt=None, type_text=None, show_type=true, show_gender=true, show_progress=true, show_created=false, show_image=true) %}
+  {% if show_image %}
+    <img width="200" height="200" src="{{ url_for('static', filename=pet.imgsrc) }}" alt="{{ image_alt or pet.pet_type }}" />
+  {% endif %}
+  <h3>{{ pet.name }}
+  
+    {% if show_gender and (pet.gender_label is defined or pet.gender_icon_class is defined) %}
+      <span class="pet-gender">
+        <span class="badge badge-info">
+          <span class="{{ pet.gender_icon_class or '' }}" aria-label="{{ pet.gender_label }}" aria-hidden="true"></span>
+        </span>
+      </span>
+    {% endif %}
+
+    {% if active_pet_id is not none and pet.id == active_pet_id %} 
+      <span class="badge badge-success">{{ _('ui.active_pet') }}</span>
+    {% endif %}
+  </h3>
+  {% if show_type %}
+    <p>{{ type_text or pet.pet_type }} <small>(#{{ pet.id }})</small></p>
+  {% endif %}
+  {% if show_created and pet.created is defined %}
+    <p>{{ _('ui.created') }}: {{ pet.created }}</p>
+  {% endif %}
+
+  {% if show_progress %}
+    {{ progressbar(pet.exp) }}
+  {% endif %}
+{% endmacro %}

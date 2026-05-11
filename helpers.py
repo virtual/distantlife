@@ -1,7 +1,9 @@
 from flask import flash, redirect, render_template, session
 from functools import wraps
 from datetime import datetime
+import random
 from flask_babel import gettext as _
+import os
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
 
@@ -9,6 +11,9 @@ con = get_db_connection()
 db = con
 
 r = get_redis_client()
+
+
+STARTER_PET_TYPE_IDS = (1, 6, 10, 26, 16) # Dragon, Genie, Faun, Cerberus, Cyclops
 
 
 def table_exists(table_name):
@@ -21,6 +26,14 @@ def table_exists(table_name):
 
 def using_lemma_schema():
     return table_exists("lemma") and table_exists("set_item")
+
+
+def canonical_vocab_enabled():
+    """Return whether canonical vocabulary writes should be used."""
+    value = os.getenv("VOCAB_CANONICAL_ENABLED")
+    if value is None:
+        return True if using_lemma_schema() else False
+    return value.strip().lower() not in {"0", "false", "no", "off"}
 
 
 def apology(message, code=400):
@@ -104,18 +117,61 @@ def set_active_pet_in_session(user_id):
       :returns: 
       - id of active pet
     """
-    active_pet_info = db.execute("SELECT pets.id, name, pet_types.pet_type, exp, pet_types.imgsrc FROM pets JOIN users ON users.active_pet_id = pets.id JOIN pet_types ON pet_types.id = pets.type WHERE users.id = ?",
-                                 (user_id, )).fetchall()
+    pet_columns = table_columns("pets")
+    gender_column = "pets.gender AS gender" if "gender" in pet_columns else "NULL AS gender"
+    active_pet_info = db.execute(
+        f"SELECT pets.id, pets.name, pet_types.pet_type, pets.exp, pet_types.imgsrc, {gender_column} FROM pets JOIN users ON users.active_pet_id = pets.id JOIN pet_types ON pet_types.id = pets.type WHERE users.id = ?",
+        (user_id, ),
+    ).fetchall()
     if (len(active_pet_info) == 1):
+        gender = active_pet_info[0]["gender"] or "neutral"
         active_pet = {
             "name": active_pet_info[0]['name'],
             "type": active_pet_info[0]['pet_type'],
             "exp": active_pet_info[0]['exp'],
             "id": active_pet_info[0]['id'],
-            "imgsrc": active_pet_info[0]['imgsrc']
+            "imgsrc": active_pet_info[0]['imgsrc'],
+            "gender": gender,
+            "gender_label": get_pet_gender_label(gender),
+            "gender_icon_class": get_pet_gender_icon_class(gender),
         }
         session["active_pet"] = active_pet
         return active_pet['id']
+
+
+def normalize_pet_gender(gender):
+    """Normalize a pet gender value for display and personalization."""
+    if gender in ("male", "female"):
+        return gender
+    return "neutral"
+
+
+def choose_pet_gender(default_gender=None):
+    """Choose a gender for a new pet."""
+    normalized_default = normalize_pet_gender(default_gender)
+    if normalized_default in ("male", "female"):
+        return normalized_default
+    return random.choice(["male", "female"])
+
+
+def get_pet_gender_label(gender):
+    """Return a translated pet gender label."""
+    normalized_gender = normalize_pet_gender(gender)
+    if normalized_gender == "male":
+        return _("ui.gender.male")
+    if normalized_gender == "female":
+        return _("ui.gender.female")
+    return _("ui.gender.unknown")
+
+
+def get_pet_gender_icon_class(gender):
+    """Return the icon class used to render the pet gender."""
+    normalized_gender = normalize_pet_gender(gender)
+    if normalized_gender == "male":
+        return "fa fa-solid fa-mars"
+    if normalized_gender == "female":
+        return "fa fa-solid fa-venus"
+    return "fa fa-solid fa-genderless"
 
 
 def set_languages(user_id):
@@ -125,18 +181,107 @@ def set_languages(user_id):
       :param int user_id - user's ID
     """
 
-    language_info = db.execute("SELECT preferred_lang, learning_lang, dir, charcode, localization FROM users JOIN languages ON users.preferred_lang = languages.id WHERE users.id = ?",
-                               (user_id, )).fetchall()
+    language_info = db.execute("""
+        SELECT 
+            users.preferred_lang,
+            users.learning_lang,
+            pl.dir,
+            pl.charcode,
+            pl.localization,
+            ll.charcode as learning_charcode,
+            ll.dir as learning_dir
+        FROM users 
+        JOIN languages pl ON users.preferred_lang = pl.id 
+        JOIN languages ll ON users.learning_lang = ll.id 
+        WHERE users.id = ?
+    """, (user_id, )).fetchall()
+    
     if (len(language_info) == 1):
         language = {
             "preferred": language_info[0]['preferred_lang'],
             "learning": language_info[0]['learning_lang'],
             "dir": language_info[0]['dir'],
+            "learning_dir": language_info[0]['learning_dir'],
             "charcode": language_info[0]['charcode'],
+            "learning_charcode": language_info[0]['learning_charcode'],
             "localization": language_info[0]['localization']
         }
         session["language"] = language
         return True
+
+
+def get_learning_language_charcode(user_id=None):
+    """
+    Get the charcode for the user's target learning language.
+    Uses session data if available, otherwise queries the database.
+    
+    :param user_id: User ID (optional, uses current session user if not provided)
+    :return: Language charcode (e.g., 'he', 'en') or 'en' as fallback
+    """
+    # Try to get from session first
+    if session.get("language") and session.get("language").get("learning_charcode"):
+        return session.get("language").get("learning_charcode")
+    
+    # Fallback to database query if user_id provided
+    if user_id:
+        result = db.execute("""
+            SELECT ll.charcode 
+            FROM users 
+            JOIN languages ll ON users.learning_lang = ll.id 
+            WHERE users.id = ?
+        """, (user_id,)).fetchone()
+        if result:
+            return result['charcode']
+    
+    return 'en'  # Default fallback
+
+
+def resolve_canonical_sense_id(word_ref):
+    """Resolve a legacy word ID, lemma ID, or sense ID to a canonical sense ID."""
+    if word_ref is None:
+        return None
+
+    try:
+        ref_id = int(word_ref)
+    except (TypeError, ValueError):
+        return None
+
+    if not using_lemma_schema():
+        return ref_id
+
+    sense_row = db.execute(
+        "SELECT id FROM sense WHERE id = ? LIMIT 1",
+        (ref_id,),
+    ).fetchone()
+    if sense_row is not None:
+        return int(sense_row["id"])
+
+    legacy_row = db.execute(
+        """
+        SELECT s.id AS sense_id
+        FROM lemma l
+        JOIN sense s ON s.lemma_id = l.id AND s.is_primary = 1
+        WHERE l.legacy_word_id = ?
+        LIMIT 1
+        """,
+        (ref_id,),
+    ).fetchone()
+    if legacy_row is not None:
+        return int(legacy_row["sense_id"])
+
+    lemma_row = db.execute(
+        """
+        SELECT s.id AS sense_id
+        FROM sense s
+        WHERE s.lemma_id = ? AND s.is_primary = 1
+        LIMIT 1
+        """,
+        (ref_id,),
+    ).fetchone()
+    if lemma_row is not None:
+        return int(lemma_row["sense_id"])
+
+    return None
 
 
 def get_word_translation(word_id, orig_lang='', trans_lang=''):
@@ -156,24 +301,11 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
         trans_lang = session.get('language')['learning']
 
     if using_lemma_schema():
-        source_sense_id = int(word_id)
-        translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
+        source_sense_id = resolve_canonical_sense_id(word_id)
+        if source_sense_id is None:
+            return ''
 
-        # Fallback for legacy IDs during transition.
-        if len(translated_senses) == 0:
-            mapped = db.execute(
-                """
-                SELECT s.id AS sense_id
-                FROM lemma l
-                JOIN sense s ON s.lemma_id = l.id AND s.is_primary = 1
-                WHERE l.legacy_word_id = ?
-                LIMIT 1
-                """,
-                (int(word_id),),
-            ).fetchone()
-            if mapped is not None:
-                source_sense_id = int(mapped['sense_id'])
-                translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
+        translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
 
         if len(translated_senses) == 0:
             return ''
@@ -202,61 +334,41 @@ def get_sets(language_id='', trans_lang=''):
     if (language_id == ''):
         language_id = session.get('language')['preferred']
 
-    if using_lemma_schema():
-        setsqry = db.execute(
-            """
-            SELECT word_sets.id AS id,
-                   word_sets.imgsrc AS imgsrc,
-                   word_sets.set_name_sense_id AS setnameid,
-                   lf.value AS wordstr
-            FROM word_sets
-            LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
-            WHERE word_sets.language_id = ?
-            """,
-            (trans_lang,),
-        ).fetchall()
-    else:
-        setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", 
-                        (trans_lang, )).fetchall()
+    setsqry = db.execute(
+        """
+        SELECT word_sets.id AS id,
+               word_sets.imgsrc AS imgsrc,
+               word_sets.set_name_sense_id AS setnameid,
+               lf.value AS wordstr
+        FROM word_sets
+        LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
+        WHERE word_sets.language_id = ?
+        """,
+        (trans_lang,),
+    ).fetchall()
 
     sets = []
     for setinfo in setsqry:
         translation = get_word_translation(
             int(setinfo['setnameid']), language_id, trans_lang)
 
-        if using_lemma_schema():
-            totalcount = db.execute(
-                "select count(*) as count from set_item where word_set_id =  ?",
-                (setinfo['id'],),
-            ).fetchall()
-        else:
-            totalcount = db.execute(
-                "select count(*) as count from word_set_words where word_set_id =  ?", 
-                (setinfo['id'], )).fetchall()
+        totalcount = db.execute(
+            "select count(*) as count from set_item where word_set_id =  ?",
+            (setinfo['id'],),
+        ).fetchall()
 
         learnedcount = 0
         if session_get_int('user_id') is not None:
-            if using_lemma_schema():
-                learnedcount = db.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM words_learned wl
-                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
-                    WHERE sl.user_id = ? AND sl.wordsets = ?
-                    """,
-                    (session_get_int('user_id'), setinfo['id']),
-                ).fetchone()['count']
-            else:
-                learnedcount = db.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM words_learned wl
-                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
-                    WHERE sl.user_id = ? AND sl.wordsets = ?
-                    """,
-                    (session_get_int('user_id'), setinfo['id']),
-                ).fetchone()['count']
+            learnedcount = db.execute(
+                """
+                SELECT COUNT(*) AS count
+                FROM words_learned wl
+                JOIN sets_learned sl ON sl.id = wl.sets_learned_id
+                WHERE sl.user_id = ? AND sl.wordsets = ?
+                """,
+                (session_get_int('user_id'), setinfo['id']),
+            ).fetchone()['count']
 
         setinfo = {
             "id": setinfo['id'],
@@ -281,23 +393,19 @@ def get_set_by_id(set_id):
           - setnameid - word ID of wordstr
           - imgsrc - image path for set cover image
     """
-    if using_lemma_schema():
-        setsqry = db.execute(
-            """
-            SELECT word_sets.id AS id,
-                   lf.value AS wordstr,
-                   word_sets.set_name_sense_id AS setnameid,
-                   word_sets.imgsrc AS imgsrc
-            FROM word_sets
-            LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
-            WHERE word_sets.language_id = ? AND word_sets.id = ?
-            """,
-            (session.get('language')['learning'], set_id),
-        ).fetchall()
-    else:
-        setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ? AND word_sets.id = ?", 
-                    (session.get('language')['learning'], set_id, )).fetchall()
+    setsqry = db.execute(
+        """
+        SELECT word_sets.id AS id,
+               lf.value AS wordstr,
+               word_sets.set_name_sense_id AS setnameid,
+               word_sets.imgsrc AS imgsrc
+        FROM word_sets
+        LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
+        WHERE word_sets.language_id = ? AND word_sets.id = ?
+        """,
+        (session.get('language')['learning'], set_id),
+    ).fetchall()
 
     return setsqry[0]
 
@@ -310,27 +418,23 @@ def get_words_by_set_id(set_id):
       :returns: 
           - list of words
     """
-    if using_lemma_schema():
-        words = db.execute(
-            """
-            SELECT s.id AS id,
-                   lf.value AS wordstr,
-                   COALESCE(l.pronunciation, '') AS pronunciation,
-                   COALESCE(word_type.type, '') AS type,
-                   l.audiopath AS audiosrc
-            FROM set_item
-            JOIN sense s ON s.id = set_item.sense_id
-            JOIN lemma l ON l.id = s.lemma_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
-            LEFT JOIN word_type ON word_type.id = s.part_of_speech
-            WHERE set_item.word_set_id = ?
-            ORDER BY set_item.id ASC
-            """,
-            (set_id,),
-        ).fetchall()
-    else:
-        words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type, words.audiopath AS audiosrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = ?", 
-                    (set_id, )).fetchall()
+    words = db.execute(
+        """
+        SELECT s.id AS id,
+               lf.value AS wordstr,
+               COALESCE(l.pronunciation, '') AS pronunciation,
+               COALESCE(word_type.type, '') AS type,
+               l.audiopath AS audiosrc
+        FROM set_item
+        JOIN sense s ON s.id = set_item.sense_id
+        JOIN lemma l ON l.id = s.lemma_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
+        LEFT JOIN word_type ON word_type.id = s.part_of_speech
+        WHERE set_item.word_set_id = ?
+        ORDER BY set_item.id ASC
+        """,
+        (set_id,),
+    ).fetchall()
 
     words_with_translation = []
     for word in words:
@@ -363,6 +467,140 @@ def is_admin():
           - boolean - True if admin, False otherwise
     """
     return get_role() == 9
+
+
+def initialize_user_pet_unlocks(user_id):
+    """
+    Ensure a user has starter pet unlocks.
+
+      :param int user_id - user's ID
+    """
+    if not table_exists("user_pet_unlocks"):
+        return
+
+    for pet_type_id in STARTER_PET_TYPE_IDS:
+        db.execute(
+            "INSERT OR IGNORE INTO user_pet_unlocks (user_id, pet_type_id, unlocked_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+            (int(user_id), int(pet_type_id)),
+        )
+    con.commit()
+
+
+def unlock_pet_for_user(user_id, pet_type_id):
+    """
+    Unlock a pet type for a user.
+
+      :param int user_id - user's ID
+      :param int pet_type_id - pet type ID
+      :returns:
+          - boolean - True if unlock data is available and insert attempted
+    """
+    if not table_exists("user_pet_unlocks"):
+        return False
+
+    db.execute(
+        "INSERT OR IGNORE INTO user_pet_unlocks (user_id, pet_type_id, unlocked_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+        (int(user_id), int(pet_type_id)),
+    )
+    con.commit()
+    return True
+
+
+def can_user_adopt_pet_type(user_id, pet_type_id):
+    """
+    Return whether the user can adopt a given pet type.
+    Admin users bypass lock checks.
+
+      :param int user_id - user's ID
+      :param int pet_type_id - pet type ID
+      :returns:
+          - boolean
+    """
+    if is_admin():
+        return True
+
+    # Fallback while migration is rolling out.
+    if not table_exists("user_pet_unlocks"):
+        return True
+
+    unlocked = db.execute(
+        "SELECT 1 FROM user_pet_unlocks WHERE user_id = ? AND pet_type_id = ? LIMIT 1",
+        (int(user_id), int(pet_type_id)),
+    ).fetchone()
+    return unlocked is not None
+
+
+def get_adoptable_pet_types_for_user(user_id):
+    """
+    Return pet types adoptable by the active user.
+    Admin users see all pet types.
+
+      :param int user_id - user's ID
+      :returns:
+          - list of rows
+    """
+    if is_admin() or not table_exists("user_pet_unlocks"):
+        return db.execute("SELECT * FROM pet_types ORDER BY id").fetchall()
+
+    return db.execute(
+        """
+        SELECT pt.*
+        FROM pet_types pt
+        INNER JOIN user_pet_unlocks upu ON pt.id = upu.pet_type_id
+        WHERE upu.user_id = ?
+        ORDER BY pt.id
+        """,
+        (int(user_id),),
+    ).fetchall()
+
+
+def get_active_pet_for_user(user_id):
+    """
+    Fetch the currently active pet for a user.
+    
+    Returns a dict with id, type_id, name, and gender when available, or None if no active pet.
+
+      :param int user_id - user's ID
+      :returns:
+          - dict with keys: id, type_id, name, gender
+          - None if user has no active pet
+    """
+    columns = table_columns("pets")
+    gender_column = "p.gender AS gender" if "gender" in columns else "NULL AS gender"
+    type_column = "p.type AS type_id" if "type" in columns else "p.type_id AS type_id"
+
+    pet = db.execute(
+        f"""
+        SELECT p.id, {type_column}, p.name, {gender_column}
+        FROM pets p
+        JOIN users u ON u.active_pet_id = p.id
+        WHERE u.id = ?
+        LIMIT 1
+        """,
+        (int(user_id),),
+    ).fetchone()
+    return dict(pet) if pet else None
+
+
+def get_owned_pet_type_ids_for_user(user_id):
+    """
+    Return a list of pet type IDs owned by the user.
+
+      :param int user_id - user's ID
+      :returns:
+          - list of integer pet type IDs
+    """
+    rows = db.execute(
+        """
+        SELECT DISTINCT p.type AS type_id
+        FROM owners o
+        JOIN pets p ON p.id = o.pet_id
+        WHERE o.owner_id = ?
+        ORDER BY p.type
+        """,
+        (int(user_id),),
+    ).fetchall()
+    return [int(row["type_id"]) for row in rows]
 
 
 def session_get_int(key):
