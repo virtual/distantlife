@@ -17,6 +17,9 @@ In addition to growing your pets, you'll be able to review words and test your k
 
 Future enhancements include:
 
+- Generate vocabulary automatically from quest stories (admin tool)
+- Duplicate vocabulary detection and merge workflow
+- Vocabulary review and approval workflow with draft state
 - Tracking which words are learned
 - Notifications
 - Badges earned
@@ -24,17 +27,26 @@ Future enhancements include:
 - Customized pets (colors)
 - Customizable avatars
 - Location backgrounds for different areas
-- Fix paths to use dash instead of underscore for better SEO and readability (for example, `/quest/hungry-faun-01/ep1` instead of `/quest/hungry_faun_01/hungry_faun_01_ep1`)
+- Setup local environment to support compiling css based on [custom scss](https://github.com/virtual/fed-projects/tree/main/source/_assets/sass/04)
+- Autogenerate flash cards and quizzes based on the vocabulary in each set
 
 ### 📔 Administration
 
-In addition to the member experience, there is an admin dashboard available to users with an admin role. In this area, an admin can:
+The admin dashboard (available at `/admin/` for users with admin role) provides comprehensive vocabulary and set management using the canonical lemma-based schema:
 
-- Create new word sets
-- Add new words to word sets using a CSV file uploader
-- Delete words from word sets
+#### Admin Vocabulary Management
 
-#### CSV Upload Format
+At `/admin/vocabulary/`, admins can:
+
+- **Search & Filter**: Find vocabulary by lemma value with pagination (20/50/100 rows per page)
+- **Create**: Add new vocabulary entries with language, part-of-speech, optional image path
+- **Edit**: Modify existing primary form, vocalization, definition, Part of Speech (POS), and image paths
+- **Bulk Actions**: Select multiple vocabulary items and publish or archive in batch
+- **View Usage**: See how many word sets each vocabulary item appears in
+
+#### Upload Vocabulary CSV
+
+At `/admin/upload/`, admins can bulk-import vocabulary into word sets using CSV files. 
 
 The uploader expects at least 5 columns in this exact order:
 
@@ -66,6 +78,15 @@ cat,kat,חתול,chatul,noun
 ```
 
 Optional extra columns are currently ignored by the importer, so you can include reference-only columns (for example a nikkud variant) without breaking upload.
+
+#### Part of Speech (POS) Management
+
+- Noun (שֵׁם עֶצֶם): A person, place, thing, or idea.
+- Verb (פֹּעַל): An action or state of being.
+- Adjective (שֵׁם תֹּאַר): A word that describes or modifies a noun.
+- Adverb (תֹּאַר הַפֹּעַל): A word that modifies a verb, adjective, or another adverb (often ending in "-ly" in English).
+- Pronoun (כִּנּוּי גּוּף): A word used in place of a noun (e.g., I, she, they).
+- Preposition (מִילַת יַחַס): Describes the relationship between a noun and another part of the sentence (e.g., in, on, at, from).
 
 ### 🪐 Localization and Internationalization
 
@@ -109,10 +130,12 @@ Template files
 - Sign up and login pages:
   - **login.html** - Allows a user to log in.
   - **signup.html** - Allows a new user to sign up.
-- Admin pages:
-  - **createset.html** - Allows an admin to create a new word set.
-  - **editsets.html** - Shows all available word sets.
-  - **editset.html** - Allows an admin to edit a set by deleting existing words or uploading a CSV to add a group of new words to it (and optionally the translated-language word set equivalent.)
+- Admin pages (under `/admin/`):
+  - **admin/index.html** - Admin dashboard with summaries of vocabulary, senses, and sets.
+  - **admin/vocabulary.html** - List vocabulary with search, pagination, bulk action controls.
+  - **admin/vocabulary_create.html** - Form to create new vocabulary items.
+  - **admin/vocabulary_edit.html** - Form to edit vocabulary values, POS, and optional image paths.
+  - **admin/upload.html** - CSV upload form for bulk-importing vocabulary into word sets.
 
 Other files:
 
@@ -131,7 +154,16 @@ The lexical data structure was migrated from a simple word/translation model to 
 
 #### Core Tables
 
-- **lemma** - The base form of a word. Contains language_id, part-of-speech, pronunciation, and audiopath. Each lemma has multiple forms.
+- **lemma** - The base form of a word. Contains:
+  - `language_id`: Language of the lemma
+  - `pos_id`: Part-of-speech (noun, verb, etc.)
+  - `pronunciation`: Pronunciation guide
+  - `audiopath`: Path to audio file (if available)
+  - `image_path`: Optional path to vocabulary image
+  - `state`: Publication state (published/archived) - optional schema extension
+  - `archived_at`: Timestamp when archived - optional schema extension
+  
+  Each lemma has multiple forms.
   
 - **lemma_form** - Surface forms and variants of a lemma in a specific language. Stores:
   - `value`: The actual word text
@@ -171,6 +203,16 @@ To find a translation for a vocabulary word:
 4. Retrieve the primary `lemma_form` for the translated sense in the preferred language
 
 This is implemented in `quest_content.py`'s `get_vocabulary_with_translations()` function.
+
+#### Quest Vocabulary Integration
+
+Quest episodes reference vocabulary by **lemma ID** in their `vocabulary_target_ids` array. When rendering a quest episode:
+
+1. Lemma IDs are validated against the canonical `lemma` table
+2. The translation workflow above retrieves word + translation pairs
+3. Vocabulary table is rendered directly from database results in the quest episode template
+
+This ensures all vocabulary shown in quests is live from your word database—changes to vocabulary in the admin UI are immediately reflected in quest stories.
 
 ------
 

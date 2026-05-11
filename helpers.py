@@ -3,6 +3,7 @@ from functools import wraps
 from datetime import datetime
 import random
 from flask_babel import gettext as _
+import os
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
 
@@ -25,6 +26,14 @@ def table_exists(table_name):
 
 def using_lemma_schema():
     return table_exists("lemma") and table_exists("set_item")
+
+
+def canonical_vocab_enabled():
+    """Return whether canonical vocabulary writes should be used."""
+    value = os.getenv("VOCAB_CANONICAL_ENABLED")
+    if value is None:
+        return True if using_lemma_schema() else False
+    return value.strip().lower() not in {"0", "false", "no", "off"}
 
 
 def apology(message, code=400):
@@ -227,6 +236,54 @@ def get_learning_language_charcode(user_id=None):
     return 'en'  # Default fallback
 
 
+def resolve_canonical_sense_id(word_ref):
+    """Resolve a legacy word ID, lemma ID, or sense ID to a canonical sense ID."""
+    if word_ref is None:
+        return None
+
+    try:
+        ref_id = int(word_ref)
+    except (TypeError, ValueError):
+        return None
+
+    if not using_lemma_schema():
+        return ref_id
+
+    sense_row = db.execute(
+        "SELECT id FROM sense WHERE id = ? LIMIT 1",
+        (ref_id,),
+    ).fetchone()
+    if sense_row is not None:
+        return int(sense_row["id"])
+
+    legacy_row = db.execute(
+        """
+        SELECT s.id AS sense_id
+        FROM lemma l
+        JOIN sense s ON s.lemma_id = l.id AND s.is_primary = 1
+        WHERE l.legacy_word_id = ?
+        LIMIT 1
+        """,
+        (ref_id,),
+    ).fetchone()
+    if legacy_row is not None:
+        return int(legacy_row["sense_id"])
+
+    lemma_row = db.execute(
+        """
+        SELECT s.id AS sense_id
+        FROM sense s
+        WHERE s.lemma_id = ? AND s.is_primary = 1
+        LIMIT 1
+        """,
+        (ref_id,),
+    ).fetchone()
+    if lemma_row is not None:
+        return int(lemma_row["sense_id"])
+
+    return None
+
+
 def get_word_translation(word_id, orig_lang='', trans_lang=''):
     """
     Given word_id, returns translated word in original (native) language
@@ -244,24 +301,11 @@ def get_word_translation(word_id, orig_lang='', trans_lang=''):
         trans_lang = session.get('language')['learning']
 
     if using_lemma_schema():
-        source_sense_id = int(word_id)
-        translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
+        source_sense_id = resolve_canonical_sense_id(word_id)
+        if source_sense_id is None:
+            return ''
 
-        # Fallback for legacy IDs during transition.
-        if len(translated_senses) == 0:
-            mapped = db.execute(
-                """
-                SELECT s.id AS sense_id
-                FROM lemma l
-                JOIN sense s ON s.lemma_id = l.id AND s.is_primary = 1
-                WHERE l.legacy_word_id = ?
-                LIMIT 1
-                """,
-                (int(word_id),),
-            ).fetchone()
-            if mapped is not None:
-                source_sense_id = int(mapped['sense_id'])
-                translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
+        translated_senses = get_sense_translations(db, source_sense_id, orig_lang)
 
         if len(translated_senses) == 0:
             return ''
@@ -290,61 +334,41 @@ def get_sets(language_id='', trans_lang=''):
     if (language_id == ''):
         language_id = session.get('language')['preferred']
 
-    if using_lemma_schema():
-        setsqry = db.execute(
-            """
-            SELECT word_sets.id AS id,
-                   word_sets.imgsrc AS imgsrc,
-                   word_sets.set_name_sense_id AS setnameid,
-                   lf.value AS wordstr
-            FROM word_sets
-            LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
-            WHERE word_sets.language_id = ?
-            """,
-            (trans_lang,),
-        ).fetchall()
-    else:
-        setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ?", 
-                        (trans_lang, )).fetchall()
+    setsqry = db.execute(
+        """
+        SELECT word_sets.id AS id,
+               word_sets.imgsrc AS imgsrc,
+               word_sets.set_name_sense_id AS setnameid,
+               lf.value AS wordstr
+        FROM word_sets
+        LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
+        WHERE word_sets.language_id = ?
+        """,
+        (trans_lang,),
+    ).fetchall()
 
     sets = []
     for setinfo in setsqry:
         translation = get_word_translation(
             int(setinfo['setnameid']), language_id, trans_lang)
 
-        if using_lemma_schema():
-            totalcount = db.execute(
-                "select count(*) as count from set_item where word_set_id =  ?",
-                (setinfo['id'],),
-            ).fetchall()
-        else:
-            totalcount = db.execute(
-                "select count(*) as count from word_set_words where word_set_id =  ?", 
-                (setinfo['id'], )).fetchall()
+        totalcount = db.execute(
+            "select count(*) as count from set_item where word_set_id =  ?",
+            (setinfo['id'],),
+        ).fetchall()
 
         learnedcount = 0
         if session_get_int('user_id') is not None:
-            if using_lemma_schema():
-                learnedcount = db.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM words_learned wl
-                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
-                    WHERE sl.user_id = ? AND sl.wordsets = ?
-                    """,
-                    (session_get_int('user_id'), setinfo['id']),
-                ).fetchone()['count']
-            else:
-                learnedcount = db.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM words_learned wl
-                    JOIN sets_learned sl ON sl.id = wl.sets_learned_id
-                    WHERE sl.user_id = ? AND sl.wordsets = ?
-                    """,
-                    (session_get_int('user_id'), setinfo['id']),
-                ).fetchone()['count']
+            learnedcount = db.execute(
+                """
+                SELECT COUNT(*) AS count
+                FROM words_learned wl
+                JOIN sets_learned sl ON sl.id = wl.sets_learned_id
+                WHERE sl.user_id = ? AND sl.wordsets = ?
+                """,
+                (session_get_int('user_id'), setinfo['id']),
+            ).fetchone()['count']
 
         setinfo = {
             "id": setinfo['id'],
@@ -369,23 +393,19 @@ def get_set_by_id(set_id):
           - setnameid - word ID of wordstr
           - imgsrc - image path for set cover image
     """
-    if using_lemma_schema():
-        setsqry = db.execute(
-            """
-            SELECT word_sets.id AS id,
-                   lf.value AS wordstr,
-                   word_sets.set_name_sense_id AS setnameid,
-                   word_sets.imgsrc AS imgsrc
-            FROM word_sets
-            LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
-            WHERE word_sets.language_id = ? AND word_sets.id = ?
-            """,
-            (session.get('language')['learning'], set_id),
-        ).fetchall()
-    else:
-        setsqry = db.execute("SELECT word_sets.id as id, words.wordstr as wordstr, words.id as setnameid, word_sets.imgsrc FROM word_sets JOIN words ON word_sets.set_name_word_id = words.id WHERE word_sets.language_id =  ? AND word_sets.id = ?", 
-                    (session.get('language')['learning'], set_id, )).fetchall()
+    setsqry = db.execute(
+        """
+        SELECT word_sets.id AS id,
+               lf.value AS wordstr,
+               word_sets.set_name_sense_id AS setnameid,
+               word_sets.imgsrc AS imgsrc
+        FROM word_sets
+        LEFT JOIN sense s ON s.id = word_sets.set_name_sense_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = s.lemma_id AND lf.is_primary = 1
+        WHERE word_sets.language_id = ? AND word_sets.id = ?
+        """,
+        (session.get('language')['learning'], set_id),
+    ).fetchall()
 
     return setsqry[0]
 
@@ -398,27 +418,23 @@ def get_words_by_set_id(set_id):
       :returns: 
           - list of words
     """
-    if using_lemma_schema():
-        words = db.execute(
-            """
-            SELECT s.id AS id,
-                   lf.value AS wordstr,
-                   COALESCE(l.pronunciation, '') AS pronunciation,
-                   COALESCE(word_type.type, '') AS type,
-                   l.audiopath AS audiosrc
-            FROM set_item
-            JOIN sense s ON s.id = set_item.sense_id
-            JOIN lemma l ON l.id = s.lemma_id
-            LEFT JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
-            LEFT JOIN word_type ON word_type.id = s.part_of_speech
-            WHERE set_item.word_set_id = ?
-            ORDER BY set_item.id ASC
-            """,
-            (set_id,),
-        ).fetchall()
-    else:
-        words = db.execute("SELECT words.id, words.wordstr, words.pronunciation, word_type.type, words.audiopath AS audiosrc FROM words JOIN word_set_words ON word_set_words.word_id = words.id JOIN word_type ON words.type = word_type.id where word_set_words.word_set_id = ?", 
-                    (set_id, )).fetchall()
+    words = db.execute(
+        """
+        SELECT s.id AS id,
+               lf.value AS wordstr,
+               COALESCE(l.pronunciation, '') AS pronunciation,
+               COALESCE(word_type.type, '') AS type,
+               l.audiopath AS audiosrc
+        FROM set_item
+        JOIN sense s ON s.id = set_item.sense_id
+        JOIN lemma l ON l.id = s.lemma_id
+        LEFT JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
+        LEFT JOIN word_type ON word_type.id = s.part_of_speech
+        WHERE set_item.word_set_id = ?
+        ORDER BY set_item.id ASC
+        """,
+        (set_id,),
+    ).fetchall()
 
     words_with_translation = []
     for word in words:

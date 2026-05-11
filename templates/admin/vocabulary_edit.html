@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% from "./macros.html" import csrf_field with context %}
+{% block title %}Admin — Edit Vocabulary{% endblock %}
+{% block main %}
+<h1>Edit Vocabulary</h1>
+
+<p>
+  <strong>ID:</strong> {{ lemma['lemma_id'] }} |
+  <strong>Language:</strong> {{ lemma['language_name'] or lemma['lang_code'] }} |
+  <strong>Uses:</strong> {{ lemma['uses'] or 0 }}
+</p>
+
+<form method="post" action="/admin/vocabulary/edit/{{ lemma['lemma_id'] }}/">
+  {{ csrf_field() }}
+  <div>
+    <label for="lemma_value">Primary form</label><br>
+    <input id="lemma_value" name="lemma_value" type="text" value="{{ lemma['lemma_value'] }}" required>
+  </div>
+
+  <div>
+    <label for="vocalization">Vocalization</label><br>
+    <input id="vocalization" name="vocalization" type="text" value="{{ vocalization or '' }}" placeholder="Optional vocalized form">
+  </div>
+
+  <div>
+    <label for="definition">Definition</label><br>
+    <textarea id="definition" name="definition" rows="4">{{ definition or '' }}</textarea>
+  </div>
+
+  <div>
+    <label for="translation_word">Link translation (preferred language)</label><br>
+    <input id="translation_word" name="translation_word" type="text" value="" placeholder="Type primary form in preferred language (e.g. 'earth')">
+    <p class="help">Enter the primary word in the preferred language to link a sense translation. Leave blank to keep existing links.</p>
+  </div>
+
+  <div>
+    <label for="pos_id">Part of Speech</label><br>
+    <select id="pos_id" name="pos_id">
+      {% for pos in pos_options %}
+      <option value="{{ pos['id'] }}" {% if pos['id'] == lemma['pos_id'] %}selected="selected"{% endif %}>{{ pos['type'] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div>
+    <label for="state">Status</label><br>
+    <select id="state" name="state">
+      {% for st in state_options %}
+      <option value="{{ st }}" {% if st == lemma['state'] %}selected="selected"{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if has_image %}
+  <div>
+    <label for="image_path">Image Path</label><br>
+    <input id="image_path" name="image_path" type="text" value="{{ lemma['image_path'] or '' }}" placeholder="/files/...">
+  </div>
+  {% endif %}
+
+  <div style="margin-top: 12px;">
+    <button type="submit">Save</button>
+    <a href="/admin/vocabulary/">Back to list</a>
+  </div>
+</form>
+{% endblock %}
