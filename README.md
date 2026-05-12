@@ -43,6 +43,9 @@ npm install
 # build CSS once
 npm run build:css
 
+# build production CSS (minified, no source map)
+npm run build:css:prod
+
 # or run a watcher in development
 npm run watch:css
 ```
