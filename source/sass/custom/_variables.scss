@@ -1,0 +1,51 @@
+// https://www.frontendmentor.io/challenges/url-shortening-api-landing-page-2ce3ob-G
+
+// $screen-sm: 375px;
+// $screen-md: 768px;
+// $screen-lg: 992px;
+$screen-xl: 1440px;
+
+// $gutter: 16px;
+// $button-padding: 8px;
+$button-border-radius: 8px;
+$input-border-radius: 8px;
+
+
+// Colors
+
+// $color-cyan: #2acfcf;
+// $color-dark-violet: hsl(257, 27%, 26%);
+
+// $color-red: hsl(0, 87%, 67%);
+
+// $color-gray: hsl(0, 0%, 75%);
+// $color-grayish-violet: hsl(257, 7%, 63%);
+// $color-gray-light: #F0F1F6;
+// $color-very-dark-blue: hsl(255, 11%, 22%);
+// $color-very-dark-violet: hsl(260, 8%, 14%);
+
+$color-gray-dark: #050517;
+$color-blue: #247BA0;
+$color-blue-light: #C4E0F9;
+$color-green: #00A676;
+$color-yellow: #FFFD82;
+$color-berry: #922D50;
+$color-white: #fff;  
+
+// Alert https://colors.eva.design/
+$alert-success: #5DDB6D !default;
+$alert-info: #3BBDEE !default;
+$alert-warning: #EDDE43 !default;
+$alert-danger: #E48850 !default;
+
+$theme-primary: $color-gray-dark;
+$theme-secondary: $color-blue; 
+
+$theme-font-size-base: 18px;
+$theme-header-text-color: $color-white;
+$theme-body-text-color: $theme-header-text-color;
+// $theme-font-line-height: $theme-font-size-base * 1.4;
+$theme-font-family: 'Karla', 'Noto Sans Hebrew', sans-serif;
+$theme-header-font-family: $theme-font-family;
+$theme-body-font-weight: 400;
+$theme-link-color: $color-blue-light;

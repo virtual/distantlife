@@ -1,0 +1,72 @@
+.list-stats {
+  @include flexbox();
+  @include justify-content(flex-start);
+  margin-bottom: $gutter * .5;
+  dt { 
+    @include flex-basis(1rem);
+  }
+  dd { 
+    margin-left: $gutter;
+  }
+  + .list-stats {
+    margin-top: 0;
+  }
+  &:last-of-type {
+    margin-bottom: $gutter;
+  }
+}
+
+
+.element-options {
+  @extend .list-unstyled;
+  width: 100%;
+  button {
+    width: 100%;
+    text-align: left;
+    background-color: rgba($color-blue-light, .1);
+    &:after {
+      font-family: $font-awesome;
+      content: "\f107";
+      font-weight: 400;
+      float: right;
+    }
+  }
+  li.has-dropdown {
+    position: relative;
+    ul.dropdown {
+      @extend .list-unstyled;
+      width: 100%;
+      overflow: hidden;
+      height: 0;
+      
+      transition: all 1s ease-in-out;
+    }
+    &:active,
+    &:focus-within {
+      > a {
+        color: $color-yellow;
+      }
+    }
+    &:active > ul,
+    &:focus-within > ul,
+    & ul:hover,
+    & ul:focus {
+      height: auto;
+    }
+    li {
+      margin-top: 3px;
+      a {
+        padding: $gutter ($gutter * 2);
+        display: inline-block;
+        text-decoration: none;
+        width: 100%;
+        background-color: rgba($color-blue-light, .1);
+        display: block;
+      }
+      a.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+      }
+    }
+  } 
+}

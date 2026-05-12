@@ -1,0 +1,15 @@
+@use "sass:math";
+footer.footer.theme-inversed {
+  p a {
+    color: $theme-link-color;
+    &:hover, &:focus, &:active {
+      text-decoration: none;
+    }
+  }
+}
+
+.sub-footer-container {
+  p {
+    margin-bottom: 0;
+  }
+}

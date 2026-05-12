@@ -1,0 +1,33 @@
+.pet-box {
+  border: 1px solid $color-blue-light;
+  background-color: rgba($color-blue-light, .3);
+}
+.pet-hidden {
+  img {
+    filter: brightness(0) saturate(100%) invert(97%) sepia(83%) saturate(6718%) hue-rotate(145deg) brightness(108%) contrast(104%);
+    opacity: .3;
+  }
+}
+.layout-secondary-aside {
+  .pet-box {
+    max-width: 125px;
+  }
+}
+body.dir-rtl .layout-secondary aside .pet-box img {
+  transform: scaleX(-1);
+}
+aside .pet-box img {
+  padding: $gutter * .5;
+}
+figure {
+  margin-right: 0;
+  margin-left: 0;
+  text-align: center;
+  .figure-img {
+    border-radius: $button-border-radius;
+    background-color: rgba($color-blue-light, .5);
+    margin-right: auto;
+    margin-left: auto;
+    padding: $gutter * .5;
+  }
+}

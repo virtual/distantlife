@@ -1,0 +1,39 @@
+.hero-container {
+  width: 100%;
+  padding: 0;
+  max-width: $screen-xl + 400px;
+  margin: 0 auto;
+  @media (min-width: $screen-md) {
+    padding: 40px;
+  }
+  .hero-title {
+    @media (min-width: $screen-md) {
+      font-size: 60px;
+      line-height: 1.1;
+    }
+    @media (min-width: $screen-xl) {
+      font-size: 80px;
+    }
+  }
+  .hero-description {
+    color: $color-white;
+    @media (min-width: $screen-md) {
+      font-size: $theme-font-size-base * 1.4;
+      line-height: 1.6;
+    }
+  }
+}
+.hero-bg-right {
+  padding-top: 80vw;
+  background-repeat: no-repeat;
+  background-size: 120%;
+  @media (min-width: $screen-md) {
+    padding-top: 40px;
+    background-position: 120% 20%;
+    background-size: 60%;
+  }
+  @media (min-width: $screen-xl) {
+    background-position: 100% 20%;
+    background-size: 50%;
+  }
+}

@@ -1,0 +1,141 @@
+@use "sass:math";
+body {
+  background-color: $theme-secondary;
+}
+
+header.header, 
+.sub-footer-container,
+.main-container,
+footer.footer {
+  @include flexbox();
+  width: 100%;
+  padding: $gutter;
+  @include flex-direction(column);
+}
+header.header {
+  padding: 0;
+  min-height: 60px;
+  align-items: center;
+  flex-direction: row;
+  .container {
+    @media (min-width: $screen-lg) {
+      padding: 0;
+    }
+  }
+}
+.main-container {
+  @include flex-grow(1);
+}
+
+$columns: 24;
+
+.layout-secondary {
+  @include flexbox();
+  @include flex-direction(column);
+  @include flex-grow(1);
+  width: 100%;
+  .layout-secondary-main, 
+  .layout-secondary-aside {
+    @include flex-grow(1);
+    padding: $gutter * 2;
+  }
+  .layout-secondary-main {
+    order: 1;
+    background-color: $theme-secondary;
+    main + main {
+      margin-top: $gutter * 2;
+      border-top: 2px solid rgba($theme-primary, .5);
+      padding-top: $gutter * 2;
+    }
+  }
+  .layout-secondary-aside {
+    order: 2;
+    background-color: rgba($theme-primary, .5);
+  }
+  @media (min-width: $screen-md) {
+    @include flex-direction(row);
+    .layout-secondary-main {
+      order: 2;
+    }
+    .layout-secondary-aside {
+      order: 1;
+      @include flex-basis(300px);
+      @include flex-grow(0);
+    }
+  }
+  @media (min-width: $screen-lg) {
+    .layout-secondary-aside {
+      @include flex-basis(320px);
+    }
+    .secondary-main {
+      margin: 0 auto;
+      max-width: 600px;
+    }
+  }
+
+  @media (min-width: $screen-xl) {
+    .layout-secondary-main, 
+    .layout-secondary-aside {
+      padding: $gutter * 3;
+    }
+    .layout-secondary-main {
+      > main {
+        width: 860px;
+      }
+
+    }
+    .layout-secondary-aside {
+      @include flexbox();
+      @include flex-basis(30vw);
+      @include justify-content(flex-end);
+      > aside {
+        width: 320px;
+      }
+    }
+  }
+  @media (min-width: 1540px) {
+    .layout-secondary-aside {
+      @include flex-basis(400px);
+      > aside {
+        width: 400px;
+      }
+    }
+  }
+}
+.main-options {
+  @include flexbox();
+  @include flex-direction(row);
+  @include align-items(center);
+  @include justify-content(space-between);
+  margin-bottom: $gutter;
+  button {}
+}
+
+.display-sm {
+  display: inline-block !important;
+  @media (min-width: $screen-md) {
+    display: none !important;
+  }
+}
+.hide-sm {
+  display: none !important;
+  @media (min-width: $screen-md) {
+    display: inline-block !important;
+  }
+}
+
+.display-md {
+  display: inline-block !important;
+  @media (min-width: $screen-lg) {
+    display: none !important;
+  }
+}
+.hide-md {
+  display: none !important;
+  @media (min-width: $screen-lg) {
+    display: inline-block !important;
+  }
+}
+.col-list {
+  flex-wrap: wrap;
+}

@@ -1,0 +1,31 @@
+$themeColours: (
+  "primary": $theme-primary,
+  "secondary": $theme-secondary,
+  "red": $alert-danger,
+  "yellow": $color-yellow
+);
+body {
+  background-color: $theme-secondary;
+}
+header.header {
+  background-color: $theme-primary;
+}
+footer.footer {
+  color: $color-white;
+  background-color: $theme-primary;
+}
+
+a {
+  color: $theme-link-color;
+}
+.theme-inversed {
+  a:not(.btn) {
+    &:hover, &:active, &:focus {
+      color: $color-yellow;
+    }
+  }
+}
+
+.sub-footer-container {
+  background-color:  $theme-secondary;
+}

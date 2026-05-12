@@ -1,0 +1,52 @@
+$color-primary: #003f7f !default;
+
+$screen-sm: 375px !default;
+$screen-md: 768px !default;
+$screen-lg: 992px !default;
+$screen-xl: 1200px !default;
+
+$gutter: 16px !default;
+$button-padding: 8px !default;
+$button-border-radius: 8px !default;
+
+
+// Colors
+$color-white: #fff !default;
+$color-candy-pink: #a71068 !default;
+$color-candy-orange: #f19d2d !default;
+
+$color-gray: #585858 !default;
+$color-gray-light: #dddddd !default;
+
+// Alert https://colors.eva.design/
+$alert-success: #0F8230 !default;
+$alert-info: #2560DD !default;
+$alert-warning: #C19100 !default;
+$alert-danger: #BA321A !default;
+
+$theme-primary: $color-candy-pink !default;
+$theme-secondary: $color-candy-orange !default;
+
+$theme-font-size-base: 16px !default;
+$theme-header-text-color: $color-gray !default;
+$theme-body-text-color: $theme-header-text-color !default;
+$theme-font-line-height: $theme-font-size-base * 1.5 !default;
+$theme-font-family: 'Karla', sans-serif !default;
+$theme-header-font-family: $theme-font-family !default;
+$theme-body-font-weight: 400 !default;
+$theme-header-font-weight: 700 !default;
+$theme-link-color: #2560DD !default;
+
+$font-awesome: 'FontAwesome';
+
+$theme-label-size-base: 16px !default;
+$theme-label-text-transform: uppercase !default;
+
+@function set-color($color) {
+  @if (lightness($color) > 40) {
+    @return $theme-body-text-color;
+  }
+  @else {
+    @return $color-white;
+  }
+}

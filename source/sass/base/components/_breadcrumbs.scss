@@ -1,0 +1,47 @@
+.breadcrumb {
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $color-white;
+  margin-top: 0;
+  margin-bottom: $gutter * 3;
+  ol {
+    @extend .list-unstyled;
+    // list-style: none;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    clear: both;
+    width: 100%;
+    display: block;
+    margin: 0;
+  }
+  li {
+    @extend .list-unstyled;
+    line-height: inherit;
+    font-size: inherit;
+    display: inline;
+    padding: 0;
+    a {
+      color: $theme-link-color;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    a.active {
+      cursor: default;
+    }
+  }
+}
+// Carat styling 
+.breadcrumb ol {
+  li+li:before {
+    content: '\f054';
+    font-family: $font-awesome;
+    display: inline-block;
+    text-align: center;
+    padding: 4px .45rem 0 .35rem;
+    font-size: .7rem;
+    opacity: .7;
+  }
+} 

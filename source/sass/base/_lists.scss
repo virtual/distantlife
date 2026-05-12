@@ -1,0 +1,21 @@
+@use "sass:math";
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+.list-inline {
+  li {
+    display: inline;
+  }
+}
+.list-inline-block {
+  li {
+    display: inline-block;
+  }
+}
+.list-padded {
+  margin-left: math.div($theme-font-size-base, 2) * -1;
+  li {
+    padding: math.div($theme-font-size-base, 4) math.div($theme-font-size-base, 2); 
+  }
+}

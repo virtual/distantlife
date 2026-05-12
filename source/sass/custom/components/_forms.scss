@@ -1,0 +1,119 @@
+@use "sass:math";
+
+.form-group {
+  position: relative;
+  &.has-danger {
+    input {
+      box-shadow: 0 0 0 3px $alert-danger;
+      &::placeholder {
+        color: rgba($alert-danger, 0.5);
+      }
+    }
+    .text-help {
+      &.pristine-error {
+        position: absolute;
+        bottom: -12px;
+        left: $theme-font-size-base;
+        color: $alert-danger;
+        font-size: 14px;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+form.centered {
+  @include flexbox();
+  @include justify-content(space-around);
+  @include flex-direction(column);
+  @include align-items(center);
+  .form-group {
+    margin: 0 0 ($gutter) 0;
+    width: 100%;
+    @media (min-width: $screen-md) {
+      max-width: 350px;
+    }
+  }
+  label, input[type=text], input[type=password] {
+    width: 100%;
+  }
+  label {
+    color: $theme-body-text-color;
+    display: block;
+  }
+  button {
+    margin-top: $gutter;
+  }
+ 
+}
+input {
+  border-radius: $input-border-radius;
+  background-color: rgba($color-white, .8);
+}
+
+.btn-check {
+  position: absolute;
+  clip: rect(0,0,0,0);
+  pointer-events: none;
+}
+.form-quiz-container {
+  text-align: center;
+  input[type=submit],
+  button[type=submit] {
+    margin-top: $gutter;
+  }
+}
+.form-quiz {
+  @include flexbox();
+  @include flex-wrap(wrap);
+  margin-right: $gutter * -0.5;
+  margin-left: $gutter * -0.5;
+  .btn, .btn-radio {
+    @include flex-basis(calc(100% - #{$gutter} * 1));
+    margin-bottom: $gutter;
+    margin-right: $gutter * 0.5;
+    margin-left: $gutter * 0.5;
+    min-height: 60px;
+
+    @include flexbox();
+    @include align-items(center);
+    @include justify-content(center);
+    @include flex-direction(column);
+    
+    @media (min-width: $screen-md) {
+      @include flex-basis(calc(50% - #{$gutter} * 1)); 
+      min-height: 110px;
+    }
+  }
+}
+
+
+fieldset, legend {
+  color: $color-white;
+  border-color: rgba($color-white, .3);
+}
+legend {
+  font-size: 14px;
+  text-transform: uppercase;
+}
+form + form {
+  margin-top: $gutter;
+}
+fieldset {
+  width: 100%;
+}
+select {
+  padding: $gutter * .25;
+  font-size: $theme-font-size-base;
+}
+input[type=submit], button, select, option {
+  cursor: pointer;
+}
+td.form-options form {
+  display: inline-block;
+  width: auto;
+  margin-top: 0;
+}
+input {
+  color: $theme-primary;
+}

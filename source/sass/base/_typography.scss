@@ -1,0 +1,41 @@
+@use "sass:math";
+body {
+  font-weight: $theme-body-font-weight;
+  font-size: $theme-font-size-base;
+  font-family: $theme-font-family;
+  line-height: $theme-font-line-height;
+}
+
+$headingcount: 1;
+$headingcountmax: 2 !default;
+@while $headingcount <= $headingcountmax {
+    h#{$headingcount}, .h#{$headingcount} {
+      margin-top: 0;
+      margin-bottom: $gutter * 2;
+      color: $theme-header-text-color;
+      font-weight: $theme-header-font-weight;
+      font-size: .75 * (math.div($theme-font-size-base, math.div($headingcount, 5)));
+      font-family: $theme-header-font-family;
+      line-height: 1.3;  
+    }
+
+    $headingcount: $headingcount + 1;
+}
+
+.lead {
+  font-size: 1.2em;
+}
+.type-feature {
+  font-weight: 600;
+  font-size: 3em;
+}
+.type-dimmed {
+  opacity: .7;
+}
+.text-center {
+  text-align: center;
+}
+.text-small-caps {
+  font-size: 14px;
+  text-transform: uppercase;
+}

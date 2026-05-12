@@ -1,0 +1,14 @@
+input {
+  padding: $button-padding;
+  font-size: $theme-font-size-base;
+  font-family: $theme-font-family;
+  background: $color-white;
+  border: 1px solid $color-gray-light;
+}
+form {
+  width: 100%;
+}
+label {
+  font-size: $theme-label-size-base;
+  text-transform: $theme-label-text-transform;
+}

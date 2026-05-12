@@ -1,0 +1,26 @@
+// https://dev.to/frontendmentor/16-front-end-projects-with-designs-to-help-improve-your-coding-skills-5ajl
+@import './custom/variables';
+@import './base/variables';
+
+@import './imports.scss';
+
+// Local overrides
+@import './custom/structure';
+@import './custom/menu';
+@import './custom/footer';
+@import './custom/colors';
+@import './custom/typography';
+@import './custom/lists';
+
+@import './base/structure';
+@import './base/colors';
+@import './base/typography';
+
+@import './custom/components/cards';
+@import './custom/components/buttons';
+@import './custom/components/hero';
+@import './custom/components/forms';
+@import './custom/components/tables';
+@import './custom/components/progress';
+@import './custom/components/images';
+@import './custom/components/icons';

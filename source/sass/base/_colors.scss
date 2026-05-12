@@ -1,0 +1,24 @@
+$themeColours: (
+  "primary": $theme-primary,
+  "secondary": $theme-secondary
+) !default;
+
+@each $themeColour, $i in $themeColours {
+  .theme-#{$themeColour} {
+    color: $color-white;
+    background-color: $i;
+  }
+}
+@each $themeColour, $i in $themeColours {
+  .color-#{$themeColour} {
+    color: $i !important;
+  }
+}
+.theme-inversed {
+  h1, h2, h3, h4, h5, h6, p, ul, dl, ol {
+    color: $color-white;
+  }
+  a:not(.btn) {
+    color: $color-white;
+  }
+}

@@ -1,0 +1,35 @@
+// icons
+
+.icon-xxl {
+  font-size: 60px;
+}
+
+.badge {
+  padding: 5px 6px;
+  border-radius: 12px;
+  background-color: $alert-success;
+  color: $theme-primary;
+  font-size: 12px;
+  display: inline-block;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-right: $gutter * .5;
+  bottom: 1px;
+  position: relative;
+}
+.badge-success {
+  background-color: $alert-success;
+  color: $theme-primary;
+}
+.badge-warning {
+  background-color: $alert-warning;
+  color: $theme-primary;
+}
+.badge-danger {
+  background-color: $alert-danger;
+  color: $theme-primary;
+}
+.badge-info {
+  background-color: $alert-info;
+  color: $theme-primary;
+}

@@ -1,0 +1,17 @@
+$alertColours: (
+  'success': $alert-success,
+  'info': $alert-info,
+  'warning': $alert-warning,
+  'danger': $alert-danger
+) !default;
+
+@each $alertColour, $i in $alertColours {
+  .alert-#{$alertColour} {
+    background-color: $i;
+  }
+}
+.alert {
+  padding: $gutter * .5;
+  border-radius: 4px;
+  margin-bottom: $gutter * 1.25;
+}

@@ -1,0 +1,123 @@
+@use "sass:math";
+.menu-container {
+  nav {
+    background-color: transparent;
+
+    
+    @media (max-width: $screen-lg - 1px) {
+      height: 0;
+      opacity: 0;
+      &[aria-hidden=false] {
+        height: auto;
+        opacity: 1;
+      }
+    }
+    
+    
+    a:not(.btn) {
+      color: $color-white;
+      font-weight: 400;
+      font-size: $theme-font-size-base * .9;
+      &:hover {
+        color: $theme-link-color;
+      }
+    }
+    li {
+      position: relative;
+    }
+    .menu-user a {
+      position: relative;
+      padding-right: calc(#{$gutter} * 3 + 10px);
+      .rounded-circle {
+        right: 10px;
+        top: 6px;
+        position: absolute;
+      }
+    }
+  }
+  @media (min-width: $screen-md) {
+    padding-right: $gutter * 3;
+    padding-left: $gutter * 3;
+  }
+  .menu-logo {
+    padding: 15px $gutter;
+    button {
+      padding: 4px;
+      background-color: transparent;
+      color: $color-white;
+      &[aria-expanded=true] {
+        color: $color-yellow;
+      }
+    }
+  }
+
+  .rounded-circle { 
+    width: 34px;
+    height: 34px;
+    font-size: 10px;
+  }
+
+  // dropdown
+  li.has-dropdown {
+    ul.dropdown {
+      background-color: $theme-primary;
+      padding-left: 0;
+      padding-right: 0;
+      transition: all 0.5s ease;
+      top: 35px;
+      right: 0;
+      li {
+        clear: both;
+        width: 100%;
+        
+      }
+    }
+  }
+
+  @media (min-width: $screen-lg) {
+    li.has-dropdown {
+      ul.dropdown {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        display: none;
+        background-color: rgba($theme-primary, .8);
+      }
+      &:hover,
+      &:focus-within {
+        > a {
+          color: $color-yellow;
+        }
+      }
+      &:hover > ul,
+      &:focus-within > ul,
+      & ul:hover,
+      & ul:focus {
+        visibility: visible;
+        opacity: 1;
+        display: block;
+      }
+      li {
+        a {
+          padding: $gutter ($gutter * 2);
+        }
+      }
+    } 
+  }
+}
+.rounded-circle {
+  border-radius: 50%!important;
+}
+
+@media (min-width: $screen-lg) {
+  body.dir-rtl {
+    .menu-container {
+      li.has-dropdown {
+        ul.dropdown {
+          right: auto;
+          left: 0;
+        }
+      }
+    }
+  }
+} 

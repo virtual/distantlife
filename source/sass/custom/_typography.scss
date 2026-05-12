@@ -1,0 +1,42 @@
+@use "sass:math";
+$headingcountmax: 4;
+
+.type-constrained-width {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+::-moz-selection { 
+  color: $color-white;
+  background: $theme-primary;
+}
+::selection {
+  color: $color-white;
+  background: $theme-primary;
+}
+
+.layout-secondary-aside {
+  h3 {
+    margin-top: $gutter;
+    margin-bottom: 0;
+    font-size: 18px;
+  }
+  > aside > *:first-child {
+    margin-top: 0;
+  }
+}
+.secondary-main {
+  h1, h2 {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+}
+.text-lowercase {
+  text-transform: lowercase;
+}
+h1 .badge {
+  top: -3px;
+}
