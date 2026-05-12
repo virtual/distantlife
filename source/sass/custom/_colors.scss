@@ -1,10 +1,11 @@
 @use '../globals' as *;
 
 $themeColours: (
-
   "primary": $theme-primary,
-  "secondary": $theme-secondary
-) !default;
+  "secondary": $theme-secondary,
+  "red": $alert-danger,
+  "yellow": $color-yellow
+);
 
 @each $themeColour, $i in $themeColours {
   .theme-#{$themeColour} {
@@ -26,12 +27,6 @@ $themeColours: (
   }
 }
 
-$themeColours: (
-  "primary": $theme-primary,
-  "secondary": $theme-secondary,
-  "red": $alert-danger,
-  "yellow": $color-yellow
-);
 body {
   background-color: $theme-secondary;
 }
