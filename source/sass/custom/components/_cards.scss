@@ -1,3 +1,4 @@
+@use '../../globals' as *;
 @use "sass:math";
 .card-container {
   margin: ($gutter * 4) 0 ($gutter * 2) 0;
@@ -16,7 +17,7 @@
   padding-top: $gutter * 4;
   background: $color-white;
   position: relative;
-  color: lighten($theme-primary, 20);
+  color: dl-lighten($theme-primary, 20);
   margin-bottom: $gutter * 4;
   line-height: 1.7;
   border-radius: 8px;

@@ -146,3 +146,5 @@ dump.rdb
 
 # Local-only reference files
 .local/
+
+node_modules/

@@ -1,3 +1,5 @@
+@use '../../globals' as *;
+
 .progressbar {
   margin: 0 0 $gutter 0;
   background-color: $theme-primary;

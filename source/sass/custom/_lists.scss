@@ -1,3 +1,26 @@
+@use '../globals' as *;
+@use "sass:math";
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+.list-inline {
+  li {
+    display: inline;
+  }
+}
+.list-inline-block {
+  li {
+    display: inline-block;
+  }
+}
+.list-padded {
+  margin-left: math.div($theme-font-size-base, 2) * -1;
+  li {
+    padding: math.div($theme-font-size-base, 4) math.div($theme-font-size-base, 2); 
+  }
+}
+
 .list-stats {
   @include flexbox();
   @include justify-content(flex-start);
@@ -18,7 +41,8 @@
 
 
 .element-options {
-  @extend .list-unstyled;
+  list-style: none;
+  padding-left: 0;
   width: 100%;
   button {
     width: 100%;
@@ -34,7 +58,8 @@
   li.has-dropdown {
     position: relative;
     ul.dropdown {
-      @extend .list-unstyled;
+      list-style: none;
+      padding-left: 0;
       width: 100%;
       overflow: hidden;
       height: 0;

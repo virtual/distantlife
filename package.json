@@ -1,0 +1,12 @@
+{
+  "name": "distantlife-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "sass": "^1.79.0"
+  },
+  "scripts": {
+    "build:css": "sass source/sass/styles.scss static/proj04.css --no-source-map --style=compressed && sass source/sass/main.scss static/overrides.css --no-source-map --style=compressed",
+    "watch:css": "sass --watch source/sass/styles.scss:static/proj04.css source/sass/main.scss:static/overrides.css --style=expanded"
+  }
+}

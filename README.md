@@ -30,6 +30,29 @@ Future enhancements include:
 - Setup local environment to support compiling css based on [custom scss](https://github.com/virtual/fed-projects/tree/main/source/_assets/sass/04)
 - Autogenerate flash cards and quizzes based on the vocabulary in each set
 
+#### Building the SCSS
+
+This project ships the compiled CSS in `static/` and the SCSS sources live in `source/sass/`.
+
+You can use Dart Sass to compile the SCSS into the existing files consumed by the Flask templates:
+
+```bash
+# install dev dependency (one-time)
+npm install
+
+# build CSS once
+npm run build:css
+
+# or run a watcher in development
+npm run watch:css
+```
+
+The npm scripts compile:
+
+- `source/sass/styles.scss` -> `static/proj04.css`
+- `source/sass/main.scss` -> `static/overrides.css`
+
+
 ### 📔 Administration
 
 The admin dashboard (available at `/admin/` for users with admin role) provides comprehensive vocabulary and set management using the canonical lemma-based schema:

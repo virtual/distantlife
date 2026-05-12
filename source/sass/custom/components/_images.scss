@@ -1,3 +1,10 @@
+@use '../../globals' as *;
+@use "sass:math";
+img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}
 .pet-box {
   border: 1px solid $color-blue-light;
   background-color: rgba($color-blue-light, .3);

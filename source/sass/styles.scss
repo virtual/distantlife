@@ -1,26 +1,22 @@
 // https://dev.to/frontendmentor/16-front-end-projects-with-designs-to-help-improve-your-coding-skills-5ajl
-@import './custom/variables';
-@import './base/variables';
+@use './globals' as *;
 
-@import './imports.scss';
+@use './imports' as *;
 
 // Local overrides
-@import './custom/structure';
-@import './custom/menu';
-@import './custom/footer';
-@import './custom/colors';
-@import './custom/typography';
-@import './custom/lists';
+@use './custom/structure' as *;
+@use './custom/menu' as *;
+@use './custom/footer' as *;
+@use './custom/colors' as *;
+@use './custom/typography' as *;
 
-@import './base/structure';
-@import './base/colors';
-@import './base/typography';
+@use './custom/lists' as *;
 
-@import './custom/components/cards';
-@import './custom/components/buttons';
-@import './custom/components/hero';
-@import './custom/components/forms';
-@import './custom/components/tables';
-@import './custom/components/progress';
-@import './custom/components/images';
-@import './custom/components/icons';
+@use './custom/components/cards' as *;
+@use './custom/components/buttons' as *;
+@use './custom/components/hero' as *;
+@use './custom/components/forms' as *;
+@use './custom/components/tables' as *;
+@use './custom/components/progress' as *;
+@use './custom/components/images' as *;
+@use './custom/components/icons' as *;
