@@ -1,0 +1,15 @@
+@use '../../globals' as *;
+
+.js-hidden-until-answer {
+  display: none;
+}
+
+.cta-pet-image {
+  height: 100px;
+}
+
+@for $i from 0 through 100 {
+  .progress-width-#{$i} {
+    width: #{$i}%;
+  }
+}

@@ -37,7 +37,7 @@
 
     </div>
     <input type="hidden" id="experience" name="experience" value="{{ experience }}" />
-    <button style="display: none;" id="buttonContinue" type="submit" class="btn btn-primary">{{ _('ui.quiz.continue') }}</button>
+    <button id="buttonContinue" type="submit" class="btn btn-primary js-hidden-until-answer">{{ _('ui.quiz.continue') }}</button>
     <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('ui.quiz.skip') }}</button>
   </form>
 
