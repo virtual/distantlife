@@ -69,3 +69,17 @@ $theme-label-text-transform: uppercase !default;
 @function dl-lighten($color, $amount) {
   @return color.adjust($color, $lightness: ($amount * 1%));
 }
+
+:root {
+  --color-primary: #{$theme-primary};
+  --color-secondary: #{$theme-secondary};
+  --color-secondary-light: #{$color-blue-light};
+  --color-success: #{$color-green};
+  --color-danger: #{$alert-danger};
+  --color-warning: #{$alert-warning};
+  --color-white: #{$color-white};
+  --color-card-accent: #4e84a5;
+  --color-card-border: #99b6cb;
+  --color-card-surface: rgba(255, 255, 255, 0.1);
+  --color-overlay-blue: rgba(196, 224, 249, 0.5);
+}

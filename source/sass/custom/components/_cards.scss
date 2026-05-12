@@ -64,3 +64,20 @@
     @include flex-basis(calc(100% / 3));
   }
 }
+
+.card-image {
+  width: 63px;
+}
+.card .card-image .fad {
+  color: var(--color-warning);
+}
+.layout-secondary {
+  .card {
+    background-color: var(--color-card-surface);
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .card h3 {
+    color: var(--color-white);
+  }
+}

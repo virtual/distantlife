@@ -22,7 +22,7 @@
       {% call form_group('password', _('ui.auth.password')) %}
         {{ password_field('password', 'password', _('ui.auth.show_password'), _('ui.auth.hide_password'), minlength=12, autocomplete='new-password', required=true, describedby='password-criteria password-match-status') }}
       {% endcall %}
-      <div id="password-criteria" class="form-group password-help small-text" aria-live="polite">
+      <div id="password-criteria" class="form-group password-help text-small" aria-live="polite">
         <p id="password-criteria-status" class="password-criteria-status password-status">
           <span class="fal status-icon" aria-hidden="true"></span>
           <span class="sr-only status-state">{{ _('ui.auth.status.neutral') }}</span>
@@ -40,7 +40,7 @@
       {% call form_group('confirmation', _('ui.auth.retype_password')) %}
         {{ password_field('confirmation', 'confirmation', _('ui.auth.show_password'), _('ui.auth.hide_password'), autocomplete='new-password', required=true, describedby='password-match-status') }}
       {% endcall %}
-      <div class="form-group small-text">
+      <div class="form-group text-small">
         <p id="password-match-status" class="password-help password-match-status password-status" aria-live="polite">
           <span class="fal status-icon" aria-hidden="true"></span>
           <span class="sr-only status-state">{{ _('ui.auth.status.neutral') }}</span>

@@ -49,8 +49,7 @@ npm run watch:css
 
 The npm scripts compile:
 
-- `source/sass/styles.scss` -> `static/proj04.css`
-- `source/sass/main.scss` -> `static/overrides.css`
+- `source/sass/styles.scss` -> `static/styles.css` 
 
 
 ### 📔 Administration

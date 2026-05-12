@@ -133,3 +133,61 @@ td.form-options form {
 input {
   color: $theme-primary;
 }
+
+
+.password-field {
+  position: relative;
+}
+
+.form-group .has-password-toggle {
+  padding-inline-end: 40px;
+}
+
+.password-help {
+  margin-top: 8px;
+  line-height: 1.35;
+}
+
+.password-status {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.password-status .status-icon {
+  flex: 0 0 1em;
+  text-align: center;
+}
+
+.password-status .status-message {
+  flex: 1 1 auto;
+}
+
+.password-status .status-icon.d-none {
+  display: none;
+}
+
+.form-group .password-toggle {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  min-width: 0;
+  background: transparent;
+  color: var(--color-primary);
+  border: 0;
+  border-radius: 4px;
+  padding: 6px;
+  line-height: 1;
+  margin-top: 0;
+}
+
+.form-group .password-toggle:hover,
+.form-group .password-toggle:focus {
+  color: var(--color-secondary);
+}
+
+.form-group p {
+  margin-top: 0;
+}
