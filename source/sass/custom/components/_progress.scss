@@ -1,0 +1,16 @@
+@use '../../globals' as *;
+
+.progressbar {
+  margin: 0 0 $gutter 0;
+  background-color: $theme-primary;
+  height: 8px;
+  position: relative;
+  .filled {
+    background-color: $color-green;
+    padding: 4px 0;
+    line-height: 0;
+    display: inline-block;
+    position: absolute;
+    transition: width .2s ease-in-out;
+  }
+}

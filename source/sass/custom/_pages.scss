@@ -1,0 +1,9 @@
+// Template-specific component styles
+// Organized into focused modules for easier maintenance
+
+@use './templates/utilities' as *;
+@use './templates/admin' as *;
+@use './templates/auth' as *;
+@use './templates/quests' as *;
+@use './templates/quiz' as *;
+@use './templates/episodes' as *;

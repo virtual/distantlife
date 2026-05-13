@@ -1,0 +1,116 @@
+@use '../../globals' as *;
+
+%button {
+  display: block;
+  width: 100%;
+  padding: ($button-padding * 2) $button-padding;
+  font-size: 1.125rem;
+  font-family: $theme-font-family;
+  text-align: center;
+  text-decoration: none;
+  border: 0;
+  border-radius: $button-border-radius;
+  cursor: pointer;
+  transition: background-color .2s ease-in;
+  &:focus {
+    outline: 2px solid dl-darken($theme-primary, 20);
+  }
+  &:hover, &:focus, &:active {
+    color: initial;
+  }
+}
+button, .btn {
+  @extend %button;
+  &.btn-sm {
+    padding: ($button-padding * 1.5) ($button-padding * .75);
+    font-size: 1rem;
+  }  
+  .btn-lg {
+    padding: 1rem 2rem; 
+    font-size: 1.1rem;
+  }
+}
+
+.btn-primary {
+  color: set-color($theme-primary);
+  background-color: $theme-primary;
+  &:hover {
+    background-color: dl-darken($theme-primary, 10);
+  }
+}
+.btn-secondary {
+  color: set-color($theme-secondary);
+  background-color: $theme-secondary;
+  &:hover {
+    background-color: dl-darken($theme-secondary, 10);
+  }
+}
+
+.btn, button {
+  width: 100%;
+  min-width: 80px;
+  display: inline-block;
+  padding-left: $button-padding * 4;
+  padding-right: $button-padding * 4;
+  font-weight: 700;
+  color: $color-white;
+  background-color: $theme-primary;
+  text-transform: none;
+  @media (min-width: $screen-sm) {
+    width: auto;
+  }
+  &:hover, &:focus, &:active {
+    color: $color-yellow;
+  }
+  &.btn-red {
+    background-color: $color-berry;
+  }
+}
+
+.btn-radio {
+  width: 50%;
+  border: 4px solid $theme-primary;
+  &:hover, &:focus, &:active {
+    border-color: rgba($theme-secondary, .5);
+  }
+  &.btn-success {
+    border-color: $alert-success;
+  }
+  &.btn-error {
+    border-color: $alert-danger;
+  }
+}
+
+.btn-option {
+  background-color: transparent;
+  padding: ($gutter * .25) $gutter;
+  font-size: 24px;
+  min-width: 24px;
+}
+.btn.btn-secondary {
+  background-color: rgba(5, 5, 23, .5)
+}
+.btn-danger {
+  background-color: #d95a01;
+}
+
+.btn-icon {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  background: var(--color-primary-light);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

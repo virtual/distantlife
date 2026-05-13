@@ -10,49 +10,51 @@
       <input type="text" name="q" value="{{ q }}" placeholder="Lemma, translation, or form">
     </label>
   </div>
-  <div>
-    <label>Language:
-      <select name="language_id">
-        <option value="">All</option>
-        {% for language in languages %}
-          <option value="{{ language['id'] }}" {% if language_id == language['id'] %}selected{% endif %}>{{ language['name'] }}</option>
-        {% endfor %}
-      </select>
-    </label>
-  </div>
-  <div>
-    <label>POS:
-      <select name="pos_id">
-        <option value="">All</option>
-        {% for option in pos_options %}
-          <option value="{{ option['id'] }}" {% if pos_id == option['id'] %}selected{% endif %}>{{ option['type'] }}</option>
-        {% endfor %}
-      </select>
-    </label>
-  </div>
-  {% if has_state %}
-  <div>
-    <label>Status:
-      <select name="status">
-        <option value="">All</option>
-        <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
-        <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
-        <option value="review" {% if status == 'review' %}selected{% endif %}>Review</option>
-        <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
-        <option value="archived" {% if status == 'archived' %}selected{% endif %}>Archived</option>
-      </select>
-    </label>
-  </div>
-  {% endif %}
-  <div>
-    <label>Sort:
-      <select name="sort">
-        <option value="name-asc" {% if sort == 'name-asc' %}selected{% endif %}>Name A-Z</option>
-        <option value="name-desc" {% if sort == 'name-desc' %}selected{% endif %}>Name Z-A</option>
-        <option value="recent" {% if sort == 'recent' %}selected{% endif %}>Recently Updated</option>
-        {% if has_state %}<option value="status" {% if sort == 'status' %}selected{% endif %}>Status</option>{% endif %}
-      </select>
-    </label>
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <div>
+      <label>Language:
+        <select name="language_id">
+          <option value="">All</option>
+          {% for language in languages %}
+            <option value="{{ language['id'] }}" {% if language_id == language['id'] %}selected{% endif %}>{{ language['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div>
+      <label>POS:
+        <select name="pos_id">
+          <option value="">All</option>
+          {% for option in pos_options %}
+            <option value="{{ option['id'] }}" {% if pos_id == option['id'] %}selected{% endif %}>{{ option['type'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    {% if has_state %}
+    <div>
+      <label>Status:
+        <select name="status">
+          <option value="">All</option>
+          <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
+          <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+          <option value="review" {% if status == 'review' %}selected{% endif %}>Review</option>
+          <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
+          <option value="archived" {% if status == 'archived' %}selected{% endif %}>Archived</option>
+        </select>
+      </label>
+    </div>
+    {% endif %}
+    <div>
+      <label>Sort:
+        <select name="sort">
+          <option value="name-asc" {% if sort == 'name-asc' %}selected{% endif %}>Name A-Z</option>
+          <option value="name-desc" {% if sort == 'name-desc' %}selected{% endif %}>Name Z-A</option>
+          <option value="recent" {% if sort == 'recent' %}selected{% endif %}>Recently Updated</option>
+          {% if has_state %}<option value="status" {% if sort == 'status' %}selected{% endif %}>Status</option>{% endif %}
+        </select>
+      </label>
+    </div>
   </div>
   <div>
     <label>Rows:
@@ -73,7 +75,7 @@
   <input type="hidden" name="q" value="{{ q }}">
 
   {% if has_state %}
-  <div style="margin: 10px 0;">
+  <div class="admin-bulk-actions">
     <label for="action">Bulk action:</label>
     <select id="action" name="action" required>
       <option value="">Choose action</option>

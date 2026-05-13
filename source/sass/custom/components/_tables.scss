@@ -1,0 +1,77 @@
+@use '../../globals' as *;
+@use "sass:math";
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: $gutter * 2;
+  margin-bottom: $gutter * 2;
+}
+thead, tbody {
+  td, th {
+    padding: ($gutter * .25) $gutter;
+    color: $color-white;
+    text-align: left;
+    &.table-icon {
+      @media (min-width: $screen-md) {
+        width: 50px;
+        text-align: center;
+      }
+    }
+  }
+}
+thead {
+  th {
+    background-color: $theme-primary;
+    font-size: 1rem;
+  }
+}
+tbody {
+  tr {
+    td {
+      background-color: rgba($theme-primary, 0.05);
+      
+    }
+  }
+  tr:nth-child(2n + 1) {
+    td {
+      background-color: rgba($color-blue-light, 0.05);
+    }
+  }
+}
+
+@media (max-width: $screen-md-max) {
+  .table-responsive-stack {
+    display: block;
+    width: 100%;
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    tbody {
+      display: block;
+      width: 100%;
+    }
+    tr {
+      @include flexbox();
+      @include flex-direction(column);
+      width: 100%;
+    }
+  }
+}
+
+.secondary-main {
+  .table-responsive-stack {
+    td a {
+      &:hover, &:focus {
+        color: $color-yellow;
+      }
+    }
+  }
+}

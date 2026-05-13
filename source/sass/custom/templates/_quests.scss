@@ -1,0 +1,127 @@
+@use '../../globals' as *;
+
+.quest-overview {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.quest-overview-header {
+  margin-bottom: $gutter * 2;
+  text-align: center;
+}
+
+.quest-overview-meta {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: $gutter;
+}
+
+.quest-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: $button-border-radius;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.quest-episodes-section {
+  margin: $gutter 0;
+}
+
+.quest-episodes-section h3 {
+  margin-bottom: $gutter;
+}
+
+.episodes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $gutter;
+}
+
+.episode-card {
+  display: flex;
+  flex-direction: column;
+  padding: $gutter;
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: $button-border-radius;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.episode-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.episode-number {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.episode-content {
+  flex: 1;
+  margin-top: $gutter;
+}
+
+.episode-content h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-right: 3rem;
+}
+
+.episode-preview {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.episode-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.episode-actions .btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.quest-overview-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+@media (max-width: $screen-sm) {
+  .episodes-list {
+    grid-template-columns: 1fr;
+  }
+
+  .episode-actions {
+    flex-direction: column;
+  }
+
+  .episode-actions .btn {
+    min-width: unset;
+  }
+}

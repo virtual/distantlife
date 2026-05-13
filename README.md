@@ -30,6 +30,20 @@ Future enhancements include:
 - Setup local environment to support compiling css based on [custom scss](https://github.com/virtual/fed-projects/tree/main/source/_assets/sass/04)
 - Autogenerate flash cards and quizzes based on the vocabulary in each set
 
+#### Building the SCSS
+
+This project uses Dart Sass to compile SCSS to `static/styles.css`, and the SCSS sources live in `source/sass/` driven by `source/sass/styles.scss`.
+
+- Use Sass variables for build-time logic: breakpoints, fixed sizes, color calculations, and generated classes.
+- Use CSS custom properties for runtime theming: colors, surfaces, accents, and values you might want to override per page, mode, or user setting.
+
+```bash
+npm install # install dev dependency (one-time)
+npm run build:css # build CSS once
+npm run build:css:prod # build production CSS (minified, no source map)
+npm run watch:css # or run a watcher in development
+```
+
 ### 📔 Administration
 
 The admin dashboard (available at `/admin/` for users with admin role) provides comprehensive vocabulary and set management using the canonical lemma-based schema:

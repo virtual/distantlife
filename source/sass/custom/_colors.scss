@@ -1,0 +1,54 @@
+@use '../globals' as *;
+
+$themeColours: (
+  "primary": $theme-primary,
+  "secondary": $theme-secondary,
+  "red": $alert-danger,
+  "yellow": $color-yellow
+);
+
+@each $themeColour, $i in $themeColours {
+  .theme-#{$themeColour} {
+    color: $color-white;
+    background-color: $i;
+  }
+}
+@each $themeColour, $i in $themeColours {
+  .color-#{$themeColour} {
+    color: $i !important;
+  }
+}
+.theme-inversed {
+  h1, h2, h3, h4, h5, h6, p, ul, dl, ol {
+    color: $color-white;
+  }
+  a:not(.btn) {
+    color: $color-white;
+  }
+}
+
+body {
+  background-color: $theme-secondary;
+}
+header.header {
+  background-color: $theme-primary;
+}
+footer.footer {
+  color: $color-white;
+  background-color: $theme-primary;
+}
+
+a {
+  color: $theme-link-color;
+}
+.theme-inversed {
+  a:not(.btn) {
+    &:hover, &:active, &:focus {
+      color: $color-yellow;
+    }
+  }
+}
+
+.sub-footer-container {
+  background-color:  $theme-secondary;
+}

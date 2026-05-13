@@ -1,0 +1,100 @@
+@use '../globals' as *;
+@use "sass:math";
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+.list-inline {
+  li {
+    display: inline;
+  }
+}
+.list-inline-block {
+  li {
+    display: inline-block;
+  }
+}
+.list-padded {
+  margin-left: math.div($theme-font-size-base, 2) * -1;
+  li {
+    padding: math.div($theme-font-size-base, 4) math.div($theme-font-size-base, 2); 
+  }
+}
+
+.list-stats {
+  @include flexbox();
+  @include justify-content(flex-start);
+  margin-bottom: $gutter * .5;
+  dt { 
+    @include flex-basis(1rem);
+  }
+  dd { 
+    margin-left: $gutter;
+  }
+  + .list-stats {
+    margin-top: 0;
+  }
+  &:last-of-type {
+    margin-bottom: $gutter;
+  }
+}
+
+.element-options {
+  list-style: none;
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%;
+  button {
+    width: 100%;
+    text-align: left;
+    background-color: rgba($color-blue-light, .1);
+    &:after {
+      font-family: $font-awesome;
+      content: "\f107";
+      font-weight: 400;
+      float: right;
+    }
+  }
+  li.has-dropdown {
+    position: relative;
+    ul.dropdown {
+      list-style: none;
+      padding-left: 0;
+      width: 100%;
+      overflow: hidden;
+      height: 0;
+      position: absolute;
+      padding-right: 0;
+      z-index: 2;
+      
+      transition: all 1s ease-in-out;
+    }
+    &:active,
+    &:focus-within {
+      > a {
+        color: $color-yellow;
+      }
+    }
+    &:active > ul,
+    &:focus-within > ul,
+    & ul:hover,
+    & ul:focus {
+      height: auto;
+    }
+    li {
+      margin-top: 3px;
+      a {
+        padding: $gutter ($gutter * 2);
+        display: inline-block;
+        text-decoration: none;
+        width: 100%;
+        background-color: var(--color-card-accent);
+        display: block;
+      }
+      a.disabled {
+        opacity: 1;
+        color: rgba(255, 255, 255, .5)
+      }
+    }
+  } 
+}

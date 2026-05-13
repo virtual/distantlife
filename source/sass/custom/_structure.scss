@@ -1,0 +1,275 @@
+@use '../globals' as *;
+@use "sass:math";
+
+body {
+  @include flexbox();
+  @include flex-direction(column);
+  @include align-items(center);
+  @include justify-content(center);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0; 
+}
+* {
+  box-sizing: border-box;
+}
+.row {
+  @include flexbox();
+  @include flex-direction(column);
+  clear: both;
+  width: 100%;
+  @media (min-width: $screen-md) {
+    @include flex-direction(row);
+  }
+}
+.container {
+  width: 100%;
+  max-width: $screen-xl;
+  margin: 0 auto;
+}
+div[class^="col-"] {
+  padding: $gutter * 2;
+}
+
+// https://www.gavsblog.com/blog/for-each-while-loops-sass-scss
+$columns: 16 !default;
+
+// https://sass-lang.com/d/slash-div
+@media (min-width: $screen-md) {
+  @for $i from 1 through $columns {
+    .col-#{$i} {
+        width: math.div(100, $columns) * $i * 1%;
+    }
+  }
+}
+
+$marginbuffers: 5;
+@for $i from 0 through $marginbuffers {
+  .m-#{$i} {
+    margin: $i * ($theme-font-size-base * .5) !important;
+  }
+  .my-#{$i} {
+    margin-top: $i * ($theme-font-size-base * .5) !important;
+    margin-bottom: $i * ($theme-font-size-base * .5) !important;
+  }
+  .mx-#{$i} {
+    margin-right: $i * ($theme-font-size-base * .5) !important;
+    margin-left: $i * ($theme-font-size-base * .5) !important;
+  }
+  .mt-#{$i} {
+    margin-top: $i * ($theme-font-size-base * .5) !important;
+  }
+  .mb-#{$i} {
+    margin-bottom: $i * ($theme-font-size-base * .5) !important;
+  }
+  .ml-#{$i} {
+    margin-left: $i * ($theme-font-size-base * .5) !important;
+  }
+  .mr-#{$i} {
+    margin-right: $i * ($theme-font-size-base * .5) !important;
+  }
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+$paddingbuffers: 5;
+@for $i from 0 through $paddingbuffers {
+  .p-#{$i} {
+    padding: $i * ($theme-font-size-base * .5) !important;
+  }
+  .py-#{$i} {
+    padding-top: $i * ($theme-font-size-base * .5) !important;
+    padding-bottom: $i * ($theme-font-size-base * .5) !important;
+  }
+  .px-#{$i} {
+    padding-right: $i * ($theme-font-size-base * .5) !important;
+    padding-left: $i * ($theme-font-size-base * .5) !important;
+  }
+  .pt-#{$i} {
+    padding-top: $i * ($theme-font-size-base * .5) !important;
+  }
+  .pb-#{$i} {
+    padding-bottom: $i * ($theme-font-size-base * .5) !important;
+  }
+  .pl-#{$i} {
+    padding-left: $i * ($theme-font-size-base * .5) !important;
+  }
+  .pr-#{$i} {
+    padding-right: $i * ($theme-font-size-base * .5) !important;
+  }
+}
+
+
+.full-width {
+  position: relative;
+  right: 50%;
+  left: 50%;
+  width: 100vw;
+  margin-right: -50vw;
+  margin-left: -50vw;
+}
+.width-100 {
+  width: 100%;
+}
+.d-none {
+  display: none;
+}
+.d-inline {
+  display: inline !important;
+}
+.d-flex {
+  @include flexbox();
+  @include flex-wrap(wrap);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+body {
+  background-color: $theme-secondary;
+}
+
+header.header, 
+.sub-footer-container,
+.main-container,
+footer.footer {
+  @include flexbox();
+  width: 100%;
+  padding: $gutter;
+  @include flex-direction(column);
+}
+header.header {
+  padding: 0;
+  min-height: 60px;
+  align-items: center;
+  flex-direction: row;
+  .container {
+    @media (min-width: $screen-lg) {
+      padding: 0;
+    }
+  }
+}
+.main-container {
+  @include flex-grow(1);
+}
+
+$columns: 24;
+
+.layout-secondary {
+  @include flexbox();
+  @include flex-direction(column);
+  @include flex-grow(1);
+  width: 100%;
+  .layout-secondary-main, 
+  .layout-secondary-aside {
+    @include flex-grow(1);
+    padding: $gutter * 2;
+  }
+  .layout-secondary-main {
+    order: 1;
+    background-color: $theme-secondary;
+    main + main {
+      margin-top: $gutter * 2;
+      border-top: 2px solid rgba($theme-primary, .5);
+      padding-top: $gutter * 2;
+    }
+  }
+  .layout-secondary-aside {
+    order: 2;
+    background-color: rgba($theme-primary, .5);
+  }
+  @media (min-width: $screen-md) {
+    @include flex-direction(row);
+    .layout-secondary-main {
+      order: 2;
+    }
+    .layout-secondary-aside {
+      order: 1;
+      @include flex-basis(300px);
+      @include flex-grow(0);
+    }
+  }
+  @media (min-width: $screen-lg) {
+    .layout-secondary-aside {
+      @include flex-basis(320px);
+    }
+    .secondary-main {
+      margin: 0 auto;
+      max-width: 600px;
+    }
+  }
+
+  @media (min-width: $screen-xl) {
+    .layout-secondary-main, 
+    .layout-secondary-aside {
+      padding: $gutter * 3;
+    }
+    .layout-secondary-main {
+      > main {
+        width: 860px;
+      }
+
+    }
+    .layout-secondary-aside {
+      @include flexbox();
+      @include flex-basis(30vw);
+      @include justify-content(flex-end);
+      > aside {
+        width: 320px;
+      }
+    }
+  }
+  @media (min-width: 1540px) {
+    .layout-secondary-aside {
+      @include flex-basis(400px);
+      > aside {
+        width: 400px;
+      }
+    }
+  }
+}
+.main-options {
+  @include flexbox();
+  @include flex-direction(row);
+  @include align-items(center);
+  @include justify-content(space-between);
+  margin-bottom: $gutter;
+  button {}
+}
+
+.display-sm {
+  display: inline-block !important;
+  @media (min-width: $screen-md) {
+    display: none !important;
+  }
+}
+.hide-sm {
+  display: none !important;
+  @media (min-width: $screen-md) {
+    display: inline-block !important;
+  }
+}
+
+.display-md {
+  display: inline-block !important;
+  @media (min-width: $screen-lg) {
+    display: none !important;
+  }
+}
+.hide-md {
+  display: none !important;
+  @media (min-width: $screen-lg) {
+    display: inline-block !important;
+  }
+}
+.col-list {
+  flex-wrap: wrap;
+}

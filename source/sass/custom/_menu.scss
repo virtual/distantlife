@@ -1,0 +1,211 @@
+@use '../globals' as *;
+@use "sass:math";
+.menu-container {
+  @include flexbox();
+  @include flex-direction(column);
+  @include align-items(center);
+  @media (min-width: $screen-lg) {
+    @include flex-direction(row);
+  }
+  h1 {
+    margin: 0;
+    line-height: 0;
+  } 
+  .menu-logo {
+    display: flex;
+    width: 100%;
+    padding: $gutter;
+    text-align: left;
+    @include justify-content(space-between);
+    @include align-items(center);
+    @media (min-width: $screen-lg) {
+      width: auto;
+    }
+    button {
+      flex-grow: 0;
+      flex-shrink: 1;
+      width: auto;
+      background-color: transparent;
+      @media (min-width: $screen-lg) {
+        display: none;
+      }
+      &[aria-expanded=true] {
+        img {
+          filter: brightness(0) saturate(100%) invert(78%) sepia(90%) saturate(565%) hue-rotate(134deg) brightness(84%) contrast(90%);
+        }
+      }
+    }
+  }
+  nav {
+    width: 100%;
+    padding: 0 math.div($gutter, 2);
+    @include flexbox();
+    @include flex-direction(column);
+    @include flex-grow(1);
+    @media (min-width: $screen-lg) {
+      @include flex-direction(row);
+      @include justify-content(space-between);
+      @include align-items(center);
+    }
+    background-color: #fff;
+    @media (max-width: $screen-md-max) {
+      height: auto;
+      visibility: visible;
+      opacity: 1;
+      transition: 20ms all ease-in;
+      &[aria-hidden=true] {
+        height: 0;
+        opacity: 0;
+      }
+    }
+    ul {
+      margin: 0;
+      li a {
+        display: block;
+        @media (min-width: $screen-lg) {
+          display: inline-block;
+        }
+      }
+      li {
+        @media (max-width: $screen-md-max) {
+          display: block;
+        }
+      }
+      li.mobile-padded-link {
+        @media (max-width: $screen-md-max) {
+          margin-top: 20px;
+        }
+      }
+    }
+    a:not(.btn) {
+      padding: math.div($theme-font-size-base, 2) $theme-font-size-base;
+      color: $theme-body-text-color;
+      text-decoration: none;
+      &:hover {
+        color: $theme-primary;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.menu-container {
+  nav {
+    background-color: transparent;
+    
+    @media (max-width: $screen-md-max) {
+      height: 0;
+      opacity: 0;
+      &[aria-hidden=false] {
+        height: auto;
+        opacity: 1;
+      }
+    }    
+    
+    a:not(.btn) {
+      color: $color-white;
+      font-weight: 400;
+      font-size: $theme-font-size-base * .9;
+      &:hover {
+        color: $theme-link-color;
+      }
+    }
+    li {
+      position: relative;
+    }
+    .menu-user a {
+      position: relative;
+      padding-right: calc(#{$gutter} * 3 + 10px);
+      .rounded-circle {
+        right: 10px;
+        top: 6px;
+        position: absolute;
+      }
+    }
+  }
+  @media (min-width: $screen-md) {
+    padding-right: $gutter * 3;
+    padding-left: $gutter * 3;
+  }
+  .menu-logo {
+    padding: 15px $gutter;
+    button {
+      padding: 4px;
+      background-color: transparent;
+      color: $color-white;
+      &[aria-expanded=true] {
+        color: $color-yellow;
+      }
+    }
+  }
+
+  .rounded-circle { 
+    width: 34px;
+    height: 34px;
+    font-size: 10px;
+  }
+
+  // dropdown
+  li.has-dropdown {
+    ul.dropdown {
+      background-color: $theme-primary;
+      padding-left: 0;
+      padding-right: 0;
+      transition: all 0.5s ease;
+      top: 35px;
+      right: 0;
+      li {
+        clear: both;
+        width: 100%;        
+      }
+    }
+  }
+
+  @media (min-width: $screen-lg) {
+    li.has-dropdown {
+      ul.dropdown {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        display: none;
+        background-color: rgba($theme-primary, .8);
+      }
+      &:hover,
+      &:focus-within {
+        > a {
+          color: $color-yellow;
+        }
+      }
+      &:hover > ul,
+      &:focus-within > ul,
+      & ul:hover,
+      & ul:focus {
+        visibility: visible;
+        opacity: 1;
+        display: block;
+      }
+      li {
+        a {
+          padding: $gutter ($gutter * 2);
+        }
+      }
+    } 
+  }
+}
+
+.rounded-circle {
+  border-radius: 50% !important;
+}
+
+@media (min-width: $screen-lg) {
+  body.dir-rtl {
+    .menu-container {
+      li.has-dropdown {
+        ul.dropdown {
+          right: auto;
+          left: 0;
+        }
+      }
+    }
+  }
+} 
