@@ -118,6 +118,10 @@ $paddingbuffers: 5;
 .d-inline {
   display: inline !important;
 }
+.d-flex {
+  @include flexbox();
+  @include flex-wrap(wrap);
+}
 .sr-only {
   position: absolute;
   width: 1px;

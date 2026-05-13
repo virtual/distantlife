@@ -40,7 +40,7 @@ tbody {
   }
 }
 
-@media (max-width: $screen-lg - 1px) {
+@media (max-width: $screen-md-max) {
   .table-responsive-stack {
     display: block;
     width: 100%;

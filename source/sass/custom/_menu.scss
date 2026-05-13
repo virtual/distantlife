@@ -48,7 +48,7 @@
       @include align-items(center);
     }
     background-color: #fff;
-    @media (max-width: $screen-lg - 1px) {
+    @media (max-width: $screen-md-max) {
       height: auto;
       visibility: visible;
       opacity: 1;
@@ -67,12 +67,12 @@
         }
       }
       li {
-        @media (max-width: $screen-lg - 1px) {
+        @media (max-width: $screen-md-max) {
           display: block;
         }
       }
       li.mobile-padded-link {
-        @media (max-width: $screen-lg - 1px) {
+        @media (max-width: $screen-md-max) {
           margin-top: 20px;
         }
       }
@@ -92,9 +92,8 @@
 .menu-container {
   nav {
     background-color: transparent;
-
     
-    @media (max-width: $screen-lg - 1px) {
+    @media (max-width: $screen-md-max) {
       height: 0;
       opacity: 0;
       &[aria-hidden=false] {

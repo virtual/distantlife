@@ -22,7 +22,7 @@
   line-height: 1.7;
   border-radius: 8px;
   flex-basis: calc(100% / 3);
-  @media (max-width: $screen-md - 1px) {
+  @media (max-width: $screen-sm-max) {
     flex-basis: 100%;
     &:last-child {
       margin-bottom: 0;

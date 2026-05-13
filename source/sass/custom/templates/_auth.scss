@@ -1,6 +1,6 @@
 @use '../../globals' as *;
 
 .signup-intro {
-  max-width: 370px;
+  max-width: $screen-xs-max;
   margin: 0 auto;
 }

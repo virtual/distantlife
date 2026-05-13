@@ -41,7 +41,7 @@ figure {
 
 .pet-group .pet-image-sm { width: 50px; }
 .pet-group .pet-image-lg { width: 80px; }
-@media (min-width: 768px) {
+@media (min-width: $screen-md) {
   .pet-group .pet-image-sm { width: 100px; }
   .pet-group .pet-image-lg { width: 140px; }
 }

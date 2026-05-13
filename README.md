@@ -32,28 +32,17 @@ Future enhancements include:
 
 #### Building the SCSS
 
-This project ships the compiled CSS in `static/` and the SCSS sources live in `source/sass/`.
+This project uses Dart Sass to compile SCSS to `static/styles.css`, and the SCSS sources live in `source/sass/` driven by `source/sass/styles.scss`.
 
-You can use Dart Sass to compile the SCSS into the existing files consumed by the Flask templates:
+- Use Sass variables for build-time logic: breakpoints, fixed sizes, color calculations, and generated classes.
+- Use CSS custom properties for runtime theming: colors, surfaces, accents, and values you might want to override per page, mode, or user setting.
 
 ```bash
-# install dev dependency (one-time)
-npm install
-
-# build CSS once
-npm run build:css
-
-# build production CSS (minified, no source map)
-npm run build:css:prod
-
-# or run a watcher in development
-npm run watch:css
+npm install # install dev dependency (one-time)
+npm run build:css # build CSS once
+npm run build:css:prod # build production CSS (minified, no source map)
+npm run watch:css # or run a watcher in development
 ```
-
-The npm scripts compile:
-
-- `source/sass/styles.scss` -> `static/styles.css` 
-
 
 ### 📔 Administration
 

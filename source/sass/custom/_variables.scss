@@ -7,6 +7,11 @@ $screen-md: 768px;
 $screen-lg: 992px;
 $screen-xl: 1440px;
 
+$screen-xs-max: $screen-sm - 1px;
+$screen-sm-max: $screen-md - 1px;
+$screen-md-max: $screen-lg - 1px;  
+$screen-lg-max: $screen-xl - 1px;
+
 $gutter: 16px;
 $button-padding: 8px;
 $button-border-radius: 8px;

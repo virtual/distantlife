@@ -585,6 +585,17 @@ div[class^=col-] {
   display: inline !important;
 }
 
+.d-flex {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -2521,7 +2532,7 @@ figure .figure-img {
 }
 
 .signup-intro {
-  max-width: 370px;
+  max-width: 374px;
   margin: 0 auto;
 }
 
@@ -2949,7 +2960,7 @@ figure .figure-img {
   }
 }
 .quest-episode-detail {
-  max-width: 800px;
+  max-width: 991px;
 }
 
 .quest-episode-header {
