@@ -1530,6 +1530,10 @@ button.btn-sm, .btn.btn-sm {
   padding: 12px 6px;
   font-size: 1rem;
 }
+button .btn-lg, .btn .btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
 
 .btn-primary {
   color: #fff;
@@ -1597,6 +1601,27 @@ button.btn-sm, .btn.btn-sm {
 
 .btn-danger {
   background-color: #d95a01;
+}
+
+.btn-icon {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  background: var(--color-primary-light);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .hero-container {
@@ -2506,7 +2531,7 @@ figure .figure-img {
 }
 
 .quest-overview-header {
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
   text-align: center;
 }
 
@@ -2515,7 +2540,7 @@ figure .figure-img {
   gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
-  margin-top: 1rem;
+  margin-top: 16px;
 }
 
 .quest-badge {
@@ -2523,30 +2548,30 @@ figure .figure-img {
   padding: 0.25rem 0.75rem;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .quest-episodes-section {
-  margin: 2rem 0;
+  margin: 16px 0;
 }
 
 .quest-episodes-section h3 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 16px;
 }
 
 .episodes-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 16px;
 }
 
 .episode-card {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 16px;
   background: var(--color-bg-secondary);
   border: 2px solid var(--color-border);
   border-radius: 8px;
@@ -2577,7 +2602,7 @@ figure .figure-img {
 
 .episode-content {
   flex: 1;
-  margin-top: 1rem;
+  margin-top: 16px;
 }
 
 .episode-content h4 {
@@ -2612,7 +2637,7 @@ figure .figure-img {
   text-align: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 375px) {
   .episodes-list {
     grid-template-columns: 1fr;
   }
@@ -2661,8 +2686,8 @@ figure .figure-img {
   background: var(--color-bg-accent);
   border-left: 4px solid var(--color-primary);
   padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: 6px;
+  margin-bottom: 16px;
+  border-radius: 8px;
 }
 
 .quiz-vocabulary-reference {
@@ -2670,7 +2695,7 @@ figure .figure-img {
   padding: 1.5rem;
   margin-bottom: 2rem;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .quiz-vocabulary-reference h4 {
@@ -2748,7 +2773,7 @@ figure .figure-img {
 }
 
 .question-content {
-  margin-top: 1rem;
+  margin-top: 16px;
 }
 
 .question-prompt {
@@ -2759,7 +2784,7 @@ figure .figure-img {
 
 .question-cloze .cloze-input {
   padding: 0.75rem;
-  font-size: 1rem;
+  font-size: 18px;
   border: 2px solid var(--color-border);
   border-radius: 6px;
   width: 100%;
@@ -2775,16 +2800,16 @@ figure .figure-img {
 .question-multiple-choice {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 16px;
 }
 
 .choice-label {
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 16px;
   background: white;
   border: 2px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -2795,7 +2820,7 @@ figure .figure-img {
 }
 
 .choice-input {
-  margin-right: 0.75rem;
+  margin-right: 16px;
   cursor: pointer;
   accent-color: var(--color-primary);
 }
@@ -2819,13 +2844,13 @@ figure .figure-img {
 .sequence-options {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 16px;
 }
 
 .sequence-label {
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 16px;
   background: white;
   border: 2px solid var(--color-border);
   border-radius: 6px;
@@ -2900,11 +2925,6 @@ figure .figure-img {
   justify-content: center;
   margin-top: 2rem;
   flex-wrap: wrap;
-}
-
-.btn-lg {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
 }
 
 @media (max-width: 600px) {
@@ -3038,27 +3058,6 @@ figure .figure-img {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
-}
-
-.btn-icon {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
-  background: var(--color-primary-light);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--color-primary);
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: var(--color-primary);
-  color: white;
-}
-
-.btn-icon:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .vocabulary-table {
