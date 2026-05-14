@@ -18,7 +18,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed
 from fileparser import save_words
 from normalization import compute_search_key, has_nikkud
 
@@ -284,7 +284,7 @@ def quests():
 
 
 @app.route("/quest/<quest_id>")
-@login_required
+@adopted_pet_required
 def quest_detail(quest_id):
     """Quest detail page with story and quiz content."""
     user_id = session_get_int("user_id")
@@ -310,7 +310,7 @@ def quest_detail(quest_id):
 
 
 @app.route("/quest/<quest_id>/<episode_id>")
-@login_required
+@adopted_pet_required
 def quest_episode(quest_id, episode_id):
     """Quest episode detail page showing story and sentences for a single episode."""
     user_id = session_get_int("user_id")
@@ -337,6 +337,12 @@ def quest_episode(quest_id, episode_id):
     except ValueError as e:
         flash(str(e))
         return redirect(f"/quest/{quest_id}")
+
+    # Enforce sequential episode access: require previous episode completion
+    prev_ep = episode.get("previous_episode_id")
+    if prev_ep and not has_completed_episode(session_get_int("user_id"), quest_id, prev_ep):
+        flash("This episode is locked. Complete the previous episode to unlock.")
+        return redirect(f"/quest/{quest_id}/{prev_ep}")
     
     # Get vocabulary with translations
     vocabulary_with_translations = []
@@ -440,7 +446,7 @@ def _grade_quiz_submission(questions, form_data):
 
 
 @app.route("/quiz/<quest_id>/<episode_id>")
-@login_required
+@adopted_pet_required
 def quiz_episode(quest_id, episode_id):
     """Quiz page for a specific episode - focuses on quiz questions."""
     user_id = session_get_int("user_id")
@@ -467,6 +473,12 @@ def quiz_episode(quest_id, episode_id):
     except ValueError as e:
         flash(str(e))
         return redirect(f"/quest/{quest_id}")
+
+    # Enforce sequential episode access for quizzes as well
+    prev_ep = episode.get("previous_episode_id")
+    if prev_ep and not has_completed_episode(session_get_int("user_id"), quest_id, prev_ep):
+        flash("This episode is locked. Complete the previous episode to unlock.")
+        return redirect(f"/quest/{quest_id}/{prev_ep}")
 
     # Extract quiz from episode
     quiz = episode.get("quiz", {})
@@ -508,7 +520,7 @@ def quiz_episode(quest_id, episode_id):
 
 
 @app.route("/quiz/<quest_id>/<episode_id>/submit", methods=["POST"])
-@login_required
+@adopted_pet_required
 def quiz_episode_submit(quest_id, episode_id):
     """Validate a quiz submission for a quest episode."""
     user_id = session_get_int("user_id")
@@ -542,8 +554,26 @@ def quiz_episode_submit(quest_id, episode_id):
         flash("No quiz questions found for this episode.")
         return redirect(f"/quiz/{quest_id}/{episode_id}")
 
+    # Ensure the user submitted at least one answer field
+    has_answer = any(k.startswith("answer_") for k in request.form.keys())
+    if not has_answer:
+        flash("No answers submitted. Please answer the questions before submitting.")
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
     submission = _grade_quiz_submission(questions, request.form)
     flash(f"You got {submission['correct']} of {submission['total']} correct.")
+
+    next_episode_url = None
+    # If user got everything correct, record completion and award experience once
+    if submission.get('total') and submission.get('correct') == submission.get('total'):
+        first_time = record_episode_completed(session_get_int('user_id'), quest_id, episode_id)
+        if first_time:
+            # Award experience equal to number of questions (simple rule)
+            awarded = update_experience(submission['total'])
+            flash(f"Gained {submission['total']} experience for completing the quiz!")
+            # If there is a next episode, build its URL so the template can show a link/button
+            if episode.get('has_next') and episode.get('next_episode_id'):
+                next_episode_url = f"/quest/{quest_id}/{episode.get('next_episode_id')}"
 
     vocabulary_with_translations = []
     episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")

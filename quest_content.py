@@ -92,6 +92,7 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
         list of dicts with 'word' (learning lang) and 'translation' (preferred lang)
     """
     from connections import get_db_connection
+    from normalization import has_nikkud
     
     db = get_db_connection()
     logger.info("get_vocabulary_with_translations called: targets=%s learning_lang_id=%s preferred_lang_id=%s", vocabulary_targets, learning_lang_id, preferred_lang_id)
@@ -110,6 +111,7 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
             word_str = str(target)
 
         if lemma_id is not None:
+            # Get primary (unvocalized) form
             primary_form = db.execute(
                 """
                 SELECT value
@@ -119,7 +121,26 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
                 """,
                 (lemma_id, learning_lang_id),
             ).fetchone()
-            if primary_form is not None:
+
+            # Look for a vocalized (nikkud) form in non-primary lemma_form rows
+            vocalized_form = None
+            vocal_rows = db.execute(
+                """
+                SELECT value
+                FROM lemma_form
+                WHERE lemma_id = ? AND language_id = ? AND (is_primary = 0 OR is_primary IS NULL)
+                ORDER BY id ASC
+                """,
+                (lemma_id, learning_lang_id),
+            ).fetchall()
+            for vr in vocal_rows:
+                if vr and vr['value'] and has_nikkud(vr['value']):
+                    vocalized_form = vr['value']
+                    break
+
+            if vocalized_form:
+                word_str = vocalized_form
+            elif primary_form is not None:
                 word_str = primary_form['value']
             else:
                 # Keep deterministic fallback text in UI for bad references.

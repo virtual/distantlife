@@ -18,6 +18,11 @@
     <section class="quiz-result card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
       <h3>Quiz results</h3>
       <p>{{ quiz_result.correct }} / {{ quiz_result.total }} {{ _('ui.quests.question') }}{% if quiz_result.total != 1 %}s{% endif %} correct</p>
+      {% if next_episode_url %}
+        <p>
+          <a class="btn btn-primary" href="{{ next_episode_url }}">{{ _('ui.quests.next_episode_continue') or 'Continue to next episode' }}</a>
+        </p>
+      {% endif %}
     </section>
   {% endif %}
 
@@ -59,6 +64,7 @@
   <!-- Quiz Questions -->
   <section class="quiz-questions">
     <form id="quizForm" method="POST" action="/quiz/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}/submit">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       {% if questions and questions is iterable %}
         {% for question in questions %}
           {% set question_index = loop.index0 %}
@@ -247,6 +253,58 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+  
+  // Drag/drop for quiz sentence reorder helper
+  const quizSentenceList = document.getElementById('quizSentenceList');
+  if (quizSentenceList) {
+    const sentenceItems = Array.from(quizSentenceList.querySelectorAll('.sentence-item'));
+    let draggedSentence = null;
+
+    sentenceItems.forEach(item => {
+      item.addEventListener('dragstart', function() {
+        draggedSentence = this;
+        this.classList.add('dragging');
+      });
+
+      item.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+        Array.from(quizSentenceList.querySelectorAll('.sentence-item')).forEach(i => i.classList.remove('drag-over'));
+        draggedSentence = null;
+      });
+
+      item.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (draggedSentence && draggedSentence !== this) {
+          this.classList.add('drag-over');
+        }
+      });
+
+      item.addEventListener('dragleave', function() {
+        this.classList.remove('drag-over');
+      });
+
+      item.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (draggedSentence && draggedSentence !== this) {
+          const allItems = Array.from(quizSentenceList.querySelectorAll('.sentence-item'));
+          const draggedIndex = allItems.indexOf(draggedSentence);
+          const targetIndex = allItems.indexOf(this);
+
+          if (draggedIndex < targetIndex) {
+            this.parentNode.insertBefore(draggedSentence, this.nextSibling);
+          } else {
+            this.parentNode.insertBefore(draggedSentence, this);
+          }
+        }
+      });
+    });
+
+    function updateSentenceListOrder() {
+      Array.from(quizSentenceList.querySelectorAll('.sentence-item')).forEach((item, idx) => {
+        item.dataset.itemIndex = idx + 1;
+      });
+    }
+  }
 });
 </script>
 {% endblock %}

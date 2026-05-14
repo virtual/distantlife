@@ -700,6 +700,55 @@ def record_words_learned(user_id, learned_id, word_ids):
     con.commit()
 
 
+def has_completed_episode(user_id, quest_id, episode_id):
+    """Return True if the user has completed the given quest episode."""
+    if not table_exists("user_completed_episodes"):
+        return False
+
+    row = db.execute(
+        "SELECT 1 FROM user_completed_episodes WHERE user_id = ? AND quest_id = ? AND episode_id = ? LIMIT 1",
+        (int(user_id), str(quest_id), str(episode_id)),
+    ).fetchone()
+    return row is not None
+
+
+def record_episode_completed(user_id, quest_id, episode_id):
+    """Record that a user completed a specific quest episode.
+
+    Returns True if this is the first time the episode was recorded (inserted),
+    False if it already existed or if the table is not available.
+    """
+    # Lazily create the table if it doesn't exist so migrations are optional.
+    if not table_exists("user_completed_episodes"):
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_completed_episodes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                quest_id TEXT NOT NULL,
+                episode_id TEXT NOT NULL,
+                completed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, quest_id, episode_id)
+            )
+            """
+        )
+        con.commit()
+
+    existing = db.execute(
+        "SELECT id FROM user_completed_episodes WHERE user_id = ? AND quest_id = ? AND episode_id = ?",
+        (int(user_id), str(quest_id), str(episode_id)),
+    ).fetchone()
+    if existing is not None:
+        return False
+
+    db.execute(
+        "INSERT INTO user_completed_episodes (user_id, quest_id, episode_id, completed_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+        (int(user_id), str(quest_id), str(episode_id)),
+    )
+    con.commit()
+    return True
+
+
 def get_learning_progress(user_id):
     """Return aggregate learning progress for a user."""
     learned_words = db.execute(
@@ -745,7 +794,11 @@ def update_experience(amount):
         "UPDATE pets SET exp = ? WHERE id = ?", (exp, active_pet_id))
     con.commit()
     if (updateqry.rowcount > 0):
-        session.get("active_pet")["exp"] = exp
+        # Update session active pet safely if present
+        active_pet = session.get("active_pet")
+        if isinstance(active_pet, dict):
+            active_pet["exp"] = exp
+            session["active_pet"] = active_pet
         return exp
     else:
         return 0

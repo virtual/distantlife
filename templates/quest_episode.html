@@ -51,44 +51,18 @@
     </section>
   {% endif %}
 
-  <!-- Speech Bubble Lines -->
+  <!-- Speech Bubble Lines -->  <!-- Speech Bubble Lines (quiz-only) -->
   {% if episode.speech_bubble_lines %}
-    <section class="quest-section">
+    <section class="quiz-speech-lines quest-section">
       <h4>{{ _('ui.quests.speech_lines') }}</h4>
-      <ul class="quest-bubble-list" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
+      <ul class="quest-bubble-list" dir="{{ session.language.learning_charcode | to_direction }}">
         {% for line in episode.speech_bubble_lines %}
           <li>{{ line }}</li>
         {% endfor %}
       </ul>
     </section>
   {% endif %}
-
-  <!-- Reorderable Sentences -->
-  {% if episode.sentences %}
-    <section class="quest-section">
-      <h4>{{ _('ui.quests.sentence_order') }}</h4>
-      <p class="section-instruction">{{ _('ui.quests.reorder_instruction') }}</p>
-      
-      <div class="sentence-reorder-container">
-        <ol class="sentence-list" id="sentenceList" role="region" aria-label="Reorderable story sentences" dir="{{ session.language.learning_charcode | to_direction }}">
-          {% for sentence in episode.sentences %}
-              <li class="sentence-item" data-order="{{ sentence.order or loop.index }}" draggable="true">
-                <span class="sentence-drag-handle" aria-label="Drag to reorder">⋮⋮</span>
-                <span class="sentence-text" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ sentence.text if sentence.text is string else sentence.text }}</span>
-              <div class="sentence-controls">
-                <button class="btn-icon btn-move-up" data-index="{{ loop.index0 }}" aria-label="Move sentence up">
-                  <span aria-hidden="true">↑</span> {{ _('ui.quests.move_up') }}
-                </button>
-                <button class="btn-icon btn-move-down" data-index="{{ loop.index0 }}" aria-label="Move sentence down">
-                  <span aria-hidden="true">↓</span> {{ _('ui.quests.move_down') }}
-                </button>
-              </div>
-            </li>
-          {% endfor %}
-        </ol>
-      </div>
-    </section>
-  {% endif %}
+  <!-- Speech lines and sentence reordering intentionally shown on the quiz page only -->
 
   <!-- Navigation and Actions -->
   <div class="quest-episode-actions">
