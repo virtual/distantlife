@@ -1,10 +1,12 @@
 {% macro progressbar(exp) %}
-{% set level %}{{ (exp // 100) + 1 }}{% endset %}
-{% set percent %}{{ exp % 100 }}{% endset %}
-    <p class="text-small-caps mb-0">{{ _('ui.level') }} {{ level }} | {{ _('ui.experience') }}: {{ percent }}/100 </p>
+{% set progress_data %}{{ (exp | get_level_progress) }}{% endset %}
+{% set level %}{{ exp | get_level }}{% endset %}
+{% set progress_info = (exp | get_level_progress) %}
+{% set percent %}{{ progress_info.progress_percent }}{% endset %}
+    <p class="text-small-caps mb-0">{{ _('ui.level') }} {{ level }} | {{ _('ui.experience') }}: {{ progress_info.current_exp }}/{{ progress_info.exp_for_next }} </p>
     <div class="progressbar" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
-      <span class="filled progress-width-{{ percent }}"></span>
-      <span class="sr-only">{{percent}}</span>
+      <span class="filled progress-width" style="width: {{ percent }}%;"></span>
+      <span class="sr-only">{{percent}}%</span>
     </div>
 {% endmacro %}
 

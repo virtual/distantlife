@@ -489,3 +489,18 @@ These choices can stay open until the implementation phase, but the document sho
 - Quest starts, completions, abandonments, and answer-mode performance should be tracked so difficulty and economy can be tuned later.
 - Schema changes for unlocks, gender defaults, and quest content should include a migration plan and backfill strategy.
 - The Quest Board should define explicit empty, loading, and no-active-quest states so the page does not feel broken.
+
+## Experience levels
+
+| Level | Total EXP Required | EXP to Next Level |
+| ----- | ------------------ | ----------------- |
+| 1 | 0 | 7 |
+| 2 | 7 | 10 |
+| 3 | 17 | 15 |
+| 4 | 32 | 22 |
+| 5 | 54 | 32 |
+| 6 | 86 | 47 |
+| 7 | 133 | 68 |
+| 8 | 201 | 99 |
+| 9 | 300 | 143 |
+| 1 | 443 | 208 |

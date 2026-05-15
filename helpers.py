@@ -1,6 +1,7 @@
 from flask import flash, redirect, render_template, session
 from functools import wraps
 from datetime import datetime
+import math
 import random
 from flask_babel import gettext as _
 import os
@@ -14,6 +15,111 @@ r = get_redis_client()
 
 
 STARTER_PET_TYPE_IDS = (1, 6, 10, 26, 16) # Dragon, Genie, Faun, Cerberus, Cyclops
+
+XP_EXP_BASE = 16
+XP_EXP_GROWTH = 1.45
+
+
+# ============================================================================
+# Exponential Leveling System
+# ============================================================================
+# Total XP for a level follows:
+# floor(XP_EXP_BASE * (XP_EXP_GROWTH^(level - 1) - 1))
+#
+# This starts fast and scales up naturally:
+#   Level 1: 0 exp total
+#   Level 2: 7 exp total
+#   Level 3: 17 exp total
+#   Level 6: 86 exp total
+
+def _level_to_total_xp(level):
+    """Convert a target level to the minimum total XP threshold for that level."""
+    if level <= 1:
+        return 0
+    return math.floor(XP_EXP_BASE * (math.pow(XP_EXP_GROWTH, level - 1) - 1))
+
+
+def _total_xp_to_level(total_exp):
+    """Convert total XP to level using the configured exponential curve."""
+    level = 1
+    while total_exp >= _level_to_total_xp(level + 1):
+        level += 1
+    return level
+
+def exp_required_for_level(level):
+    """
+    Calculate total experience required to reach a given level.
+
+        Uses exponential formula:
+            floor(XP_EXP_BASE * (XP_EXP_GROWTH^(level - 1) - 1))
+
+    Level 1 requires 0 exp (starting point).
+    
+    Args:
+        level: Target level (1-based)
+    
+    Returns:
+        int: Total experience points needed to reach that level
+    """
+    return int(_level_to_total_xp(level))
+
+
+def get_total_xp_for_level(level):
+    """Calculates total XP needed for a given level using the exponential curve."""
+    return exp_required_for_level(level)
+
+
+def check_level_up(current_level, current_total_xp):
+    """Determines whether current total XP has reached the next level threshold."""
+    next_level_xp = get_total_xp_for_level(int(current_level) + 1)
+    return int(current_total_xp) >= next_level_xp
+
+
+def get_level_from_exp(total_exp):
+    """
+    Calculate current level from total experience points.
+    
+    Args:
+        total_exp: Total experience accumulated
+    
+    Returns:
+        int: Current level (minimum 1)
+    """
+    total_exp = max(0, int(total_exp))
+    level = _total_xp_to_level(total_exp)
+    return max(1, level)
+
+
+def get_level_progress(total_exp):
+    """
+    Get current level, experience towards next level, and progress percentage.
+    
+    Args:
+        total_exp: Total experience accumulated
+    
+    Returns:
+        dict with keys:
+            - level: Current level
+            - current_exp: Experience accumulated in current level
+            - exp_for_next: Experience required for next level
+            - progress_percent: Progress towards next level (0-100)
+    """
+    current_level = get_level_from_exp(total_exp)
+    exp_at_current_level = exp_required_for_level(current_level)
+    exp_at_next_level = exp_required_for_level(current_level + 1)
+    
+    current_exp = total_exp - exp_at_current_level
+    exp_needed = exp_at_next_level - exp_at_current_level
+    
+    progress_percent = int((current_exp / exp_needed) * 100) if exp_needed > 0 else 0
+    progress_percent = min(100, max(0, progress_percent))  # Clamp 0-100
+    
+    return {
+        "level": current_level,
+        "current_exp": current_exp,
+        "exp_for_next": exp_needed,
+        "progress_percent": progress_percent,
+    }
 
 
 def table_exists(table_name):

@@ -2037,12 +2037,15 @@ tbody tr:nth-child(2n+1) td {
   background-color: #050517;
   height: 8px;
   position: relative;
+  overflow: hidden;
 }
 .progressbar .filled {
   background-color: #00A676;
-  padding: 4px 0;
+  height: 100%;
+  left: 0;
+  top: 0;
   line-height: 0;
-  display: inline-block;
+  display: block;
   position: absolute;
   transition: width 0.2s ease-in-out;
 }
@@ -2695,6 +2698,10 @@ figure .figure-img {
     min-width: unset;
   }
 }
+.quest-story-text {
+  font-size: 23.4px;
+}
+
 .quiz-container {
   max-width: 900px;
   margin: 0 auto;

@@ -18,7 +18,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed, get_level_from_exp
 from fileparser import save_words
 from normalization import compute_search_key, has_nikkud
 
@@ -78,6 +78,26 @@ def to_direction(charcode):
         'rtl' for right-to-left languages (Hebrew), 'ltr' for others
     """
     return resolve_language_direction(charcode)
+
+
+@app.template_filter('get_level')
+def get_level(total_exp):
+    """
+    Jinja2 filter to calculate level from total experience.
+    Uses logarithmic (quadratic) scaling for experience requirements.
+    """
+    from helpers import get_level_from_exp
+    return get_level_from_exp(int(total_exp))
+
+
+@app.template_filter('get_level_progress')
+def get_level_progress(total_exp):
+    """
+    Jinja2 filter to get level progress data from total experience.
+    Returns a dict with level, current_exp, exp_for_next, and progress_percent.
+    """
+    from helpers import get_level_progress as calc_progress
+    return calc_progress(int(total_exp))
 
 
 @app.after_request
@@ -1641,7 +1661,9 @@ def petedit():
         # Confirmed user owns this pet
         if rows[0]['count'] == 1:
             exp = db.execute("SELECT exp FROM pets WHERE id = ?", (pet_id, )).fetchall()
-            if (int(exp[0]['exp']) >= 100):
+            total_exp = int(exp[0]['exp'])
+            level = get_level_from_exp(total_exp)
+            if level >= 2:
                 db.execute("UPDATE pets SET name = ? WHERE id = ?", (rename, pet_id, ))
                 con.commit()
 
@@ -1649,7 +1671,7 @@ def petedit():
                 set_active_pet_in_session(session_get_int("user_id"))
                 flash("Pet renamed to " + rename)
             else:
-                return apology("Your pet needs at least 100 experience to be renamed!", 403)
+                return apology("Your pet needs to reach level 2 to be renamed!", 403)
 
         return redirect('/pets/edit/?id='+ str(pet_id))
     else:
