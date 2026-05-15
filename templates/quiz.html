@@ -15,7 +15,7 @@
   </div>
 
   {% if quiz_result %}
-    <section class="quiz-result card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
+    <section class="quiz-result card-accent" dir="{{ language_dir() }}">
       <h3>Quiz results</h3>
       <p>{{ quiz_result.correct }} / {{ quiz_result.total }} {{ _('ui.quests.question') }}{% if quiz_result.total != 1 %}s{% endif %} correct</p>
       {% if next_episode_url %}
@@ -27,11 +27,13 @@
   {% endif %}
 
   <!-- Episode Summary -->
-  <section class="quiz-summary card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
-    <h3>{{ episode.title }}</h3>
-    {% if episode.story_text %}
-      <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
-    {% endif %}
+  <section class="quest-section" dir="{{ language_dir() }}">
+    <div class="quest-story-text card-accent">
+      <h3>{{ episode.title }}</h3>
+      {% if episode.story_text %}
+        <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
+      {% endif %}
+    </div>
   </section>
 
   <!-- Vocabulary Reference -->
@@ -42,14 +44,14 @@
         <table class="vocabulary-table">
           <thead>
             <tr>
-              <th dir="{{ session.language.learning_charcode | to_direction }}">{{ quest_metadata.locale.upper() }}</th>
+              <th dir="{{ language_dir() }}">{{ quest_metadata.locale.upper() }}</th>
               <th>{{ session.language.charcode.upper() if session.language else 'EN' }}</th>
             </tr>
           </thead>
           <tbody>
             {% for vocab in vocabulary_with_translations %}
               <tr>
-                <td class="vocab-word" dir="{{ session.language.learning_charcode | to_direction }}">{{ vocab.word }}</td>
+                <td class="vocab-word" dir="{{ language_dir() }}">{{ vocab.word }}</td>
                 <td class="vocab-translation">{{ vocab.translation }}</td>
               </tr>
             {% endfor %}
@@ -61,6 +63,25 @@
     </section>
   {% endif %}
 
+  <!-- Speech Line Builder (quiz-only) -->
+  {% if episode.speech_bubble_lines %}
+    <section class="quiz-speech-builder">
+      <h4>{{ _('ui.quests.speech_lines') }}</h4>
+      <p class="section-instruction">Build each speech line by selecting words from the word bank.</p>
+
+      {% for line in episode.speech_bubble_lines %}
+        {% set line_text = line if line is string else (line.neutral or line.male or line.female or '') %}
+        {% if line_text %}
+          <article class="speech-line-builder card-accent" data-speech-builder data-line-index="{{ loop.index0 }}" data-line-text="{{ line_text | e }}" dir="{{ language_dir() }}">
+            <h5>{{ _('ui.quests.speech_lines') }} {{ loop.index }}</h5>
+            <div class="speech-word-bank" data-word-bank role="list" aria-label="Word bank for speech line {{ loop.index }}"></div>
+            <div class="speech-sentence-box" data-sentence-box role="list" aria-label="Built sentence for speech line {{ loop.index }}"></div>
+          </article>
+        {% endif %}
+      {% endfor %}
+    </section>
+  {% endif %}
+
   <!-- Quiz Questions -->
   <section class="quiz-questions">
     <form id="quizForm" method="POST" action="/quiz/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}/submit">
@@ -68,7 +89,7 @@
       {% if questions and questions is iterable %}
         {% for question in questions %}
           {% set question_index = loop.index0 %}
-          <div class="quiz-question card" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ session.language.learning_charcode | to_direction }}">
+          <div class="quiz-question card" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ language_dir() }}">
             <div class="question-number">
               <span>{{ _('ui.quests.question') }} {{ loop.index }} {{ _('ui.quests.of') }} {{ questions | length }}</span>
             </div>
@@ -253,58 +274,111 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-  
-  // Drag/drop for quiz sentence reorder helper
-  const quizSentenceList = document.getElementById('quizSentenceList');
-  if (quizSentenceList) {
-    const sentenceItems = Array.from(quizSentenceList.querySelectorAll('.sentence-item'));
-    let draggedSentence = null;
 
-    sentenceItems.forEach(item => {
-      item.addEventListener('dragstart', function() {
-        draggedSentence = this;
-        this.classList.add('dragging');
-      });
-
-      item.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-        Array.from(quizSentenceList.querySelectorAll('.sentence-item')).forEach(i => i.classList.remove('drag-over'));
-        draggedSentence = null;
-      });
-
-      item.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        if (draggedSentence && draggedSentence !== this) {
-          this.classList.add('drag-over');
-        }
-      });
-
-      item.addEventListener('dragleave', function() {
-        this.classList.remove('drag-over');
-      });
-
-      item.addEventListener('drop', function(e) {
-        e.preventDefault();
-        if (draggedSentence && draggedSentence !== this) {
-          const allItems = Array.from(quizSentenceList.querySelectorAll('.sentence-item'));
-          const draggedIndex = allItems.indexOf(draggedSentence);
-          const targetIndex = allItems.indexOf(this);
-
-          if (draggedIndex < targetIndex) {
-            this.parentNode.insertBefore(draggedSentence, this.nextSibling);
-          } else {
-            this.parentNode.insertBefore(draggedSentence, this);
-          }
-        }
-      });
-    });
-
-    function updateSentenceListOrder() {
-      Array.from(quizSentenceList.querySelectorAll('.sentence-item')).forEach((item, idx) => {
-        item.dataset.itemIndex = idx + 1;
-      });
+  // Quiz speech-line builder: punctuation-free word tags that toggle between bank and sentence box.
+  function tokenizeSpeechLine(rawLine) {
+    if (!rawLine) {
+      return [];
     }
+    // Remove punctuation/symbols so tags are words only.
+    const cleaned = String(rawLine).replace(/[\p{P}\p{S}]/gu, ' ');
+    return cleaned.split(/\s+/).filter(Boolean);
   }
+
+  function shuffleTokens(items) {
+    const shuffled = items.slice();
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = tmp;
+    }
+    return shuffled;
+  }
+
+  function moveTag(tag, targetContainer) {
+    if (!tag || !targetContainer) {
+      return;
+    }
+    targetContainer.appendChild(tag);
+  }
+
+  function createSpeechWordButton(token, builderIndex, tokenIndex, variant) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'speech-word-tag btn btn-secondary btn-sm';
+    button.textContent = token;
+    button.dataset.builderIndex = String(builderIndex);
+    button.dataset.tokenIndex = String(tokenIndex);
+    button.dataset.variant = variant;
+    button.setAttribute('aria-label', variant === 'bank'
+      ? `Word ${token}. Press Enter to move it into the sentence.`
+      : `Word ${token}. Press Enter to return it to the word bank.`);
+    return button;
+  }
+
+  document.querySelectorAll('[data-speech-builder]').forEach((builder, builderIndex) => {
+    const rawLine = builder.dataset.lineText || '';
+    const tokens = shuffleTokens(tokenizeSpeechLine(rawLine));
+    const wordBank = builder.querySelector('[data-word-bank]');
+    const sentenceBox = builder.querySelector('[data-sentence-box]');
+
+    if (!wordBank || !sentenceBox || tokens.length === 0) {
+      return;
+    }
+
+    // Create buttons for each token in the word bank and set up event listeners for moving them.
+    tokens.forEach((token, tokenIndex) => {
+      const bankTag = createSpeechWordButton(token, builderIndex, tokenIndex, 'bank');
+      const sentenceTag = createSpeechWordButton(token, builderIndex, tokenIndex, 'sentence');
+      sentenceTag.classList.remove('btn-secondary');
+      sentenceTag.classList.add('btn-outline-secondary');
+      sentenceTag.disabled = false;
+      sentenceTag.setAttribute('aria-disabled', 'false');
+
+      bankTag.addEventListener('click', function() {
+        if (bankTag.disabled) {
+          return;
+        }
+        bankTag.disabled = true;
+        bankTag.setAttribute('aria-disabled', 'true');
+        bankTag.classList.add('is-used');
+        sentenceBox.appendChild(sentenceTag);
+      });
+
+      bankTag.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          bankTag.click();
+        }
+      });
+
+      sentenceTag.addEventListener('click', function() {
+        sentenceTag.remove();
+        bankTag.disabled = false;
+        bankTag.setAttribute('aria-disabled', 'false');
+        bankTag.classList.remove('is-used');
+      });
+
+      sentenceTag.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          sentenceTag.click();
+        }
+      });
+
+      wordBank.appendChild(bankTag);
+    });
+  });
+
+  // Make disabled bank tags tabbable only when they are active.
+  document.querySelectorAll('.speech-word-tag').forEach(tag => {
+    tag.addEventListener('focus', function() {
+      if (this.disabled) {
+        this.blur();
+      }
+    });
+  });
 });
 </script>
 {% endblock %}

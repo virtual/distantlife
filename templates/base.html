@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% if (session.get("language")) %}
-  <html lang="{{ session.language.charcode }}" dir="{{ session.language.dir | to_direction }}">
+  <html lang="{{ session.language.charcode }}" dir="{{ language_dir(session.language.dir) }}">
 {% else %}
   <html lang="en">
 {% endif %}
@@ -14,7 +14,7 @@
 {% include 'global/head.html' %}
 
 {% if (session.get("language")) %}
-  <body class="text-gray-900 font-sans antialiased dir-{{ session.language.dir | to_direction }}">
+  <body class="text-gray-900 font-sans antialiased dir-{{ language_dir(session.language.dir) }}">
 {% else %}
   <body class="text-gray-900 font-sans antialiased">
 {% endif %}

@@ -5,21 +5,23 @@
 {% endblock %}
 
 {% block main %}
-<article class="quest-episode-detail card" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
+<article class="quest-episode-detail card" dir="{{ language_dir() }}">
   <div class="quest-episode-header">
     <p class="eyebrow">{{ _('ui.quests.quest_story') }}</p>
-    <h2 dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ quest_metadata.title }}</h2>
+    <h2 dir="{{ language_dir() }}">{{ quest_metadata.title }}</h2>
     <div class="quest-episode-breadcrumb">
-      <a href="/quest/{{ quest_metadata.quest_id }}">{{ _('ui.quests.back_to_quest') }}</a>
-      <span class="breadcrumb-separator">·</span>
-      <span>{{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}</span>
+      <p>
+        <a href="/quest/{{ quest_metadata.quest_id }}">{{ _('ui.quests.back_to_quest') }}</a>
+        <span class="breadcrumb-separator" aria-hidden="true">·</span>
+        {{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}
+      </p>
     </div>
   </div>
 
   <!-- Episode Title and Story -->
-  <section class="quest-section">
-    <h3 dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ episode.title }}</h3>
-    <div class="quest-story-text card-accent" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
+  <section class="quest-section" dir="{{ language_dir() }}">
+    <div class="quest-story-text card-accent">
+      <h3>{{ episode.title }}</h3>
       <p>{{ episode.story_text }}</p>
     </div>
   </section>
@@ -32,14 +34,14 @@
         <table class="vocabulary-table">
           <thead>
             <tr>
-              <th dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ quest_metadata.locale.upper() }}</th>
+              <th dir="{{ language_dir() }}">{{ quest_metadata.locale.upper() }}</th>
               <th>{{ session.language.charcode.upper() if session.language else 'EN' }}</th>
             </tr>
           </thead>
           <tbody>
             {% for vocab in vocabulary_with_translations %}
               <tr>
-                <td class="vocab-word" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ vocab.word }}</td>
+                <td class="vocab-word" dir="{{ language_dir() }}">{{ vocab.word }}</td>
                 <td class="vocab-translation">{{ vocab.translation }}</td>
               </tr>
             {% endfor %}
@@ -51,25 +53,12 @@
     </section>
   {% endif %}
 
-  <!-- Speech Bubble Lines -->  <!-- Speech Bubble Lines (quiz-only) -->
-  {% if episode.speech_bubble_lines %}
-    <section class="quiz-speech-lines quest-section">
-      <h4>{{ _('ui.quests.speech_lines') }}</h4>
-      <ul class="quest-bubble-list" dir="{{ session.language.learning_charcode | to_direction }}">
-        {% for line in episode.speech_bubble_lines %}
-          <li>{{ line }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-  <!-- Speech lines and sentence reordering intentionally shown on the quiz page only -->
-
   <!-- Navigation and Actions -->
   <div class="quest-episode-actions">
     <div class="nav-buttons">
       {% if episode.has_previous %}
         <a class="btn btn-secondary" href="/quest/{{ quest_metadata.quest_id }}/{{ episode.previous_episode_id }}">
-          ← {{ _('ui.quests.previous_episode') }}
+          {{ _('ui.quests.previous_episode') }}
         </a>
       {% endif %}
       
@@ -79,7 +68,7 @@
       
       {% if episode.has_next %}
         <a class="btn btn-secondary" href="/quest/{{ quest_metadata.quest_id }}/{{ episode.next_episode_id }}">
-          {{ _('ui.quests.next_episode') }} →
+          {{ _('ui.quests.next_episode') }}
         </a>
       {% endif %}
     </div>

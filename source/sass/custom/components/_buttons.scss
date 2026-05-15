@@ -114,3 +114,28 @@ button, .btn {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.speech-word-tag {
+  white-space: normal;
+  line-height: 1.2;
+
+  &:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.is-used {
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+  }
+} 
+
+.speech-sentence-box .speech-word-tag:hover {
+  filter: brightness(0.97);
+}

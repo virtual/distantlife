@@ -1517,6 +1517,20 @@ h1 .badge {
   color: var(--color-white);
 }
 
+.card-accent {
+  background: var(--color-bg-accent);
+  padding: 1rem;
+  border-width: 0;
+  border-left-width: 4px;
+  border-style: solid;
+  border-color: var(--color-card-accent);
+}
+
+.card[dir=rtl] .card-accent {
+  border-left: none;
+  border-right-width: 4px;
+}
+
 button, .btn {
   display: block;
   width: 100%;
@@ -1633,6 +1647,28 @@ button .btn-lg, .btn .btn-lg {
 .btn-icon:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.speech-word-tag {
+  white-space: normal;
+  line-height: 1.2;
+}
+.speech-word-tag:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.speech-word-tag:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.speech-word-tag.is-used {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.speech-sentence-box .speech-word-tag:hover {
+  filter: brightness(0.97);
 }
 
 .hero-container {
@@ -2959,27 +2995,25 @@ figure .figure-img {
     padding: 0.5rem;
   }
 }
+.speech-sentence-box {
+  min-height: 3rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  padding: 8px;
+  font-size: 18px;
+  font-family: "Karla", "Noto Sans Hebrew", sans-serif;
+  background: #fff;
+  border: 1px solid #dddddd;
+}
+
 .quest-episode-detail {
   max-width: 991px;
 }
 
 .quest-episode-header {
   margin-bottom: 2rem;
-}
-
-.quest-episode-breadcrumb {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.quest-episode-breadcrumb a {
-  color: var(--color-link);
-  text-decoration: none;
-}
-
-.quest-episode-breadcrumb a:hover {
-  text-decoration: underline;
 }
 
 .breadcrumb-separator {
@@ -2991,13 +3025,6 @@ figure .figure-img {
   padding: 1.5rem;
   background: var(--color-bg-secondary);
   border-radius: 8px;
-}
-
-.card-accent {
-  background: var(--color-bg-accent);
-  padding: 1rem;
-  border-left: 4px solid var(--color-primary);
-  margin: 1rem 0;
 }
 
 .section-instruction {
@@ -3111,6 +3138,37 @@ figure .figure-img {
 .vocab-translation {
   color: var(--color-text-secondary);
   font-style: italic;
+}
+
+.quiz-speech-builder {
+  margin: 2rem 0;
+}
+
+.speech-line-builder {
+  margin-bottom: 1rem;
+}
+
+.speech-word-bank,
+.speech-sentence-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-secondary);
+}
+
+.speech-sentence-box {
+  margin-top: 0.75rem;
+  background: var(--color-bg-accent);
+}
+.speech-sentence-box .speech-word-tag {
+  opacity: 1;
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
 
 .quest-episode-actions {

@@ -305,3 +305,16 @@
     padding: 0.5rem;
   }
 }
+
+.speech-sentence-box {
+  min-height: 3rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  padding: $button-padding;
+  font-size: $theme-font-size-base;
+  font-family: $theme-font-family;
+  background: $color-white;
+  border: 1px solid $color-gray-light;
+}

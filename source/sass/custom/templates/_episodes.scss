@@ -8,20 +8,7 @@
   margin-bottom: 2rem;
 }
 
-.quest-episode-breadcrumb {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.quest-episode-breadcrumb a {
-  color: var(--color-link);
-  text-decoration: none;
-}
-
-.quest-episode-breadcrumb a:hover {
-  text-decoration: underline;
-}
+ 
 
 .breadcrumb-separator {
   margin: 0 0.5rem;
@@ -32,13 +19,6 @@
   padding: 1.5rem;
   background: var(--color-bg-secondary);
   border-radius: 8px;
-}
-
-.card-accent {
-  background: var(--color-bg-accent);
-  padding: 1rem;
-  border-left: 4px solid var(--color-primary);
-  margin: 1rem 0;
 }
 
 .section-instruction {
@@ -153,6 +133,39 @@
   color: var(--color-text-secondary);
   font-style: italic;
 }
+
+.quiz-speech-builder {
+  margin: 2rem 0;
+}
+
+.speech-line-builder {
+  margin-bottom: 1rem;
+}
+
+.speech-word-bank,
+.speech-sentence-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-secondary);
+}
+
+.speech-sentence-box {
+  margin-top: 0.75rem;
+  background: var(--color-bg-accent);
+
+  .speech-word-tag {
+    opacity: 1;
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+}
+
 
 .quest-episode-actions {
   margin-top: 2rem;

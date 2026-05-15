@@ -81,3 +81,19 @@
     color: var(--color-white);
   }
 }
+
+.card-accent {
+  background: var(--color-bg-accent);
+  padding: 1rem;
+  border-width: 0;
+  border-left-width: 4px;
+  border-style: solid;
+  border-color: var(--color-card-accent);
+}
+
+.card[dir="rtl"] {
+  .card-accent {
+    border-left: none;
+    border-right-width: 4px;
+  }
+}

@@ -48,6 +48,24 @@ def get_locale():
 babel = Babel(app, locale_selector=get_locale)
 
 
+def resolve_language_direction(source=None):
+    """Resolve a text direction for templates from session language data or a supplied value."""
+    if isinstance(source, dict):
+        source = source.get("dir") or source.get("learning_dir") or source.get("learning_charcode") or source.get("charcode")
+
+    if source is None:
+        lang = session.get("language") or {}
+        source = lang.get("learning_dir") or lang.get("learning_charcode") or lang.get("charcode")
+
+    if not source:
+        return "ltr"
+
+    value = str(source).lower()
+    if value in ("rtl", "ltr"):
+        return value
+    return "rtl" if value == "he" else "ltr"
+
+
 @app.template_filter('to_direction')
 def to_direction(charcode):
     """
@@ -59,14 +77,7 @@ def to_direction(charcode):
     Returns:
         'rtl' for right-to-left languages (Hebrew), 'ltr' for others
     """
-    if not charcode:
-        return 'ltr'
-    s = str(charcode).lower()
-    # If a direction was already provided, return it as-is
-    if s in ('rtl', 'ltr'):
-        return s
-    # Otherwise treat as a language charcode
-    return 'rtl' if s == 'he' else 'ltr'
+    return resolve_language_direction(charcode)
 
 
 @app.after_request
@@ -128,6 +139,11 @@ def inject_csrf_token():
 @app.context_processor
 def inject_admin_flag():
     return {"is_admin_user": is_admin() if session_get_int("user_id") is not None else False}
+
+
+@app.context_processor
+def inject_language_dir():
+    return {"language_dir": resolve_language_direction}
 
 limiter = Limiter(
     key_func=get_remote_address,

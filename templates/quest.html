@@ -5,11 +5,11 @@
 {% endblock %}
 
 {% block main %}
-<article class="quest-overview card" dir="{{ session.language.dir | to_direction }}">
+<article class="quest-overview card" dir="{{ language_dir(session.language.dir) }}">
       <div class="quest-overview-header">
     <p class="eyebrow">{{ _('ui.quests.quest_story') }}</p>
-    <h2 dir="{{ session.language.learning_charcode | to_direction }}">{{ quest.title }}</h2>
-    <p class="lead" dir="{{ session.language.learning_charcode | to_direction }}">{{ quest.summary }}</p>
+    <h2 dir="{{ language_dir() }}">{{ quest.title }}</h2>
+    <p class="lead" dir="{{ language_dir() }}">{{ quest.summary }}</p>
     <div class="quest-overview-meta">
       <span class="quest-badge">{{ quest.quest_line_id }}</span>
       <span class="quest-badge">{{ quest.allowed_pet_label }}</span>
@@ -25,9 +25,9 @@
         <div class="episode-card card-clickable">
           <div class="episode-number">{{ loop.index }}</div>
             <div class="episode-content">
-            <h4 dir="{{ session.language.learning_charcode | to_direction }}">{{ episode.title }}</h4>
+            <h4 dir="{{ language_dir() }}">{{ episode.title }}</h4>
             {% if episode.story_text %}
-              <p class="episode-preview" dir="{{ session.language.learning_charcode | to_direction }}">{{ episode.story_text[:150] }}...</p>
+              <p class="episode-preview" dir="{{ language_dir() }}">{{ episode.story_text[:150] }}...</p>
             {% endif %}
           </div>
           <div class="episode-actions">
