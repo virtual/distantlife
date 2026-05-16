@@ -14,7 +14,22 @@
     {{ _('ui.auth.sign_up_today_to_start_your_language_learning_journey') }}
   </p>
 </div>
-    <form class="mx-auto centered" action="/signup" method="post" data-signup-password-form data-password-start-message="{{ _('ui.auth.start_typing_a_password_to_check_it') }}" data-password-valid-message="{{ _('ui.auth.password_meets_the_requirements') }}" data-password-invalid-message="{{ _('ui.auth.password_does_not_meet_the_requirements') }}" data-password-match-prompt="{{ _('ui.auth.retype_your_password_to_confirm_it_matches') }}" data-password-match-valid="{{ _('ui.auth.passwords_match') }}" data-password-match-invalid="{{ _('ui.auth.passwords_do_not_match') }}" data-password-state-success="{{ _('ui.auth.status.success') }}" data-password-state-error="{{ _('ui.auth.status.error') }}" data-password-state-neutral="{{ _('ui.auth.status.neutral') }}">
+    <form class="mx-auto centered" action="/signup" method="post" data-signup-password-form
+      data-password-start-message="{{ _('ui.auth.start_typing_a_password_to_check_it') }}"
+      data-password-valid-message="{{ _('ui.auth.password_meets_the_requirements') }}"
+      data-password-invalid-message="{{ _('ui.auth.password_does_not_meet_the_requirements') }}"
+      data-password-match-prompt="{{ _('ui.auth.retype_your_password_to_confirm_it_matches') }}"
+      data-password-match-valid="{{ _('ui.auth.passwords_match') }}"
+      data-password-match-invalid="{{ _('ui.auth.passwords_do_not_match') }}"
+      data-password-state-success="{{ _('ui.auth.status.success') }}"
+      data-password-state-error="{{ _('ui.auth.status.error') }}"
+      data-password-state-neutral="{{ _('ui.auth.status.neutral') }}"
+      data-password-minlength="{{ password_rules.min_length }}"
+      data-password-require-uppercase="{{ '1' if password_rules.require_uppercase else '0' }}"
+      data-password-require-lowercase="{{ '1' if password_rules.require_lowercase else '0' }}"
+      data-password-require-number="{{ '1' if password_rules.require_number else '0' }}"
+      data-password-require-symbol="{{ '1' if password_rules.require_symbol else '0' }}"
+    >
       {{ csrf_field() }}
       {% call form_group('username', _('ui.auth.username')) %}
         <input required id="username" name="username" type="text" />

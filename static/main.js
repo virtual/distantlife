@@ -91,12 +91,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			var evaluatePassword = function () {
 				var password = passwordInput.value || "";
+				var minLength = parseInt(signupForm.getAttribute('data-password-minlength')) || 12;
+				var requireUpper = (signupForm.getAttribute('data-password-require-uppercase') || '0') === '1' || (signupForm.getAttribute('data-password-require-uppercase') || 'false') === 'true';
+				var requireLower = (signupForm.getAttribute('data-password-require-lowercase') || '0') === '1' || (signupForm.getAttribute('data-password-require-lowercase') || 'false') === 'true';
+				var requireNumber = (signupForm.getAttribute('data-password-require-number') || '0') === '1' || (signupForm.getAttribute('data-password-require-number') || 'false') === 'true';
+				var requireSymbol = (signupForm.getAttribute('data-password-require-symbol') || '0') === '1' || (signupForm.getAttribute('data-password-require-symbol') || 'false') === 'true';
+
 				var checks = {
-					length: password.length >= 12,
-					uppercase: /[A-Z]/.test(password),
-					lowercase: /[a-z]/.test(password),
-					number: /\d/.test(password),
-					symbol: /[^A-Za-z0-9]/.test(password)
+					length: password.length >= minLength,
+					uppercase: requireUpper ? /[A-Z]/.test(password) : true,
+					lowercase: requireLower ? /[a-z]/.test(password) : true,
+					number: requireNumber ? /\d/.test(password) : true,
+					symbol: requireSymbol ? /[^A-Za-z0-9]/.test(password) : true
 				};
 				var meetsCriteria = true;
 

@@ -18,7 +18,8 @@ from werkzeug.utils import secure_filename
 from flask_babel import Babel
 from connections import REDIS_URL, get_db_connection, get_redis_client, close_db_connection
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
-from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed, get_level_from_exp
+from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed, get_level_from_exp, PASSWORD_RULES
+import helpers
 from fileparser import save_words
 from normalization import compute_search_key, has_nikkud
 
@@ -165,6 +166,11 @@ def inject_admin_flag():
 def inject_language_dir():
     return {"language_dir": resolve_language_direction}
 
+
+@app.context_processor
+def inject_password_rules():
+    return {"password_rules": PASSWORD_RULES}
+
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
@@ -191,15 +197,17 @@ def validate_username(username):
 def validate_password_strength(password):
     if not password:
         return "must provide password"
-    if len(password) < 12:
-        return "password must be at least 12 characters"
-    if not re.search(r"[A-Z]", password):
+
+    rules = PASSWORD_RULES
+    if len(password) < int(rules.get("min_length", 12)):
+        return f"password must be at least {int(rules.get('min_length', 12))} characters"
+    if rules.get("require_uppercase") and not re.search(r"[A-Z]", password):
         return "password must include an uppercase letter"
-    if not re.search(r"[a-z]", password):
+    if rules.get("require_lowercase") and not re.search(r"[a-z]", password):
         return "password must include a lowercase letter"
-    if not re.search(r"\d", password):
+    if rules.get("require_number") and not re.search(r"\d", password):
         return "password must include a number"
-    if not re.search(r"[^A-Za-z0-9]", password):
+    if rules.get("require_symbol") and not re.search(r"[^A-Za-z0-9]", password):
         return "password must include a symbol"
     return None
 

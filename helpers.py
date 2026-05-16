@@ -21,6 +21,15 @@ XP_EXP_BASE = 16
 XP_EXP_GROWTH = 1.45
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
+# Centralized password rules used by backend and frontend
+PASSWORD_RULES = {
+    "min_length": 12,
+    "require_uppercase": True,
+    "require_lowercase": True,
+    "require_number": True,
+    "require_symbol": True,
+}
+
 
 # ============================================================================
 # Exponential Leveling System
