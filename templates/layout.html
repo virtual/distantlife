@@ -5,7 +5,7 @@
     <div class="layout-secondary-main theme-inversed">
       <main>
         {% include 'global/breadcrumb.html' %}
-        <div class="secondary-main">
+        <div class="secondary-main{% if secondary_wide %} secondary-wide{% endif %}">
           {% include 'global/alert.html' %}
           {% block main %}{% endblock %}
         </div>

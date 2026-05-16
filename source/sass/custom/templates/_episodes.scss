@@ -92,48 +92,6 @@
   flex-shrink: 0;
 }
 
-.vocabulary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.vocabulary-table thead {
-  background: var(--color-primary);
-  color: white;
-}
-
-.vocabulary-table th {
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-}
-
-.vocabulary-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.vocabulary-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.vocabulary-table tbody tr:hover {
-  background: var(--color-bg-hover);
-}
-
-.vocab-word {
-  font-weight: 500;
-}
-
-.vocab-translation {
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
-
 .quiz-speech-builder {
   margin: 2rem 0;
 }
@@ -142,29 +100,29 @@
   margin-bottom: 1rem;
 }
 
-.speech-word-bank,
-.speech-sentence-box {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 3.5rem;
-  padding: 0.75rem;
-  border: 1px dashed var(--color-border);
-  border-radius: 8px;
-  background: var(--color-bg-secondary);
-}
+// .speech-word-bank,
+// .speech-sentence-box {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 0.5rem;
+//   min-height: 3.5rem;
+//   padding: 0.75rem;
+//   border: 1px dashed var(--color-border);
+//   border-radius: 8px;
+//   background: var(--color-bg-secondary);
+// }
 
-.speech-sentence-box {
-  margin-top: 0.75rem;
-  background: var(--color-bg-accent);
+// .speech-sentence-box {
+//   margin-top: 0.75rem;
+//   background: var(--color-bg-accent);
 
-  .speech-word-tag {
-    opacity: 1;
-    background: var(--color-primary);
-    color: white;
-    border-color: var(--color-primary);
-  }
-}
+//   .speech-word-tag {
+//     opacity: 1;
+//     background: var(--color-primary);
+//     color: white;
+//     border-color: var(--color-primary);
+//   }
+// }
 
 
 .quest-episode-actions {
@@ -208,14 +166,5 @@
   .nav-buttons .btn {
     min-width: unset;
     width: 100%;
-  }
-
-  .vocabulary-table {
-    font-size: 0.875rem;
-  }
-
-  .vocabulary-table th,
-  .vocabulary-table td {
-    padding: 0.5rem;
   }
 }

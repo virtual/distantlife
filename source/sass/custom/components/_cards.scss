@@ -17,7 +17,7 @@
   padding-top: $gutter * 4;
   background: $color-white;
   position: relative;
-  color: dl-lighten($theme-primary, 20);
+  color: $theme-body-text-color;
   margin-bottom: $gutter * 4;
   line-height: 1.7;
   border-radius: 8px;
@@ -28,6 +28,11 @@
       margin-bottom: 0;
     }
   }
+
+  .card-slim {
+    padding: $gutter * 1;
+  }
+
   h3 {
     color: $theme-primary;
     margin-top: $theme-font-size-base * 1;
@@ -83,7 +88,7 @@
 }
 
 .card-accent {
-  background: var(--color-bg-accent);
+  background: var(--color-card-surface);
   padding: 1rem;
   border-width: 0;
   border-left-width: 4px;
@@ -91,9 +96,7 @@
   border-color: var(--color-card-accent);
 }
 
-.card[dir="rtl"] {
-  .card-accent {
-    border-left: none;
-    border-right-width: 4px;
-  }
-}
+.card[dir="rtl"].card-accent {
+  border-left: none;
+  border-right-width: 4px;
+} 

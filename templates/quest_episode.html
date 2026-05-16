@@ -19,8 +19,8 @@
   </div>
 
   <!-- Episode Title and Story -->
-  <section class="quest-section" dir="{{ language_dir() }}">
-    <div class="quest-story-text card-accent">
+  <section class="quest-section card-accent card" dir="{{ language_dir() }}">
+    <div class="quest-story-text">
       <h3>{{ episode.title }}</h3>
       <p>{{ episode.story_text }}</p>
     </div>
@@ -28,7 +28,7 @@
 
   <!-- Vocabulary Targets -->
   {% if vocabulary_with_translations or episode.vocabulary_targets %}
-    <section class="quest-section">
+    <section class="quest-section card">
       <h4>{{ _('ui.quests.vocabulary_targets') }}</h4>
       {% if vocabulary_with_translations %}
         <table class="vocabulary-table">

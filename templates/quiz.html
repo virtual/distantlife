@@ -27,8 +27,8 @@
   {% endif %}
 
   <!-- Episode Summary -->
-  <section class="quest-section" dir="{{ language_dir() }}">
-    <div class="quest-story-text card-accent">
+  <section class="quest-section card-accent card" dir="{{ language_dir() }}">
+    <div class="quest-story-text">
       <h3>{{ episode.title }}</h3>
       {% if episode.story_text %}
         <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
@@ -65,14 +65,14 @@
 
   <!-- Speech Line Builder (quiz-only) -->
   {% if episode.speech_bubble_lines %}
-    <section class="quiz-speech-builder">
+    <section class="quiz-speech-builder card card-slim">
       <h4>{{ _('ui.quests.speech_lines') }}</h4>
       <p class="section-instruction">Build each speech line by selecting words from the word bank.</p>
 
       {% for line in episode.speech_bubble_lines %}
         {% set line_text = line if line is string else (line.neutral or line.male or line.female or '') %}
         {% if line_text %}
-          <article class="speech-line-builder card-accent" data-speech-builder data-line-index="{{ loop.index0 }}" data-line-text="{{ line_text | e }}" dir="{{ language_dir() }}">
+          <article class="speech-line-builder" data-speech-builder data-line-index="{{ loop.index0 }}" data-line-text="{{ line_text | e }}" dir="{{ language_dir() }}">
             <h5>{{ _('ui.quests.speech_lines') }} {{ loop.index }}</h5>
             <div class="speech-word-bank" data-word-bank role="list" aria-label="Word bank for speech line {{ loop.index }}"></div>
             <div class="speech-sentence-box" data-sentence-box role="list" aria-label="Built sentence for speech line {{ loop.index }}"></div>
@@ -89,7 +89,7 @@
       {% if questions and questions is iterable %}
         {% for question in questions %}
           {% set question_index = loop.index0 %}
-          <div class="quiz-question card" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ language_dir() }}">
+          <div class="quiz-question card card-slim" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ language_dir() }}">
             <div class="question-number">
               <span>{{ _('ui.quests.question') }} {{ loop.index }} {{ _('ui.quests.of') }} {{ questions | length }}</span>
             </div>
