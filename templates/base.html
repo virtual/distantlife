@@ -14,9 +14,9 @@
 {% include 'global/head.html' %}
 
 {% if (session.get("language")) %}
-  <body class="text-gray-900 font-sans antialiased dir-{{ language_dir(session.language.dir) }}">
+  <body class="text-gray-900 font-sans antialiased dir-{{ language_dir(session.language.dir) }}" data-page="{{ page_id|default('') }}">
 {% else %}
-  <body class="text-gray-900 font-sans antialiased">
+  <body class="text-gray-900 font-sans antialiased" data-page="{{ page_id|default('') }}">
 {% endif %}
 
   {% include 'global/header.html' %}
