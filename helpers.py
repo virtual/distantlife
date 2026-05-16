@@ -5,6 +5,7 @@ import math
 import random
 from flask_babel import gettext as _
 import os
+import re
 from connections import get_db_connection, get_redis_client
 from lexicon import get_primary_form_for_sense, get_sense_translations
 
@@ -18,6 +19,7 @@ STARTER_PET_TYPE_IDS = (1, 6, 10, 26, 16) # Dragon, Genie, Faun, Cerberus, Cyclo
 
 XP_EXP_BASE = 16
 XP_EXP_GROWTH = 1.45
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 # ============================================================================
@@ -122,10 +124,25 @@ def get_level_progress(total_exp):
     }
 
 
+def _quote_identifier(name):
+    return '"' + name.replace('"', '""') + '"'
+
+
+def _validate_identifier(name, kind):
+    if not isinstance(name, str) or not _IDENTIFIER_RE.fullmatch(name):
+        raise ValueError(f"invalid {kind} name")
+    return name
+
+
 def table_exists(table_name):
+    try:
+        safe_name = _validate_identifier(table_name, "table")
+    except ValueError:
+        return False
+
     row = db.execute(
         "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
-        (table_name,),
+        (safe_name,),
     ).fetchone()
     return row is not None
 
@@ -724,7 +741,15 @@ def session_get_int(key):
 
 def table_columns(table_name):
     """Return column names for a table."""
-    rows = db.execute(f"PRAGMA table_info({table_name})").fetchall()
+    try:
+        safe_name = _validate_identifier(table_name, "table")
+    except ValueError:
+        return []
+
+    if not table_exists(safe_name):
+        return []
+
+    rows = db.execute(f"PRAGMA table_info({_quote_identifier(safe_name)})").fetchall()
     return [row["name"] for row in rows]
 
 

@@ -16,7 +16,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from flask_babel import Babel
-from connections import REDIS_URL, get_db_connection, get_redis_client
+from connections import REDIS_URL, get_db_connection, get_redis_client, close_db_connection
 from quest_content import get_quest_board_entries, load_and_personalize_quest, can_user_access_quest, load_episode_from_quest, get_vocabulary_with_translations
 from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed, get_level_from_exp
 from fileparser import save_words
@@ -232,24 +232,37 @@ def format_timestamp(value):
 
 
 def get_user_profile(identifier):
-    query = "SELECT username, id, full_name, email, preferred_lang, learning_lang, created_at, active_pet_id FROM users WHERE {column} = ?"
+    query_by_id = (
+        "SELECT username, id, full_name, email, preferred_lang, learning_lang, created_at, active_pet_id "
+        "FROM users WHERE id = ?"
+    )
+    query_by_username = (
+        "SELECT username, id, full_name, email, preferred_lang, learning_lang, created_at, active_pet_id "
+        "FROM users WHERE username = ?"
+    )
     identifier_text = str(identifier)
 
     if identifier_text.isdigit():
-        user_row = db.execute(query.format(column="id"), (int(identifier_text),)).fetchone()
+        user_row = db.execute(query_by_id, (int(identifier_text),)).fetchone()
         if user_row is None:
-            user_row = db.execute(query.format(column="username"), (identifier_text,)).fetchone()
-    else:
-        user_row = db.execute(query.format(column="username"), (identifier_text,)).fetchone()
-        if user_row is None:
-            try:
-                user_id = int(identifier_text)
-            except (TypeError, ValueError):
-                return None
+            user_row = db.execute(query_by_username, (identifier_text,)).fetchone()
+        return user_row
 
-            user_row = db.execute(query.format(column="id"), (user_id,)).fetchone()
+    user_row = db.execute(query_by_username, (identifier_text,)).fetchone()
+    if user_row is not None:
+        return user_row
 
-    return user_row
+    try:
+        user_id = int(identifier_text)
+    except (TypeError, ValueError):
+        return None
+
+    return db.execute(query_by_id, (user_id,)).fetchone()
+
+
+@app.teardown_appcontext
+def close_db_connection_on_teardown(exception=None):
+    close_db_connection()
 
 
 def get_user_pets(user_id):
