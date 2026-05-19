@@ -126,8 +126,8 @@ class QuestRuntimeTestCase(unittest.TestCase):
 
     def test_load_and_personalize_quest_replaces_tokens(self):
         quest = load_and_personalize_quest("hungry_faun_01", locale="en", pet_name="MagicFaun")
-        # Check that {{pet_name}} is replaced in story text
-        first_episode_story = quest["episodes"][0]["story_text"]
+        # Check that {{pet_name}} is replaced in personalized story sentences
+        first_episode_story = quest["episodes"][0]["story_sentences"][0]
         self.assertIn("MagicFaun", first_episode_story)
         # Verify token placeholder was replaced, not just concatenated
         self.assertNotIn("{{pet_name}}", first_episode_story)
@@ -136,10 +136,8 @@ class QuestRuntimeTestCase(unittest.TestCase):
         quest = load_and_personalize_quest(
             "counting_cerberus_01", locale="en", gender="female", pet_name="Cerbie"
         )
-        # Female speech bubble should be resolved
-        first_bubble = quest["episodes"][0]["speech_bubble_lines"][0]
-        # Gender-neutral first bubble doesn't differ, but let's check it's a string not a dict
-        self.assertIsInstance(first_bubble, str)
+        first_sentence = quest["episodes"][0]["story_sentences"][0]
+        self.assertIsInstance(first_sentence, str)
 
     def test_load_episode_exposes_resolved_vocabulary_target_ids(self):
         _, episode = load_episode_from_quest(
@@ -156,6 +154,11 @@ class QuestRuntimeTestCase(unittest.TestCase):
 class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
     def _minimal_valid_quest(self):
         return {
+            "meta": {
+                "schema_version": "1.0.0",
+                "generator": "quest_pipeline_v1",
+                "generated_at": "2026-05-19T00:00:00",
+            },
             "quest_id": "demo_quest",
             "locale": "en",
             "version": 1,
@@ -170,7 +173,14 @@ class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
                 {
                     "episode_id": "demo_ep_1",
                     "title": "Episode 1",
-                    "story_text": {"neutral": "Story."},
+                    "story_sentences": [
+                        {
+                            "id": "s1",
+                            "male": "Story.",
+                            "female": "Story.",
+                            "neutral": "Story.",
+                        }
+                    ],
                     "quiz": {
                         "questions": [
                             {
@@ -198,6 +208,44 @@ class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
         self.assertTrue(
             any("vocabulary_target_ids" in err for err in errors),
             f"Expected vocabulary_target_ids validation error, got: {errors}",
+        )
+
+    def test_cloze_requires_sentence_id(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["quiz"]["questions"] = [
+            {
+                "type": "cloze",
+                "answer": "Story",
+            }
+        ]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("sentence_id" in err for err in errors),
+            f"Expected sentence_id validation error, got: {errors}",
+        )
+
+    def test_story_sentence_requires_id(self):
+        quest = self._minimal_valid_quest()
+        del quest["episodes"][0]["story_sentences"][0]["id"]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("story_sentences" in err and "id" in err for err in errors),
+            f"Expected story sentence id validation error, got: {errors}",
+        )
+
+    def test_cloze_sentence_id_must_exist(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["quiz"]["questions"] = [
+            {
+                "type": "cloze",
+                "answer": "Story",
+                "sentence_id": "missing",
+            }
+        ]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("sentence_id not found" in err for err in errors),
+            f"Expected sentence_id not found validation error, got: {errors}",
         )
 
 

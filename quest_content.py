@@ -12,6 +12,7 @@ if not logger.handlers:
 
 
 REQUIRED_QUEST_KEYS = {
+    "meta",
     "quest_id",
     "locale",
     "version",
@@ -28,7 +29,7 @@ REQUIRED_QUEST_KEYS = {
 REQUIRED_EPISODE_KEYS = {
     "episode_id",
     "title",
-    "story_text",
+    "story_sentences",
     "quiz",
 }
 
@@ -351,13 +352,11 @@ def _validate_question_shape(question, episode_id, question_index):
         return errors
 
     # Validate required fields based on question type
-    # For cloze questions, 'prompt' and 'answer' are required. 
-    # The prompt must have a neutral variant if it's a dict.
+    # For cloze questions, sentence_id and answer are required.
     if q_type == "cloze":
-        if "prompt" not in question:
-            errors.append(f"Missing cloze prompt in {location}")
-        elif isinstance(question.get("prompt"), dict) and not _has_neutral_variant(question.get("prompt")):
-            errors.append(f"Missing neutral prompt variant in {location}")
+        sentence_id = question.get("sentence_id")
+        if not isinstance(sentence_id, str) or not sentence_id.strip():
+            errors.append(f"Missing or invalid cloze sentence_id in {location}")
 
         if not isinstance(question.get("answer"), str) or not question.get("answer").strip():
             errors.append(f"Missing or invalid cloze answer in {location}")
@@ -415,6 +414,18 @@ def validate_quest_content(quest):
     if missing_keys:
         errors.append(f"Missing required quest keys: {sorted(missing_keys)}")
 
+    meta = quest.get("meta")
+    if not isinstance(meta, dict):
+        errors.append("meta must be an object")
+    else:
+        if meta.get("schema_version") != "1.0.0":
+            errors.append("meta.schema_version must be '1.0.0'")
+        if meta.get("generator") != "quest_pipeline_v1":
+            errors.append("meta.generator must be 'quest_pipeline_v1'")
+        generated_at = meta.get("generated_at")
+        if not isinstance(generated_at, str) or not generated_at.strip():
+            errors.append("meta.generated_at must be a non-empty string")
+
     allowed_pet_type_ids = quest.get("allowed_pet_type_ids")
     if not isinstance(allowed_pet_type_ids, list):
         errors.append("allowed_pet_type_ids must be a list")
@@ -445,19 +456,33 @@ def validate_quest_content(quest):
         else:
             seen_episode_ids.add(episode_id)
 
-        story_text = episode.get("story_text")
-        if not _has_neutral_variant(story_text):
-            errors.append(f"story_text must include neutral variant in episode '{episode_id}'")
-
-        speech_bubble_lines = episode.get("speech_bubble_lines", [])
-        if not isinstance(speech_bubble_lines, list):
-            errors.append(f"speech_bubble_lines must be a list in episode '{episode_id}'")
+        story_sentences = episode.get("story_sentences")
+        story_sentence_ids = set()
+        if not isinstance(story_sentences, list) or not story_sentences:
+            errors.append(f"story_sentences must be a non-empty list in episode '{episode_id}'")
         else:
-            for i, line in enumerate(speech_bubble_lines, start=1):
-                if not _has_neutral_variant(line):
+            seen_sentence_ids = set()
+            for i, sentence in enumerate(story_sentences, start=1):
+                if not _has_neutral_variant(sentence):
                     errors.append(
-                        f"speech_bubble_lines[{i}] must include neutral variant in episode '{episode_id}'"
+                        f"story_sentences[{i}] must include neutral variant in episode '{episode_id}'"
                     )
+                    continue
+
+                sentence_id = sentence.get("id") if isinstance(sentence, dict) else None
+                if not isinstance(sentence_id, str) or not sentence_id.strip():
+                    errors.append(
+                        f"story_sentences[{i}] must include a non-empty id in episode '{episode_id}'"
+                    )
+                    continue
+
+                if sentence_id in seen_sentence_ids:
+                    errors.append(
+                        f"Duplicate sentence id '{sentence_id}' in episode '{episode_id}'"
+                    )
+                else:
+                    seen_sentence_ids.add(sentence_id)
+                    story_sentence_ids.add(sentence_id)
 
         vocabulary_targets = episode.get("vocabulary_targets")
         vocabulary_target_ids = episode.get("vocabulary_target_ids")
@@ -490,6 +515,14 @@ def validate_quest_content(quest):
                 errors.append(f"Question {q_index} must be an object in episode '{episode_id}'")
                 continue
             errors.extend(_validate_question_shape(question, episode_id, q_index))
+
+            if question.get("type") == "cloze":
+                sentence_id = question.get("sentence_id")
+                if isinstance(sentence_id, str) and sentence_id.strip():
+                    if sentence_id not in story_sentence_ids:
+                        errors.append(
+                            f"cloze sentence_id not found in episode '{episode_id}', question {q_index}: {sentence_id}"
+                        )
 
     return errors
 
@@ -682,6 +715,22 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
         context["pet_name"] = pet_name
     
     personalized_episode = apply_personalization(episode, gender, **context)
+
+    # Preserve sentence IDs alongside resolved sentence text for stable quiz lookup.
+    story_sentence_refs = []
+    for sentence in episode.get("story_sentences", []):
+        if not isinstance(sentence, dict):
+            continue
+
+        sentence_id = sentence.get("id")
+        if not isinstance(sentence_id, str) or not sentence_id.strip():
+            continue
+
+        resolved_text = replace_tokens(resolve_gender_variant(sentence, gender), **context)
+        story_sentence_refs.append({"id": sentence_id, "text": resolved_text})
+
+    personalized_episode["story_sentence_refs"] = story_sentence_refs
+    personalized_episode["story_sentences"] = [ref["text"] for ref in story_sentence_refs]
 
     learning_lang_id = None
     from connections import get_db_connection

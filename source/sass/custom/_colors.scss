@@ -42,6 +42,7 @@ a {
   color: $theme-link-color;
 }
 .theme-inversed {
+  color: $theme-body-text-color;
   a:not(.btn) {
     &:hover, &:active, &:focus {
       color: $color-yellow;

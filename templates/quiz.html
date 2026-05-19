@@ -30,8 +30,10 @@
   <section class="quest-section card-accent card" dir="{{ language_dir() }}">
     <div class="quest-story-text">
       <h3>{{ episode.title }}</h3>
-      {% if episode.story_text %}
-        <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
+      {% if episode.story_sentences %}
+        {% for sentence in episode.story_sentences %}
+          <p>{{ sentence }}</p>
+        {% endfor %}
       {% endif %}
     </div>
   </section>
@@ -64,13 +66,12 @@
   {% endif %}
 
   <!-- Speech Line Builder (quiz-only) -->
-  {% if episode.speech_bubble_lines %}
+  {% if episode.story_sentences %}
     <section class="quiz-speech-builder card card-slim">
       <h4>{{ _('ui.quests.speech_lines') }}</h4>
       <p class="section-instruction">Build each speech line by selecting words from the word bank.</p>
 
-      {% for line in episode.speech_bubble_lines %}
-        {% set line_text = line if line is string else (line.neutral or line.male or line.female or '') %}
+      {% for line_text in episode.story_sentences %}
         {% if line_text %}
           <article class="speech-line-builder" data-speech-builder data-line-index="{{ loop.index0 }}" data-line-text="{{ line_text | e }}" dir="{{ language_dir() }}">
             <h5>{{ _('ui.quests.speech_lines') }} {{ loop.index }}</h5>
@@ -95,20 +96,12 @@
             </div>
             
             <div class="question-content">
-              {% set prompt = question.prompt %}
-              {% if prompt is string and prompt | length %}
-                <p class="question-prompt">{{ prompt }}</p>
-              {% elif prompt is mapping %}
-                {% if prompt.neutral and prompt.neutral | length %}
-                  <p class="question-prompt">{{ prompt.neutral }}</p>
-                {% elif prompt.male and prompt.male | length %}
-                  <p class="question-prompt">{{ prompt.male }}</p>
-                {% elif prompt.female and prompt.female | length %}
-                  <p class="question-prompt">{{ prompt.female }}</p>
-                {% endif %}
-              {% endif %}
-
               {% if question.type == 'cloze' %}
+                {% set cloze_ref = (episode.story_sentence_refs | selectattr('id', 'equalto', question.sentence_id) | list | first) if episode.story_sentence_refs else None %}
+                {% set cloze_sentence = cloze_ref.text if cloze_ref else '' %}
+                {% if cloze_sentence %}
+                  <p class="question-prompt">{{ cloze_sentence | replace(question.answer, '_____') }}</p>
+                {% endif %}
                 <div class="question-cloze">
                   <input 
                     type="text" 
@@ -121,6 +114,9 @@
                 </div>
 
               {% elif question.type == 'multiple_choice' %}
+                {% if question.prompt %}
+                  <p class="question-prompt">{{ question.prompt }}</p>
+                {% endif %}
                 <div class="question-multiple-choice">
                   {% if question.options and question.options is iterable and question.options is not string %}
                     {% for option in question.options %}
@@ -142,6 +138,9 @@
                 </div>
 
               {% elif question.type == 'count_sequence' %}
+                {% if question.prompt %}
+                  <p class="question-prompt">{{ question.prompt }}</p>
+                {% endif %}
                 <div class="question-count-sequence">
                   <p class="sequence-instruction">{{ _('ui.quests.select_correct_order') }}</p>
                   <div class="sequence-options">
@@ -169,6 +168,9 @@
                 </div>
 
               {% elif question.type == 'reorder' %}
+                {% if question.prompt %}
+                  <p class="question-prompt">{{ question.prompt }}</p>
+                {% endif %}
                 <div class="question-reorder">
                   <p class="reorder-instruction">{{ _('ui.quests.drag_to_reorder') }}</p>
                   {% set reorder_items = question.get('items') %}

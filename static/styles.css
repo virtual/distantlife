@@ -1157,6 +1157,9 @@ a {
   color: #4e84a5;
 }
 
+.theme-inversed {
+  color: #fff;
+}
 .theme-inversed a:not(.btn):hover, .theme-inversed a:not(.btn):active, .theme-inversed a:not(.btn):focus {
   color: #FFFD82;
 }
@@ -1445,7 +1448,6 @@ h1 .badge {
   padding-top: 64px;
   background: #fff;
   position: relative;
-  color: #fff;
   margin-bottom: 64px;
   line-height: 1.7;
   border-radius: 8px;

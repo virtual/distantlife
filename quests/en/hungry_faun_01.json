@@ -6,7 +6,9 @@
   "theme": "food_and_garden",
   "quest_type": "story_quest",
   "quest_line_id": "hungry_faun",
-  "allowed_pet_type_ids": [10],
+  "allowed_pet_type_ids": [
+    10
+  ],
   "unlock_cost": 0,
   "title": "The Hungry Faun and the Missing Lunch",
   "summary": "A hungry faun learns food words while finding and growing carrots in a village garden.",
@@ -14,11 +16,6 @@
     {
       "episode_id": "hungry_faun_01_ep1",
       "title": "The Empty Basket",
-      "story_text": {
-        "male": "{{pet_name}} woke up hungry. He checked his basket, but it was empty. He walked to the village garden and saw dry soil. A gardener gave him a carrot seed and said, 'Plant it, water it, and be patient.'",
-        "female": "{{pet_name}} woke up hungry. She checked her basket, but it was empty. She walked to the village garden and saw dry soil. A gardener gave her a carrot seed and said, 'Plant it, water it, and be patient.'",
-        "neutral": "{{pet_name}} woke up hungry. {{pet_name}} checked the basket, but it was empty. {{pet_name}} walked to the village garden and saw dry soil. A gardener gave {{pet_name}} a carrot seed and said, 'Plant it, water it, and be patient.'"
-      },
       "vocabulary_targets": [
         "hungry",
         "basket",
@@ -28,43 +25,6 @@
         "plant",
         "water",
         "carrot"
-      ],
-      "speech_bubble_lines": [
-        {
-          "male": "I am very hungry.",
-          "female": "I am very hungry.",
-          "neutral": "I am very hungry."
-        },
-        {
-          "male": "My basket is empty.",
-          "female": "My basket is empty.",
-          "neutral": "My basket is empty."
-        },
-        {
-          "male": "I will plant this seed.",
-          "female": "I will plant this seed.",
-          "neutral": "I will plant this seed."
-        }
-      ],
-      "sentences": [
-        {
-          "order": 1,
-          "text": {
-            "neutral": "{{pet_name}} woke up hungry."
-          }
-        },
-        {
-          "order": 2,
-          "text": {
-            "neutral": "The basket was empty."
-          }
-        },
-        {
-          "order": 3,
-          "text": {
-            "neutral": "The gardener gave a carrot seed."
-          }
-        }
       ],
       "quiz": {
         "questions": [
@@ -80,7 +40,8 @@
             "accepted_answers": [
               "seed",
               "a seed"
-            ]
+            ],
+            "sentence_id": "s4"
           },
           {
             "type": "multiple_choice",
@@ -108,16 +69,37 @@
             ]
           }
         ]
-      }
+      },
+      "story_sentences": [
+        {
+          "male": "{{pet_name}} woke up hungry.",
+          "female": "{{pet_name}} woke up hungry.",
+          "neutral": "{{pet_name}} woke up hungry.",
+          "id": "s1"
+        },
+        {
+          "male": "He checked his basket, but it was empty.",
+          "female": "She checked her basket, but it was empty.",
+          "neutral": "{{pet_name}} checked the basket, but it was empty.",
+          "id": "s2"
+        },
+        {
+          "male": "He walked to the village garden and saw dry soil.",
+          "female": "She walked to the village garden and saw dry soil.",
+          "neutral": "{{pet_name}} walked to the village garden and saw dry soil.",
+          "id": "s3"
+        },
+        {
+          "male": "A gardener gave him a carrot seed and said, 'Plant it, water it, and be patient.'",
+          "female": "A gardener gave her a carrot seed and said, 'Plant it, water it, and be patient.'",
+          "neutral": "A gardener gave {{pet_name}} a carrot seed and said, 'Plant it, water it, and be patient.'",
+          "id": "s4"
+        }
+      ]
     },
     {
       "episode_id": "hungry_faun_01_ep2",
       "title": "The First Harvest",
-      "story_text": {
-        "male": "After a few days, {{pet_name}} returned to the garden. He saw a small green leaf, then a strong orange carrot. He pulled it from the soil, washed it, and shared soup with friends.",
-        "female": "After a few days, {{pet_name}} returned to the garden. She saw a small green leaf, then a strong orange carrot. She pulled it from the soil, washed it, and shared soup with friends.",
-        "neutral": "After a few days, {{pet_name}} returned to the garden. {{pet_name}} saw a small green leaf, then a strong orange carrot. {{pet_name}} pulled it from the soil, washed it, and shared soup with friends."
-      },
       "vocabulary_targets": [
         "leaf",
         "orange",
@@ -127,43 +109,6 @@
         "soup",
         "share",
         "friend"
-      ],
-      "speech_bubble_lines": [
-        {
-          "male": "The carrot is ready!",
-          "female": "The carrot is ready!",
-          "neutral": "The carrot is ready!"
-        },
-        {
-          "male": "I will wash and cook it.",
-          "female": "I will wash and cook it.",
-          "neutral": "I will wash and cook it."
-        },
-        {
-          "male": "Let us share this soup.",
-          "female": "Let us share this soup.",
-          "neutral": "Let us share this soup."
-        }
-      ],
-      "sentences": [
-        {
-          "order": 1,
-          "text": {
-            "neutral": "{{pet_name}} returned to the garden."
-          }
-        },
-        {
-          "order": 2,
-          "text": {
-            "neutral": "A carrot grew from the seed."
-          }
-        },
-        {
-          "order": 3,
-          "text": {
-            "neutral": "{{pet_name}} shared soup with friends."
-          }
-        }
       ],
       "quiz": {
         "questions": [
@@ -179,7 +124,8 @@
             "accepted_answers": [
               "soup",
               "carrot soup"
-            ]
+            ],
+            "sentence_id": "s3"
           },
           {
             "type": "multiple_choice",
@@ -207,7 +153,32 @@
             ]
           }
         ]
-      }
+      },
+      "story_sentences": [
+        {
+          "male": "After a few days, {{pet_name}} returned to the garden.",
+          "female": "After a few days, {{pet_name}} returned to the garden.",
+          "neutral": "After a few days, {{pet_name}} returned to the garden.",
+          "id": "s1"
+        },
+        {
+          "male": "He saw a small green leaf, then a strong orange carrot.",
+          "female": "She saw a small green leaf, then a strong orange carrot.",
+          "neutral": "{{pet_name}} saw a small green leaf, then a strong orange carrot.",
+          "id": "s2"
+        },
+        {
+          "male": "He pulled it from the soil, washed it, and shared soup with friends.",
+          "female": "She pulled it from the soil, washed it, and shared soup with friends.",
+          "neutral": "{{pet_name}} pulled it from the soil, washed it, and shared soup with friends.",
+          "id": "s3"
+        }
+      ]
     }
-  ]
+  ],
+  "meta": {
+    "schema_version": "1.0.0",
+    "generator": "quest_pipeline_v1",
+    "generated_at": "2026-05-19T19:03:23.791902"
+  }
 }

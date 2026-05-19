@@ -22,7 +22,9 @@
   <section class="quest-section card-accent card" dir="{{ language_dir() }}">
     <div class="quest-story-text">
       <h3>{{ episode.title }}</h3>
-      <p>{{ episode.story_text }}</p>
+      {% for sentence in episode.story_sentences %}
+        <p>{{ sentence }}</p>
+      {% endfor %}
     </div>
   </section>
 

@@ -26,8 +26,9 @@
           <div class="episode-number">{{ loop.index }}</div>
             <div class="episode-content">
             <h4 dir="{{ language_dir() }}">{{ episode.title }}</h4>
-            {% if episode.story_text %}
-              <p class="episode-preview" dir="{{ language_dir() }}">{{ episode.story_text[:150] }}...</p>
+            {% if episode.story_sentences and episode.story_sentences | length %}
+              {% set preview_text = episode.story_sentences[:2] | join(' ') %}
+              <p class="episode-preview" dir="{{ language_dir() }}">{{ preview_text[:150] }}...</p>
             {% endif %}
           </div>
           <div class="episode-actions">
