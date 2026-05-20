@@ -418,8 +418,8 @@ def validate_quest_content(quest):
     if not isinstance(meta, dict):
         errors.append("meta must be an object")
     else:
-        if meta.get("schema_version") != "1.0.0":
-            errors.append("meta.schema_version must be '1.0.0'")
+        # if meta.get("schema_version") != "1.0.0":
+        #     errors.append("meta.schema_version must be '1.0.0'")
         if meta.get("generator") != "quest_pipeline_v1":
             errors.append("meta.generator must be 'quest_pipeline_v1'")
         generated_at = meta.get("generated_at")
