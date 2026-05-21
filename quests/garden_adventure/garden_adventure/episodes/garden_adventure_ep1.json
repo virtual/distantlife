@@ -1,0 +1,193 @@
+{
+  "meta": {
+    "schema_version": "2.0.0",
+    "generator": "quest_pipeline_v1",
+    "generated_at": "2026-05-21T03:46:25.346634"
+  },
+  "quest_id": "garden_adventure",
+  "quest_line_id": "garden_adventure",
+  "episode_id": "garden_adventure_ep1",
+  "locales": {
+    "en": {
+      "episode_id": "garden_adventure_ep1",
+      "title": "The Empty Basket",
+      "story_sentences": [
+        {
+          "id": "s1",
+          "male": "Faun had a big hunger.",
+          "female": "Faun had a big hunger.",
+          "neutral": "Faun had a big hunger."
+        },
+        {
+          "id": "s2",
+          "male": "He took a basket of tools.",
+          "female": "She took a basket of tools.",
+          "neutral": "He took a basket of tools."
+        },
+        {
+          "id": "s3",
+          "male": "Faun dug a small hole.",
+          "female": "She dug a small hole.",
+          "neutral": "Faun dug a small hole."
+        },
+        {
+          "id": "s4",
+          "male": "He put the seed in the dirt.",
+          "female": "She put the seed in the dirt.",
+          "neutral": "He put the seed in the dirt."
+        },
+        {
+          "id": "s5",
+          "male": "Faun watered the seed.",
+          "female": "She watered the seed.",
+          "neutral": "Faun watered the seed."
+        },
+        {
+          "id": "s6",
+          "male": "He waited for the carrot to grow.",
+          "female": "She waited for the carrot to grow.",
+          "neutral": "He waited for the carrot to grow."
+        },
+        {
+          "id": "s7",
+          "male": "Faun pulled out a big carrot.",
+          "female": "She pulled out a big carrot.",
+          "neutral": "Faun pulled out a big carrot."
+        }
+      ],
+      "quiz": {
+        "questions": []
+      },
+      "vocabulary_targets": [
+        "רעב",
+        "סל",
+        "גן",
+        "זרע",
+        "גזר"
+      ]
+    },
+    "he": {
+      "episode_id": "garden_adventure_ep1",
+      "title": "הסל הריק",
+      "story_sentences": [
+        {
+          "id": "s1",
+          "male": "הפאון היה רעב מאוד.",
+          "female": "הפאון היה רעב מאוד.",
+          "neutral": "הפאון היה רעב מאוד."
+        },
+        {
+          "id": "s2",
+          "male": "לקח סל של כלים.",
+          "female": "היא לקחה סל של כלי.",
+          "neutral": "לקח סל של כלים."
+        },
+        {
+          "id": "s3",
+          "male": "הפאון חפר בור קטן.",
+          "female": "חפרה בור קטן.",
+          "neutral": "הפאון חפר בור קטן."
+        },
+        {
+          "id": "s4",
+          "male": "השתיל את הזרע באדמה.",
+          "female": "היא הכניסה את הזרע לאדמה.",
+          "neutral": "השתיל את הזרע באדמה."
+        },
+        {
+          "id": "s5",
+          "male": "הפאון השתיל את הזרע.",
+          "female": "היא השקתה את הזרע.",
+          "neutral": "הפאון השתיל את הזרע."
+        },
+        {
+          "id": "s6",
+          "male": "החכיר לקרניות לצמוח.",
+          "female": "היא המתינה לגדלת השורק.",
+          "neutral": "החכיר לקרניות לצמוח."
+        },
+        {
+          "id": "s7",
+          "male": "הפאון הוציא קרנבל בגודל גדול.",
+          "female": "היא הוצאה גזר משמעותי.",
+          "neutral": "הפאון הוציא קרנבל בגודל גדול."
+        }
+      ],
+      "quiz": {
+        "questions": [
+          {
+            "type": "cloze",
+            "sentence_id": "s1",
+            "prompt": {
+              "male": "הפאון היה _____ מאוד.",
+              "female": "הפאון היה _____ מאוד.",
+              "neutral": "הפאון היה _____ מאוד."
+            },
+            "answer": "רעב",
+            "options": [
+              "גדול",
+              "קטן",
+              "רעב",
+              "משמעותי"
+            ]
+          },
+          {
+            "type": "cloze",
+            "sentence_id": "s2",
+            "prompt": {
+              "male": "לקח _____ של כלים.",
+              "female": "היא לקחה _____ של כלי.",
+              "neutral": "לקח _____ של כלים."
+            },
+            "answer": "סל",
+            "options": [
+              "שורק",
+              "סל",
+              "גודל",
+              "זרע"
+            ]
+          },
+          {
+            "type": "cloze",
+            "sentence_id": "s4",
+            "prompt": {
+              "male": "השתיל את ה_____ באדמה.",
+              "female": "היא הכניסה את ה_____ לאדמה.",
+              "neutral": "השתיל את ה_____ באדמה."
+            },
+            "answer": "זרע",
+            "options": [
+              "אדמה",
+              "זרע",
+              "גודל",
+              "כלי"
+            ]
+          },
+          {
+            "type": "cloze",
+            "sentence_id": "s5",
+            "prompt": {
+              "male": "הפאון השתיל את ה_____.",
+              "female": "היא השקתה את ה_____.",
+              "neutral": "הפאון השתיל את ה_____."
+            },
+            "answer": "זרע",
+            "options": [
+              "חכיר",
+              "גדלה",
+              "זרע",
+              "סל"
+            ]
+          }
+        ]
+      },
+      "vocabulary_targets": [
+        "רעב",
+        "סל",
+        "גן",
+        "זרע",
+        "גזר"
+      ]
+    }
+  }
+}
