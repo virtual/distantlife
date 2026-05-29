@@ -5,11 +5,14 @@
   background-color: $theme-primary;
   height: 8px;
   position: relative;
+  overflow: hidden;
   .filled {
     background-color: $color-green;
-    padding: 4px 0;
+    height: 100%;
+    left: 0;
+    top: 0;
     line-height: 0;
-    display: inline-block;
+    display: block;
     position: absolute;
     transition: width .2s ease-in-out;
   }

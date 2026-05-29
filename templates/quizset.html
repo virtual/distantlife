@@ -1,3 +1,4 @@
+{% set page_id = 'quizset' %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -31,7 +32,7 @@
     <div class="form-quiz">
 
       {% for opt in word_options %}
-        <input data-type="{{ opt.data }}" data-index="{{ loop.index }}" value="{{ opt.word }}" onclick="displayRadioValue()" type="radio" class="btn-check" name="wordchoice" id="option{{loop.index}}" autocomplete="off">
+        <input data-type="{{ opt.data }}" data-index="{{ loop.index }}" value="{{ opt.word }}" type="radio" class="btn-check" name="wordchoice" id="option{{loop.index}}" autocomplete="off">
         <label class="btn btn-radio" for="option{{loop.index}}">{{opt.word}}</label>
       {% endfor %}
 
@@ -41,24 +42,7 @@
     <button id="buttonSkip" type="submit" class="btn btn-red">{{ _('ui.quiz.skip') }}</button>
   </form>
 
-  <script>
-    function displayRadioValue() {
-        var ele = document.getElementsByName('wordchoice');
-          
-        for(i = 0; i < ele.length; i++) {
-            if(ele[i].checked) {
-                datatype = ele[i].dataset.type;
-                ((ele[i].nextSibling).nextSibling).classList.add('btn-'+datatype);
-                if (datatype == "success") {
-                  document.getElementById("experience").value = parseInt(document.getElementById("experience").value) + 1;
-                }
-            }
-            // Disable ability to change choice after selection
-            ele[i].disabled = true;                    
-        }
-        (document.getElementById("buttonSkip")).style.display = "none";
-        (document.getElementById("buttonContinue")).style.display = "inline-block";
-    }
-  </script>
+  {# Quiz behavior loaded from page-specific script #}
+  <script defer src="{{ url_for('static', filename='quiz.js') }}"></script>
 
 {% endblock %}

@@ -1,7 +1,7 @@
 import unittest
 from werkzeug.security import generate_password_hash
 
-from application import app
+from application import app, _tokenize_sentence_text
 from connections import get_db_connection
 from helpers import initialize_user_pet_unlocks
 
@@ -38,9 +38,11 @@ class QuestRouteTestCase(unittest.TestCase):
 
     def _login(self):
         with self.client.session_transaction() as sess:
+            sess.clear() # Clear session to ensure a clean state for each test
             sess["user_id"] = self.user_id
             sess["username"] = self.username
-            sess["language"] = {"charcode": "en", "dir": "ltr"}
+            # Include learning_charcode so get_learning_language_charcode returns 'en'
+            sess["language"] = {"charcode": "en", "dir": "ltr", "learning_charcode": "en"}
 
     def _create_active_pet(self, pet_type=10, name="QuestPet"):
         pet_id = (
@@ -101,8 +103,7 @@ class QuestRouteTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
         self.assertIn("Quest Board", body)
-        self.assertIn("הפאון הרעב", body)
-        self.assertIn("שלושה ראשים", body)
+        self.assertIn("יום הגינון של פאון", body)
 
     def test_locked_quest_shows_available_tag_when_owned_pet_matches(self):
         self._login()
@@ -112,52 +113,189 @@ class QuestRouteTestCase(unittest.TestCase):
         response = self.client.get("/quests")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("הפאון הרעב", body)
+        self.assertIn("יום הגינון של פאון", body)
         self.assertIn("Available if you switch to Faun", body)
         self.assertIn("quest-badge-available", body)
 
     def test_quest_page_redirects_without_active_pet(self):
         self._login()
-        response = self.client.get("/quest/hungry_faun_01", follow_redirects=False)
+        response = self.client.get("/quest/garden_adventure", follow_redirects=False)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/adopt", response.headers.get("Location", ""))
 
     def test_quest_page_renders_with_active_pet(self):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
-        response = self.client.get("/quest/hungry_faun_01")
+        response = self.client.get("/quest/garden_adventure")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("הפאון הרעב וארוחת הצהריים שנעלמה", body)
+        self.assertIn("הסל הריק", body)
         self.assertIn("Bramble", body)
 
-    def test_quiz_page_renders_multiple_choice_and_reorder_items(self):
+    def test_quiz_page_renders_step_wizard(self):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
-        response = self.client.get("/quiz/hungry_faun_01/hungry_faun_01_ep1")
+        response = self.client.get("/quiz/garden_adventure/garden_adventure_ep1")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("name=\"answer_1\"", body)
-        self.assertIn("הגנן נותן זרע.", body)
-        self.assertIn("data-item-index=\"1\"", body)
-        self.assertIn("data-item-index=\"2\"", body)
-        self.assertIn("data-item-index=\"3\"", body)
+        self.assertIn("Step 1 of", body)
+        self.assertIn("quiz-step", body)
+        self.assertTrue("data-order-builder" in body or "cloze-input" in body or "quiz-choice-group" in body)
 
-    def test_quiz_submission_scores_answers(self):
+    def test_sentence_builder_tokenizer_strips_punctuation(self):
+        self.assertEqual(
+            _tokenize_sentence_text("Hello, world! The basket."),
+            ["Hello", "world", "The", "basket"],
+        )
+
+    def test_quiz_hint_and_retry_flow(self):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
+
         response = self.client.post(
-            "/quiz/hungry_faun_01/hungry_faun_01_ep1/submit",
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
             data={
-                "answer_0": "זרע",
-                "answer_1": "גן הכפר",
-                "answer_2": "2,3,1",
+                "action": "submit",
+                "answer_order": "1,0",
             },
+            follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("Quiz results", body)
-        self.assertIn("3 / 3", body)
+        self.assertIn("Review Context", body)
+
+        hint_response = self.client.post(
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
+            data={"action": "hint"},
+            follow_redirects=True,
+        )
+        self.assertEqual(hint_response.status_code, 200)
+        hint_body = hint_response.get_data(as_text=True)
+        self.assertIn("Correct answer", hint_body)
+        self.assertIn("Retry", hint_body)
+
+    def test_quiz_submission_reaches_summary_screen(self):
+        self._login()
+        self._create_active_pet(pet_type=10, name="Bramble")
+
+        with self.client.session_transaction() as sess:
+            sess["quiz_wizard:garden_adventure:garden_adventure_ep1"] = {
+                "quest_id": "garden_adventure",
+                "episode_id": "garden_adventure_ep1",
+                "seed": 1,
+                "current_step": 0,
+                "score": 0,
+                "finished": False,
+                "recorded_completion": False,
+                "started_at": "2026-05-29T00:00:00",
+                "steps": [
+                    {
+                        "kind": "sentence",
+                        "source_index": 0,
+                        "sentence_id": "s1",
+                        "sentence_text": "one two",
+                        "sentence_tokens": [
+                            {"index": 0, "text": "one"},
+                            {"index": 1, "text": "two"},
+                        ],
+                        "shuffled_tokens": [
+                            {"index": 1, "text": "two"},
+                            {"index": 0, "text": "one"},
+                        ],
+                        "summary_prompt": "one two",
+                        "correct_answer": "one two",
+                        "correct_answer_translation": "uno dos",
+                        "attempts": 0,
+                        "awaiting_review": False,
+                        "hint_revealed": False,
+                        "completed": False,
+                        "first_try_correct": False,
+                        "earned_point": False,
+                        "submitted_answer": "",
+                        "step_number": 1,
+                    }
+                ],
+            }
+
+        response = self.client.post(
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
+            data={
+                "action": "submit",
+                "answer_order": "0,1",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn("Correct", body)
+        self.assertIn("Translation", body)
+        self.assertIn("Finish quiz", body)
+        self.assertIn("uno dos", body)
+
+        next_response = self.client.post(
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
+            data={"action": "next"},
+            follow_redirects=True,
+        )
+        self.assertEqual(next_response.status_code, 200)
+        next_body = next_response.get_data(as_text=True)
+        self.assertIn("Quiz complete", next_body)
+        self.assertIn("1 / 1 points", next_body)
+
+    def test_quiz_forfeit_clears_state_and_restarts(self):
+        self._login()
+        self._create_active_pet(pet_type=10, name="Bramble")
+
+        with self.client.session_transaction() as sess:
+            sess["quiz_wizard:garden_adventure:garden_adventure_ep1"] = {
+                "quest_id": "garden_adventure",
+                "episode_id": "garden_adventure_ep1",
+                "seed": 1,
+                "current_step": 0,
+                "score": 1,
+                "finished": False,
+                "recorded_completion": False,
+                "started_at": "2026-05-29T00:00:00",
+                "steps": [
+                    {
+                        "kind": "sentence",
+                        "source_index": 0,
+                        "sentence_id": "s1",
+                        "sentence_text": "one two",
+                        "sentence_tokens": [
+                            {"index": 0, "text": "one"},
+                            {"index": 1, "text": "two"},
+                        ],
+                        "shuffled_tokens": [
+                            {"index": 1, "text": "two"},
+                            {"index": 0, "text": "one"},
+                        ],
+                        "summary_prompt": "one two",
+                        "correct_answer": "one two",
+                        "attempts": 0,
+                        "awaiting_review": False,
+                        "hint_revealed": False,
+                        "completed": False,
+                        "first_try_correct": False,
+                        "earned_point": False,
+                        "submitted_answer": "",
+                        "step_number": 1,
+                    }
+                ],
+            }
+
+        response = self.client.post(
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
+            data={"action": "forfeit"},
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn("הסל הריק", body)
+        self.assertIn("Bramble", body)
+
+        with self.client.session_transaction() as sess:
+            self.assertIsNone(sess.get("quiz_wizard:garden_adventure:garden_adventure_ep1"))
 
 
 if __name__ == "__main__":

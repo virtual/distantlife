@@ -5,41 +5,45 @@
 {% endblock %}
 
 {% block main %}
-<article class="quest-episode-detail card" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
+<article class="quest-episode-detail card" dir="{{ language_dir() }}">
   <div class="quest-episode-header">
     <p class="eyebrow">{{ _('ui.quests.quest_story') }}</p>
-    <h2 dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ quest_metadata.title }}</h2>
+    <h2 dir="{{ language_dir() }}">{{ quest_metadata.title }}</h2>
     <div class="quest-episode-breadcrumb">
-      <a href="/quest/{{ quest_metadata.quest_id }}">{{ _('ui.quests.back_to_quest') }}</a>
-      <span class="breadcrumb-separator">·</span>
-      <span>{{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}</span>
+      <p>
+        <a href="/quest/{{ quest_metadata.quest_id }}">{{ _('ui.quests.back_to_quest') }}</a>
+        <span class="breadcrumb-separator" aria-hidden="true">·</span>
+        {{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}
+      </p>
     </div>
   </div>
 
   <!-- Episode Title and Story -->
-  <section class="quest-section">
-    <h3 dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ episode.title }}</h3>
-    <div class="quest-story-text card-accent" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
-      <p>{{ episode.story_text }}</p>
+  <section class="quest-section card-accent card" dir="{{ language_dir() }}">
+    <div class="quest-story-text">
+      <h3>{{ episode.title }}</h3>
+      {% for sentence in episode.story_sentences %}
+        <p>{{ sentence }}</p>
+      {% endfor %}
     </div>
   </section>
 
   <!-- Vocabulary Targets -->
   {% if vocabulary_with_translations or episode.vocabulary_targets %}
-    <section class="quest-section">
+    <section class="quest-section card">
       <h4>{{ _('ui.quests.vocabulary_targets') }}</h4>
       {% if vocabulary_with_translations %}
         <table class="vocabulary-table">
           <thead>
             <tr>
-              <th dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ quest_metadata.locale.upper() }}</th>
+              <th dir="{{ language_dir() }}">{{ quest_metadata.locale.upper() }}</th>
               <th>{{ session.language.charcode.upper() if session.language else 'EN' }}</th>
             </tr>
           </thead>
           <tbody>
             {% for vocab in vocabulary_with_translations %}
               <tr>
-                <td class="vocab-word" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ vocab.word }}</td>
+                <td class="vocab-word" dir="{{ language_dir() }}">{{ vocab.word }}</td>
                 <td class="vocab-translation">{{ vocab.translation }}</td>
               </tr>
             {% endfor %}
@@ -51,51 +55,12 @@
     </section>
   {% endif %}
 
-  <!-- Speech Bubble Lines -->
-  {% if episode.speech_bubble_lines %}
-    <section class="quest-section">
-      <h4>{{ _('ui.quests.speech_lines') }}</h4>
-      <ul class="quest-bubble-list" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">
-        {% for line in episode.speech_bubble_lines %}
-          <li>{{ line }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-
-  <!-- Reorderable Sentences -->
-  {% if episode.sentences %}
-    <section class="quest-section">
-      <h4>{{ _('ui.quests.sentence_order') }}</h4>
-      <p class="section-instruction">{{ _('ui.quests.reorder_instruction') }}</p>
-      
-      <div class="sentence-reorder-container">
-        <ol class="sentence-list" id="sentenceList" role="region" aria-label="Reorderable story sentences" dir="{{ session.language.learning_charcode | to_direction }}">
-          {% for sentence in episode.sentences %}
-              <li class="sentence-item" data-order="{{ sentence.order or loop.index }}" draggable="true">
-                <span class="sentence-drag-handle" aria-label="Drag to reorder">⋮⋮</span>
-                <span class="sentence-text" dir="{{ (session.language.learning_dir or session.language.learning_charcode or session.language.charcode) | to_direction }}">{{ sentence.text if sentence.text is string else sentence.text }}</span>
-              <div class="sentence-controls">
-                <button class="btn-icon btn-move-up" data-index="{{ loop.index0 }}" aria-label="Move sentence up">
-                  <span aria-hidden="true">↑</span> {{ _('ui.quests.move_up') }}
-                </button>
-                <button class="btn-icon btn-move-down" data-index="{{ loop.index0 }}" aria-label="Move sentence down">
-                  <span aria-hidden="true">↓</span> {{ _('ui.quests.move_down') }}
-                </button>
-              </div>
-            </li>
-          {% endfor %}
-        </ol>
-      </div>
-    </section>
-  {% endif %}
-
   <!-- Navigation and Actions -->
   <div class="quest-episode-actions">
     <div class="nav-buttons">
       {% if episode.has_previous %}
         <a class="btn btn-secondary" href="/quest/{{ quest_metadata.quest_id }}/{{ episode.previous_episode_id }}">
-          ← {{ _('ui.quests.previous_episode') }}
+          {{ _('ui.quests.previous_episode') }}
         </a>
       {% endif %}
       
@@ -105,7 +70,7 @@
       
       {% if episode.has_next %}
         <a class="btn btn-secondary" href="/quest/{{ quest_metadata.quest_id }}/{{ episode.next_episode_id }}">
-          {{ _('ui.quests.next_episode') }} →
+          {{ _('ui.quests.next_episode') }}
         </a>
       {% endif %}
     </div>
@@ -114,101 +79,5 @@
   </div>
 </article>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sentenceList = document.getElementById('sentenceList');
-  const items = Array.from(sentenceList.querySelectorAll('.sentence-item'));
-  
-  // Drag and drop functionality
-  let draggedElement = null;
-  
-  items.forEach(item => {
-    item.addEventListener('dragstart', function() {
-      draggedElement = this;
-      this.classList.add('dragging');
-    });
-    
-    item.addEventListener('dragend', function() {
-      this.classList.remove('dragging');
-      items.forEach(i => i.classList.remove('drag-over'));
-      draggedElement = null;
-    });
-    
-    item.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      if (draggedElement && draggedElement !== this) {
-        this.classList.add('drag-over');
-      }
-    });
-    
-    item.addEventListener('dragleave', function() {
-      this.classList.remove('drag-over');
-    });
-    
-    item.addEventListener('drop', function(e) {
-      e.preventDefault();
-      if (draggedElement && draggedElement !== this) {
-        // Swap elements
-        const allItems = Array.from(sentenceList.querySelectorAll('.sentence-item'));
-        const draggedIndex = allItems.indexOf(draggedElement);
-        const targetIndex = allItems.indexOf(this);
-        
-        if (draggedIndex < targetIndex) {
-          this.parentNode.insertBefore(draggedElement, this.nextSibling);
-        } else {
-          this.parentNode.insertBefore(draggedElement, this);
-        }
-        
-        updateSentenceOrder();
-      }
-    });
-  });
-  
-  // Button controls for keyboard accessibility
-  document.querySelectorAll('.btn-move-up').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      if (index > 0) {
-        const items = Array.from(sentenceList.querySelectorAll('.sentence-item'));
-        sentenceList.insertBefore(items[index], items[index - 1]);
-        updateSentenceOrder();
-        updateButtonStates();
-        items[index - 1].focus();
-      }
-    });
-  });
-  
-  document.querySelectorAll('.btn-move-down').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      const items = Array.from(sentenceList.querySelectorAll('.sentence-item'));
-      if (index < items.length - 1) {
-        sentenceList.insertBefore(items[index + 1], items[index]);
-        updateSentenceOrder();
-        updateButtonStates();
-        items[index + 1].focus();
-      }
-    });
-  });
-  
-  function updateSentenceOrder() {
-    document.querySelectorAll('.sentence-item').forEach((item, index) => {
-      item.dataset.order = index + 1;
-    });
-  }
-  
-  function updateButtonStates() {
-    const items = Array.from(sentenceList.querySelectorAll('.sentence-item'));
-    document.querySelectorAll('.btn-move-up').forEach((btn, index) => {
-      btn.disabled = index === 0;
-    });
-    document.querySelectorAll('.btn-move-down').forEach((btn, index) => {
-      btn.disabled = index === items.length - 1;
-    });
-  }
-  
-  // Initialize button states
-  updateButtonStates();
-});
-</script>
+<!-- Removed unused sentence-list script: no sentence list on this page -->
 {% endblock %}

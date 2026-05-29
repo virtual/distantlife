@@ -11,6 +11,7 @@ import csv
 import os
 import sqlite3
 from datetime import datetime
+import re
 
 
 LEGACY_TABLES = [
@@ -22,6 +23,18 @@ LEGACY_TABLES = [
     "word_set_words_old",
 ]
 
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def quote_identifier(name):
+    return '"' + name.replace('"', '""') + '"'
+
+
+def validate_table_name(name):
+    if not _IDENTIFIER_RE.fullmatch(name):
+        raise ValueError(f"Invalid table name: {name}")
+    return name
+
 
 def table_exists(db, name):
     row = db.execute(
@@ -32,7 +45,8 @@ def table_exists(db, name):
 
 
 def backup_table(db, name, backup_dir, ts):
-    cursor = db.execute(f"SELECT * FROM {name}")
+    safe_name = validate_table_name(name)
+    cursor = db.execute(f"SELECT * FROM {quote_identifier(safe_name)}")
     rows = cursor.fetchall()
     if not rows:
         print(f"[INFO] Table '{name}' exists but is empty; creating empty backup CSV.")
@@ -49,8 +63,10 @@ def backup_table(db, name, backup_dir, ts):
 
 
 def rename_table(db, name, ts):
-    new_name = f"{name}_archived_{ts}"
-    sql = f"ALTER TABLE {name} RENAME TO {new_name}"
+    safe_name = validate_table_name(name)
+    new_name = f"{safe_name}_archived_{ts}"
+    validate_table_name(new_name)
+    sql = f"ALTER TABLE {quote_identifier(safe_name)} RENAME TO {quote_identifier(new_name)}"
     db.execute(sql)
     print(f"[RENAME] {name} -> {new_name}")
     return new_name

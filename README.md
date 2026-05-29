@@ -287,6 +287,16 @@ memurai.exe --service-start # run once to ensure service is started
 bash scripts/dev.sh
 ```
 
+## Story generation
+
+Jupyter (llama 3.1 and dictalm2.0)
+
+```
+cd notebooks
+conda activate jupyter-ai
+jupyter lab
+```
+
 ## Testing
 
 Run the test suite:

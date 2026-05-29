@@ -1,15 +1,15 @@
 :root {
   --color-primary: #050517;
-  --color-secondary: #247BA0;
-  --color-secondary-light: #C4E0F9;
+  --color-secondary: #216784;
+  --color-secondary-light: #4e84a5;
   --color-success: #00A676;
   --color-danger: #E48850;
   --color-warning: #EDDE43;
   --color-white: #fff;
-  --color-card-accent: #4e84a5;
-  --color-card-border: #99b6cb;
-  --color-card-surface: rgba(255, 255, 255, 0.1);
-  --color-overlay-blue: rgba(196, 224, 249, 0.5);
+  --color-card-accent: #99b6cb;
+  --color-card-border: #FFFD82;
+  --color-card-surface: rgba(255, 255, 255, 0.05);
+  --color-text-secondary: #99b6cb;
 }
 
 .breadcrumb {
@@ -39,7 +39,7 @@
   padding: 0;
 }
 .breadcrumb li a {
-  color: #C4E0F9;
+  color: #4e84a5;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -608,7 +608,7 @@ div[class^=col-] {
 }
 
 body {
-  background-color: #247BA0;
+  background-color: #216784;
 }
 
 header.header,
@@ -682,7 +682,7 @@ header.header {
 }
 .layout-secondary .layout-secondary-main {
   order: 1;
-  background-color: #247BA0;
+  background-color: #216784;
 }
 .layout-secondary .layout-secondary-main main + main {
   margin-top: 32px;
@@ -725,6 +725,9 @@ header.header {
   .layout-secondary .secondary-main {
     margin: 0 auto;
     max-width: 600px;
+  }
+  .layout-secondary .secondary-main.secondary-wide {
+    max-width: 100%;
   }
 }
 @media (min-width: 1440px) {
@@ -1004,7 +1007,7 @@ header.header {
   font-size: 16.2px;
 }
 .menu-container nav a:not(.btn):hover {
-  color: #C4E0F9;
+  color: #4e84a5;
 }
 .menu-container nav li {
   position: relative;
@@ -1084,7 +1087,7 @@ header.header {
   }
 }
 footer.footer.theme-inversed p a {
-  color: #C4E0F9;
+  color: #4e84a5;
 }
 footer.footer.theme-inversed p a:hover, footer.footer.theme-inversed p a:focus, footer.footer.theme-inversed p a:active {
   text-decoration: none;
@@ -1101,7 +1104,7 @@ footer.footer.theme-inversed p a:hover, footer.footer.theme-inversed p a:focus, 
 
 .theme-secondary {
   color: #fff;
-  background-color: #247BA0;
+  background-color: #216784;
 }
 
 .theme-red {
@@ -1119,7 +1122,7 @@ footer.footer.theme-inversed p a:hover, footer.footer.theme-inversed p a:focus, 
 }
 
 .color-secondary {
-  color: #247BA0 !important;
+  color: #216784 !important;
 }
 
 .color-red {
@@ -1138,7 +1141,7 @@ footer.footer.theme-inversed p a:hover, footer.footer.theme-inversed p a:focus, 
 }
 
 body {
-  background-color: #247BA0;
+  background-color: #216784;
 }
 
 header.header {
@@ -1151,15 +1154,18 @@ footer.footer {
 }
 
 a {
-  color: #C4E0F9;
+  color: #4e84a5;
 }
 
+.theme-inversed {
+  color: #fff;
+}
 .theme-inversed a:not(.btn):hover, .theme-inversed a:not(.btn):active, .theme-inversed a:not(.btn):focus {
   color: #FFFD82;
 }
 
 .sub-footer-container {
-  background-color: #247BA0;
+  background-color: #216784;
 }
 
 body {
@@ -1356,7 +1362,7 @@ h1 .badge {
 .element-options button {
   width: 100%;
   text-align: left;
-  background-color: rgba(196, 224, 249, 0.1);
+  background-color: rgba(78, 132, 165, 0.1);
 }
 .element-options button:after {
   font-family: "FontAwesome";
@@ -1439,10 +1445,9 @@ h1 .badge {
 
 .card {
   padding: 48px;
-  padding-top: 64px;
+  margin-top: 64px;
   background: #fff;
   position: relative;
-  color: rgb(23.2142857143, 23.2142857143, 106.7857142857);
   margin-bottom: 64px;
   line-height: 1.7;
   border-radius: 8px;
@@ -1455,6 +1460,12 @@ h1 .badge {
   .card:last-child {
     margin-bottom: 0;
   }
+}
+.card:last-child {
+  margin-bottom: 0;
+}
+.card .card-slim {
+  padding: 16px;
 }
 .card h3 {
   color: #050517;
@@ -1517,6 +1528,20 @@ h1 .badge {
   color: var(--color-white);
 }
 
+.card-accent {
+  background: var(--color-card-surface);
+  padding: 1rem;
+  border-width: 0;
+  border-left-width: 4px;
+  border-style: solid;
+  border-color: var(--color-card-accent);
+}
+
+.card[dir=rtl].card-accent {
+  border-left: none;
+  border-right-width: 4px;
+}
+
 button, .btn {
   display: block;
   width: 100%;
@@ -1556,10 +1581,10 @@ button .btn-lg, .btn .btn-lg {
 
 .btn-secondary {
   color: #fff;
-  background-color: #247BA0;
+  background-color: #216784;
 }
 .btn-secondary:hover {
-  background-color: rgb(26.6326530612, 90.9948979592, 118.3673469388);
+  background-color: rgb(22.8, 71.1636363636, 91.2);
 }
 
 .btn, button {
@@ -1590,7 +1615,7 @@ button .btn-lg, .btn .btn-lg {
   border: 4px solid #050517;
 }
 .btn-radio:hover, .btn-radio:focus, .btn-radio:active {
-  border-color: rgba(36, 123, 160, 0.5);
+  border-color: rgba(33, 103, 132, 0.5);
 }
 .btn-radio.btn-success {
   border-color: #5DDB6D;
@@ -1616,13 +1641,14 @@ button .btn-lg, .btn .btn-lg {
 
 .btn-icon {
   padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: 1rem;
   background: var(--color-primary-light);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   color: var(--color-primary);
   transition: all 0.2s ease;
+  min-width: 44px;
 }
 
 .btn-icon:hover {
@@ -1633,6 +1659,24 @@ button .btn-lg, .btn .btn-lg {
 .btn-icon:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.speech-word-tag {
+  white-space: normal;
+  line-height: 1.2;
+}
+.speech-word-tag:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.speech-word-tag:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.speech-word-tag.is-used {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .hero-container {
@@ -1946,7 +1990,7 @@ thead td, thead th, tbody td, tbody th {
 }
 
 thead th {
-  background-color: #050517;
+  background-color: rgba(5, 5, 23, 0.05);
   font-size: 1rem;
 }
 
@@ -1954,7 +1998,7 @@ tbody tr td {
   background-color: rgba(5, 5, 23, 0.05);
 }
 tbody tr:nth-child(2n+1) td {
-  background-color: rgba(196, 224, 249, 0.05);
+  background-color: rgba(78, 132, 165, 0.05);
 }
 
 @media (max-width: 991px) {
@@ -2001,12 +2045,15 @@ tbody tr:nth-child(2n+1) td {
   background-color: #050517;
   height: 8px;
   position: relative;
+  overflow: hidden;
 }
 .progressbar .filled {
   background-color: #00A676;
-  padding: 4px 0;
+  height: 100%;
+  left: 0;
+  top: 0;
   line-height: 0;
-  display: inline-block;
+  display: block;
   position: absolute;
   transition: width 0.2s ease-in-out;
 }
@@ -2018,8 +2065,8 @@ img {
 }
 
 .pet-box {
-  border: 1px solid #C4E0F9;
-  background-color: rgba(196, 224, 249, 0.3);
+  border: 1px solid #4e84a5;
+  background-color: rgba(78, 132, 165, 0.3);
 }
 
 .pet-hidden img {
@@ -2046,7 +2093,7 @@ figure {
 }
 figure .figure-img {
   border-radius: 8px;
-  background-color: rgba(196, 224, 249, 0.5);
+  background-color: rgba(78, 132, 165, 0.5);
   margin-right: auto;
   margin-left: auto;
   padding: 8px;
@@ -2659,6 +2706,10 @@ figure .figure-img {
     min-width: unset;
   }
 }
+.quest-story-text {
+  font-size: 23.4px;
+}
+
 .quiz-container {
   max-width: 900px;
   margin: 0 auto;
@@ -2714,65 +2765,10 @@ figure .figure-img {
   margin-bottom: 1rem;
 }
 
-.vocabulary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.vocabulary-table thead {
-  background: var(--color-primary);
-  color: white;
-}
-
-.vocabulary-table th {
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-}
-
-.vocabulary-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.vocabulary-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.vocabulary-table tbody tr:hover {
-  background: var(--color-bg-hover);
-}
-
-.vocab-word {
-  font-weight: 500;
-}
-
-.vocab-translation {
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
-
 .quiz-questions {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-}
-
-.quiz-question {
-  background: var(--color-bg-secondary);
-  padding: 1.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  scroll-margin-top: 2rem;
-}
-
-.quiz-question:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
 }
 
 .question-number {
@@ -2812,37 +2808,6 @@ figure .figure-img {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.choice-label {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: white;
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.choice-label:hover {
-  background: var(--color-bg-hover);
-  border-color: var(--color-primary);
-}
-
-.choice-input {
-  margin-right: 16px;
-  cursor: pointer;
-  accent-color: var(--color-primary);
-}
-
-.choice-text {
-  flex: 1;
-}
-
-.choice-label.selected {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
 }
 
 .sequence-instruction {
@@ -2892,42 +2857,9 @@ figure .figure-img {
   font-style: italic;
 }
 
-.reorder-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: white;
-  border: 2px solid var(--color-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
 .reorder-item {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
   cursor: move;
-  background: white;
-  user-select: none;
-  display: flex;
-  align-items: center;
   transition: all 0.2s ease;
-}
-
-.reorder-item:last-child {
-  border-bottom: none;
-}
-
-.reorder-item:hover {
-  background: var(--color-bg-hover);
-}
-
-.reorder-item.dragging {
-  opacity: 0.5;
-  background: var(--color-bg-muted);
-}
-
-.reorder-item.drag-over {
-  border-top: 3px solid var(--color-primary);
 }
 
 .quiz-actions {
@@ -2951,35 +2883,62 @@ figure .figure-img {
   .quiz-actions .btn {
     width: 100%;
   }
-  .vocabulary-table {
-    font-size: 0.875rem;
-  }
-  .vocabulary-table th,
-  .vocabulary-table td {
-    padding: 0.5rem;
-  }
 }
+.speech-sentence-box {
+  min-height: 3rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  padding: 8px;
+  font-size: 18px;
+  font-family: "Karla", "Noto Sans Hebrew", sans-serif;
+  background: #fff;
+  border: 1px solid #dddddd;
+}
+
+.quiz-progress-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.quiz-summary-item.is-correct {
+  border-color: #2f855a;
+}
+
+.quiz-summary-item.is-incorrect {
+  border-color: #c53030;
+}
+
+.quiz-close-form {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem;
+}
+
+.quiz-order-bank,
+.quiz-order-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quiz-order-answer {
+  margin-top: 16px;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .quest-episode-detail {
   max-width: 991px;
 }
 
 .quest-episode-header {
   margin-bottom: 2rem;
-}
-
-.quest-episode-breadcrumb {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.quest-episode-breadcrumb a {
-  color: var(--color-link);
-  text-decoration: none;
-}
-
-.quest-episode-breadcrumb a:hover {
-  text-decoration: underline;
 }
 
 .breadcrumb-separator {
@@ -2991,13 +2950,6 @@ figure .figure-img {
   padding: 1.5rem;
   background: var(--color-bg-secondary);
   border-radius: 8px;
-}
-
-.card-accent {
-  background: var(--color-bg-accent);
-  padding: 1rem;
-  border-left: 4px solid var(--color-primary);
-  margin: 1rem 0;
 }
 
 .section-instruction {
@@ -3071,46 +3023,12 @@ figure .figure-img {
   flex-shrink: 0;
 }
 
-.vocabulary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  overflow: hidden;
+.quiz-speech-builder {
+  margin: 2rem 0;
 }
 
-.vocabulary-table thead {
-  background: var(--color-primary);
-  color: white;
-}
-
-.vocabulary-table th {
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-}
-
-.vocabulary-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.vocabulary-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.vocabulary-table tbody tr:hover {
-  background: var(--color-bg-hover);
-}
-
-.vocab-word {
-  font-weight: 500;
-}
-
-.vocab-translation {
-  color: var(--color-text-secondary);
-  font-style: italic;
+.speech-line-builder {
+  margin-bottom: 1rem;
 }
 
 .quest-episode-actions {
@@ -3150,13 +3068,6 @@ figure .figure-img {
   .nav-buttons .btn {
     min-width: unset;
     width: 100%;
-  }
-  .vocabulary-table {
-    font-size: 0.875rem;
-  }
-  .vocabulary-table th,
-  .vocabulary-table td {
-    padding: 0.5rem;
   }
 }
 

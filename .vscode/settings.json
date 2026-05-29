@@ -1,0 +1,12 @@
+{
+    "css.hover.references": false,
+    "scss.hover.references": false,
+    "less.hover.references": false,
+    "html.hover.references": false,
+    "chat.tools.terminal.autoApprove": {
+        "/^python -m unittest -v$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

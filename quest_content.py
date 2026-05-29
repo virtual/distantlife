@@ -12,23 +12,15 @@ if not logger.handlers:
 
 
 REQUIRED_QUEST_KEYS = {
+    "meta",
     "quest_id",
-    "locale",
-    "version",
-    "review_status",
-    "theme",
-    "quest_type",
-    "quest_line_id",
-    "allowed_pet_type_ids",
-    "title",
-    "summary",
-    "episodes",
+    "locales",
 }
 
 REQUIRED_EPISODE_KEYS = {
     "episode_id",
     "title",
-    "story_text",
+    "story_sentences",
     "quiz",
 }
 
@@ -40,43 +32,82 @@ SUPPORTED_QUESTION_TYPES = {
 }
 
 
-def get_quest_file_path(quest_id, locale="en", root_dir="quests"):
-    return Path(root_dir) / locale / f"{quest_id}.json"
+def get_quest_file_path(quest_id, root_dir="quests"):
+    """Locate the combined quest JSON for a given quest_id under root_dir.
+
+    Searches for files matching "**/{quest_id}.json" and returns the first match.
+    Raises FileNotFoundError if not found.
+    """
+    root = Path(root_dir)
+    matches = [
+        path
+        for path in root.rglob(f"{quest_id}.json")
+        if path.is_file() and path.parent.name == quest_id
+    ]
+    if not matches:
+        raise FileNotFoundError(f"Quest file for '{quest_id}' not found under {root_dir}")
+    return sorted(matches)[0]
 
 
-def list_quest_ids(locale="en", root_dir="quests"):
+def list_quest_ids(root_dir="quests"):
+    """List all quest IDs by looking for combined quest files under root_dir.
+
+    Returns stems of files matching `**/*.json` directly under per-quest paths.
     """
-    List all available quest IDs for a given locale.
-    
-    Args:
-        locale: language code (en, he, etc.)
-        root_dir: quest directory root
-    
-    Returns:
-        list: quest IDs (filenames without .json extension)
-    """
-    quest_dir = Path(root_dir) / locale
-    if not quest_dir.exists():
+    root = Path(root_dir)
+    if not root.exists():
         return []
-    
-    return sorted([f.stem for f in quest_dir.glob("*.json")])
+    # Find only canonical quest files: <quest_folder>/<quest_id>.json
+    files = [p for p in root.rglob("*.json") if p.is_file() and p.parent.name == p.stem]
+    # Return unique stems
+    ids = sorted({p.stem for p in files})
+    return ids
 
 
-def load_quest_content(quest_id, locale="en", root_dir="quests"):
+def load_quest_content(quest_id, locale=None, root_dir="quests"):
     """
-    Load quest content from a JSON file based on quest_id and locale.
+    Load combined quest content for a quest_id. The combined file contains all locales.
 
     Args:
         quest_id: identifier for the quest (matches filename without .json)
-        locale: language code (en, he, etc.)
+        locale: ignored at load time (kept for compatibility with callers)
         root_dir: quest directory root
     Returns:
-        dict: quest content loaded from JSON
-    Raises: FileNotFoundError if the quest file does not exist  
+        dict: combined quest content loaded from JSON
+    Raises: FileNotFoundError if the quest file does not exist
     """
-    quest_path = get_quest_file_path(quest_id, locale=locale, root_dir=root_dir)
+    quest_path = get_quest_file_path(quest_id, root_dir=root_dir)
     with quest_path.open("r", encoding="utf-8") as file_obj:
         return json.load(file_obj)
+
+
+def get_locale_view(quest_obj, locale):
+    """Return a localized view of a combined quest object.
+
+    The returned view matches the previous per-locale quest shape expected by templates and routes:
+    - meta, quest_id, unlock_cost, quest_line_id, allowed_pet_type_ids
+    - title, summary, locale, theme
+    - episodes: list of episode objects for that locale
+    """
+    locales = quest_obj.get("locales")
+    if not isinstance(locales, dict):
+        raise ValueError("Quest object missing 'locales' mapping")
+    locale_data = locales.get(locale)
+    if not locale_data:
+        raise ValueError(f"Locale '{locale}' not found in quest '{quest_obj.get('quest_id')}'")
+    view = {
+        "meta": quest_obj.get("meta"),
+        "quest_id": quest_obj.get("quest_id"),
+        "unlock_cost": quest_obj.get("unlock_cost"),
+        "quest_line_id": quest_obj.get("quest_line_id"),
+        "allowed_pet_type_ids": quest_obj.get("allowed_pet_type_ids", []),
+        "title": locale_data.get("title"),
+        "summary": locale_data.get("summary"),
+        "locale": locale_data.get("locale", locale),
+        "theme": locale_data.get("theme"),
+        "episodes": locale_data.get("episodes", []),
+    }
+    return view
 
 
 def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, preferred_lang_id):
@@ -92,6 +123,7 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
         list of dicts with 'word' (learning lang) and 'translation' (preferred lang)
     """
     from connections import get_db_connection
+    from normalization import has_nikkud
     
     db = get_db_connection()
     logger.info("get_vocabulary_with_translations called: targets=%s learning_lang_id=%s preferred_lang_id=%s", vocabulary_targets, learning_lang_id, preferred_lang_id)
@@ -110,6 +142,7 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
             word_str = str(target)
 
         if lemma_id is not None:
+            # Get primary (unvocalized) form
             primary_form = db.execute(
                 """
                 SELECT value
@@ -119,7 +152,26 @@ def get_vocabulary_with_translations(vocabulary_targets, learning_lang_id, prefe
                 """,
                 (lemma_id, learning_lang_id),
             ).fetchone()
-            if primary_form is not None:
+
+            # Look for a vocalized (nikkud) form in non-primary lemma_form rows
+            vocalized_form = None
+            vocal_rows = db.execute(
+                """
+                SELECT value
+                FROM lemma_form
+                WHERE lemma_id = ? AND language_id = ? AND (is_primary = 0 OR is_primary IS NULL)
+                ORDER BY id ASC
+                """,
+                (lemma_id, learning_lang_id),
+            ).fetchall()
+            for vr in vocal_rows:
+                if vr and vr['value'] and has_nikkud(vr['value']):
+                    vocalized_form = vr['value']
+                    break
+
+            if vocalized_form:
+                word_str = vocalized_form
+            elif primary_form is not None:
                 word_str = primary_form['value']
             else:
                 # Keep deterministic fallback text in UI for bad references.
@@ -249,8 +301,13 @@ def get_quest_board_entries(user_id, locale="en", root_dir="quests"):
     }
 
     entries = []
-    for quest_id in list_quest_ids(locale=locale, root_dir=root_dir):
-        quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+    for quest_id in list_quest_ids(root_dir=root_dir):
+        quest_obj = load_quest_content(quest_id, root_dir=root_dir)
+        try:
+            quest = get_locale_view(quest_obj, locale)
+        except Exception:
+            # Skip quests that don't have the requested locale
+            continue
         allowed_pet_type_ids = quest.get("allowed_pet_type_ids", [])
 
         if not allowed_pet_type_ids:
@@ -287,7 +344,7 @@ def get_quest_board_entries(user_id, locale="en", root_dir="quests"):
                 "quest_id": quest["quest_id"],
                 "title": quest["title"],
                 "summary": quest["summary"],
-                "quest_line_id": quest["quest_line_id"],
+                "quest_line_id": quest.get("quest_line_id"),
                 "allowed_pet_type_ids": allowed_pet_type_ids,
                 "allowed_pet_label": allowed_pet_label,
                 "episode_count": len(quest.get("episodes", [])),
@@ -297,7 +354,7 @@ def get_quest_board_entries(user_id, locale="en", root_dir="quests"):
             }
         )
 
-    return entries
+    return [entry for entry in entries if entry.get("episode_count", 0) > 0]
 
 def _has_neutral_variant(value):
     """
@@ -330,13 +387,11 @@ def _validate_question_shape(question, episode_id, question_index):
         return errors
 
     # Validate required fields based on question type
-    # For cloze questions, 'prompt' and 'answer' are required. 
-    # The prompt must have a neutral variant if it's a dict.
+    # For cloze questions, sentence_id and answer are required.
     if q_type == "cloze":
-        if "prompt" not in question:
-            errors.append(f"Missing cloze prompt in {location}")
-        elif isinstance(question.get("prompt"), dict) and not _has_neutral_variant(question.get("prompt")):
-            errors.append(f"Missing neutral prompt variant in {location}")
+        sentence_id = question.get("sentence_id")
+        if not isinstance(sentence_id, str) or not sentence_id.strip():
+            errors.append(f"Missing or invalid cloze sentence_id in {location}")
 
         if not isinstance(question.get("answer"), str) or not question.get("answer").strip():
             errors.append(f"Missing or invalid cloze answer in {location}")
@@ -389,86 +444,112 @@ def validate_quest_content(quest):
     """
     errors = []
 
-    # Check for missing required keys at the quest level
-    missing_keys = REQUIRED_QUEST_KEYS - set(quest.keys())
-    if missing_keys:
-        errors.append(f"Missing required quest keys: {sorted(missing_keys)}")
+    # Top-level combined quest shape
+    if not isinstance(quest, dict):
+        return ["Quest must be a JSON object"]
 
-    allowed_pet_type_ids = quest.get("allowed_pet_type_ids")
-    if not isinstance(allowed_pet_type_ids, list):
-        errors.append("allowed_pet_type_ids must be a list")
+    # Check meta
+    meta = quest.get("meta")
+    if not isinstance(meta, dict):
+        errors.append("meta must be an object")
+    else:
+        if meta.get("generator") != "quest_pipeline_v1":
+            errors.append("meta.generator must be 'quest_pipeline_v1'")
+        generated_at = meta.get("generated_at")
+        if not isinstance(generated_at, str) or not generated_at.strip():
+            errors.append("meta.generated_at must be a non-empty string")
 
-    episodes = quest.get("episodes")
-    if not isinstance(episodes, list) or not episodes:
-        errors.append("episodes must be a non-empty list")
+    if "quest_id" not in quest or not isinstance(quest.get("quest_id"), str):
+        errors.append("quest_id must be a non-empty string")
+
+    locales = quest.get("locales")
+    if not isinstance(locales, dict) or not locales:
+        errors.append("locales must be a non-empty mapping of locale codes to locale data")
         return errors
 
-    # Track episode IDs to detect duplicates
-    seen_episode_ids = set()
-
-    for episode in episodes:
-        if not isinstance(episode, dict):
-            errors.append("Each episode must be an object")
+    # Validate each locale's episodes using episode-level validation
+    for locale_code, locale_data in locales.items():
+        if not isinstance(locale_data, dict):
+            errors.append(f"locale '{locale_code}' must be an object")
             continue
 
-        missing_episode_keys = REQUIRED_EPISODE_KEYS - set(episode.keys())
-        if missing_episode_keys:
-            errors.append(f"Episode missing required keys: {sorted(missing_episode_keys)}")
-
-        episode_id = episode.get("episode_id")
-        if not isinstance(episode_id, str) or not episode_id.strip():
-            errors.append("episode_id must be a non-empty string")
-            episode_id = "<unknown_episode>"
-        elif episode_id in seen_episode_ids:
-            errors.append(f"Duplicate episode_id: {episode_id}")
-        else:
-            seen_episode_ids.add(episode_id)
-
-        story_text = episode.get("story_text")
-        if not _has_neutral_variant(story_text):
-            errors.append(f"story_text must include neutral variant in episode '{episode_id}'")
-
-        speech_bubble_lines = episode.get("speech_bubble_lines", [])
-        if not isinstance(speech_bubble_lines, list):
-            errors.append(f"speech_bubble_lines must be a list in episode '{episode_id}'")
-        else:
-            for i, line in enumerate(speech_bubble_lines, start=1):
-                if not _has_neutral_variant(line):
-                    errors.append(
-                        f"speech_bubble_lines[{i}] must include neutral variant in episode '{episode_id}'"
-                    )
-
-        vocabulary_targets = episode.get("vocabulary_targets")
-        vocabulary_target_ids = episode.get("vocabulary_target_ids")
-        if vocabulary_targets is not None and not isinstance(vocabulary_targets, list):
-            errors.append(f"vocabulary_targets must be a list in episode '{episode_id}'")
-        if vocabulary_target_ids is not None:
-            if not isinstance(vocabulary_target_ids, list):
-                errors.append(f"vocabulary_target_ids must be a list in episode '{episode_id}'")
-            else:
-                for i, target_id in enumerate(vocabulary_target_ids, start=1):
-                    if not isinstance(target_id, int) and not (
-                        isinstance(target_id, str) and target_id.strip().isdigit()
-                    ):
-                        errors.append(
-                            f"vocabulary_target_ids[{i}] must be an integer ID in episode '{episode_id}'"
-                        )
-
-        quiz = episode.get("quiz")
-        if not isinstance(quiz, dict):
-            errors.append(f"quiz must be an object in episode '{episode_id}'")
+        episodes = locale_data.get("episodes")
+        if not isinstance(episodes, list) or not episodes:
+            errors.append(f"locale '{locale_code}' must include a non-empty episodes list")
             continue
 
-        questions = quiz.get("questions")
-        if not isinstance(questions, list) or not questions:
-            errors.append(f"quiz.questions must be a non-empty list in episode '{episode_id}'")
-            continue
-
-        for q_index, question in enumerate(questions, start=1):
-            if not isinstance(question, dict):
-                errors.append(f"Question {q_index} must be an object in episode '{episode_id}'")
+        seen_episode_ids = set()
+        for episode in episodes:
+            if not isinstance(episode, dict):
+                errors.append(f"Each episode in locale '{locale_code}' must be an object")
                 continue
-            errors.extend(_validate_question_shape(question, episode_id, q_index))
+
+            missing_episode_keys = REQUIRED_EPISODE_KEYS - set(episode.keys())
+            if missing_episode_keys:
+                errors.append(f"Episode missing required keys in locale '{locale_code}': {sorted(missing_episode_keys)}")
+
+            episode_id = episode.get("episode_id")
+            if not isinstance(episode_id, str) or not episode_id.strip():
+                errors.append(f"episode_id must be a non-empty string in locale '{locale_code}'")
+                episode_id = "<unknown_episode>"
+            elif episode_id in seen_episode_ids:
+                errors.append(f"Duplicate episode_id: {episode_id} in locale '{locale_code}'")
+            else:
+                seen_episode_ids.add(episode_id)
+
+            # story_sentences validation
+            story_sentences = episode.get("story_sentences")
+            if not isinstance(story_sentences, list) or not story_sentences:
+                errors.append(f"story_sentences must be a non-empty list in episode '{episode_id}' (locale '{locale_code}')")
+                continue
+
+            story_sentence_ids = set()
+            for i, sentence in enumerate(story_sentences, start=1):
+                if not _has_neutral_variant(sentence):
+                    errors.append(f"story_sentences[{i}] must include neutral variant in episode '{episode_id}' (locale '{locale_code}')")
+                    continue
+
+                sentence_id = sentence.get("id") if isinstance(sentence, dict) else None
+                if not isinstance(sentence_id, str) or not sentence_id.strip():
+                    errors.append(f"story_sentences[{i}] must include a non-empty id in episode '{episode_id}' (locale '{locale_code}')")
+                    continue
+
+                if sentence_id in story_sentence_ids:
+                    errors.append(f"Duplicate sentence id '{sentence_id}' in episode '{episode_id}' (locale '{locale_code}')")
+                else:
+                    story_sentence_ids.add(sentence_id)
+
+            # quiz validation
+            quiz = episode.get("quiz")
+            if not isinstance(quiz, dict):
+                errors.append(f"quiz must be an object in episode '{episode_id}' (locale '{locale_code}')")
+                continue
+
+            questions = quiz.get("questions")
+            if not isinstance(questions, list):
+                errors.append(f"quiz.questions must be a list in episode '{episode_id}' (locale '{locale_code}')")
+                continue
+            # Empty questions list is allowed (no quiz for this locale/episode)
+            if not questions:
+                continue
+
+            for q_index, question in enumerate(questions, start=1):
+                if not isinstance(question, dict):
+                    errors.append(f"Question {q_index} must be an object in episode '{episode_id}' (locale '{locale_code}')")
+                    continue
+                errors.extend(_validate_question_shape(question, episode_id, q_index))
+
+                if question.get("type") == "cloze":
+                    sentence_id = question.get("sentence_id")
+                    if isinstance(sentence_id, str) and sentence_id.strip():
+                        if sentence_id not in story_sentence_ids:
+                            errors.append(f"cloze sentence_id not found in episode '{episode_id}', question {q_index}: {sentence_id} (locale '{locale_code}')")
+
+            # Validate vocabulary_target_ids if provided: must be a list of integers
+            vocab_ids = episode.get("vocabulary_target_ids")
+            if vocab_ids is not None:
+                if not isinstance(vocab_ids, list) or not all(isinstance(v, int) for v in vocab_ids):
+                    errors.append(f"vocabulary_target_ids must be a list of integers in episode '{episode_id}' (locale '{locale_code}')")
 
     return errors
 
@@ -612,12 +693,13 @@ def load_and_personalize_quest(quest_id, locale="en", gender="neutral", pet_name
         FileNotFoundError: if quest file not found
         ValueError: if quest content is invalid
     """
-    quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
-    
+    quest_obj = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+    quest = get_locale_view(quest_obj, locale)
+
     context = {}
     if pet_name:
         context["pet_name"] = pet_name
-    
+
     return apply_personalization(quest, gender, **context)
 
 
@@ -641,8 +723,9 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
         FileNotFoundError: if quest file not found
         ValueError: if episode not found or quest content is invalid
     """
-    quest = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
-    
+    quest_obj = load_quest_content(quest_id, locale=locale, root_dir=root_dir)
+    quest = get_locale_view(quest_obj, locale)
+
     episodes = quest.get("episodes", [])
     episode_index = None
     episode = None
@@ -662,6 +745,22 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
     
     personalized_episode = apply_personalization(episode, gender, **context)
 
+    # Preserve sentence IDs alongside resolved sentence text for stable quiz lookup.
+    story_sentence_refs = []
+    for sentence in episode.get("story_sentences", []):
+        if not isinstance(sentence, dict):
+            continue
+
+        sentence_id = sentence.get("id")
+        if not isinstance(sentence_id, str) or not sentence_id.strip():
+            continue
+
+        resolved_text = replace_tokens(resolve_gender_variant(sentence, gender), **context)
+        story_sentence_refs.append({"id": sentence_id, "text": resolved_text})
+
+    personalized_episode["story_sentence_refs"] = story_sentence_refs
+    personalized_episode["story_sentences"] = [ref["text"] for ref in story_sentence_refs]
+
     learning_lang_id = None
     from connections import get_db_connection
 
@@ -672,7 +771,11 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
 
     vocabulary_target_ids = episode.get("vocabulary_target_ids")
     if learning_lang_id is not None:
-        resolved_target_ids = _resolve_vocabulary_target_ids(episode.get("vocabulary_targets"), learning_lang_id)
+        if vocabulary_target_ids is not None:
+            # If explicit lemma IDs are provided, use them directly
+            resolved_target_ids = [int(t) for t in vocabulary_target_ids]
+        else:
+            resolved_target_ids = _resolve_vocabulary_target_ids(episode.get("vocabulary_targets"), learning_lang_id)
     else:
         resolved_target_ids = []
 
@@ -685,7 +788,7 @@ def load_episode_from_quest(quest_id, episode_id, locale="en", gender="neutral",
     quest_metadata = {
         "quest_id": quest["quest_id"],
         "quest_line_id": quest.get("quest_line_id"),
-        "title": quest["title"],
+        "title": quest.get("title"),
         "allowed_pet_label": quest.get("allowed_pet_label", ""),
         "locale": quest.get("locale", locale),
         "total_episodes": len(episodes),
@@ -732,7 +835,11 @@ def can_user_access_quest(user_id, quest_id, locale="en"):
     if not pet:
         return (False, "no_active_pet")
     
-    quest = load_quest_content(quest_id, locale=locale)
+    quest_obj = load_quest_content(quest_id, locale=locale)
+    try:
+        quest = get_locale_view(quest_obj, locale)
+    except Exception:
+        quest = {}
     allowed_pet_type_ids = quest.get("allowed_pet_type_ids", [])
     
     # Empty list means all pets allowed

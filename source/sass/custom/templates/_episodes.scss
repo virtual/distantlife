@@ -8,20 +8,7 @@
   margin-bottom: 2rem;
 }
 
-.quest-episode-breadcrumb {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}
-
-.quest-episode-breadcrumb a {
-  color: var(--color-link);
-  text-decoration: none;
-}
-
-.quest-episode-breadcrumb a:hover {
-  text-decoration: underline;
-}
+ 
 
 .breadcrumb-separator {
   margin: 0 0.5rem;
@@ -32,13 +19,6 @@
   padding: 1.5rem;
   background: var(--color-bg-secondary);
   border-radius: 8px;
-}
-
-.card-accent {
-  background: var(--color-bg-accent);
-  padding: 1rem;
-  border-left: 4px solid var(--color-primary);
-  margin: 1rem 0;
 }
 
 .section-instruction {
@@ -112,47 +92,38 @@
   flex-shrink: 0;
 }
 
-.vocabulary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  overflow: hidden;
+.quiz-speech-builder {
+  margin: 2rem 0;
 }
 
-.vocabulary-table thead {
-  background: var(--color-primary);
-  color: white;
+.speech-line-builder {
+  margin-bottom: 1rem;
 }
 
-.vocabulary-table th {
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-}
+// .speech-word-bank,
+// .speech-sentence-box {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 0.5rem;
+//   min-height: 3.5rem;
+//   padding: 0.75rem;
+//   border: 1px dashed var(--color-border);
+//   border-radius: 8px;
+//   background: var(--color-bg-secondary);
+// }
 
-.vocabulary-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
+// .speech-sentence-box {
+//   margin-top: 0.75rem;
+//   background: var(--color-bg-accent);
 
-.vocabulary-table tbody tr:last-child td {
-  border-bottom: none;
-}
+//   .speech-word-tag {
+//     opacity: 1;
+//     background: var(--color-primary);
+//     color: white;
+//     border-color: var(--color-primary);
+//   }
+// }
 
-.vocabulary-table tbody tr:hover {
-  background: var(--color-bg-hover);
-}
-
-.vocab-word {
-  font-weight: 500;
-}
-
-.vocab-translation {
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
 
 .quest-episode-actions {
   margin-top: 2rem;
@@ -195,14 +166,5 @@
   .nav-buttons .btn {
     min-width: unset;
     width: 100%;
-  }
-
-  .vocabulary-table {
-    font-size: 0.875rem;
-  }
-
-  .vocabulary-table th,
-  .vocabulary-table td {
-    padding: 0.5rem;
   }
 }

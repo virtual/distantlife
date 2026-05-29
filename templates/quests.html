@@ -29,7 +29,7 @@
 </section>
 
 {% if available_quests %}
-  <section class="quest-section">
+  <section class="quest-section card">
     <h3>{{ _('ui.quests.available_quests') }}</h3>
     <div class="quest-grid">
       {% for quest in available_quests %}
@@ -51,7 +51,7 @@
 {% endif %}
 
 {% if locked_quests %}
-  <section class="quest-section">
+  <section class="quest-section card">
     <h3>{{ _('ui.quests.locked_quests') }}</h3>
     <div class="quest-grid">
       {% for quest in locked_quests %}

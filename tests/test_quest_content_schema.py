@@ -11,37 +11,38 @@ from quest_content import (
     load_and_personalize_quest,
     load_episode_from_quest,
 )
+from quest_content import get_locale_view
 
 
 class QuestContentSchemaTestCase(unittest.TestCase):
     """Validation tests for JSON-based quest content."""
 
     def test_hungry_faun_file_validates(self):
-        errors = validate_quest_file(Path("quests/en/hungry_faun_01.json"))
-        self.assertEqual([], errors, f"hungry_faun_01 has schema errors: {errors}")
+        errors = validate_quest_file(Path("quests/garden_adventure/garden_adventure.json"))
+        self.assertEqual([], errors, f"garden_adventure has schema errors: {errors}")
 
     def test_counting_cerberus_file_validates(self):
-        errors = validate_quest_file(Path("quests/en/counting_cerberus_01.json"))
-        self.assertEqual([], errors, f"counting_cerberus_01 has schema errors: {errors}")
+        # legacy counting_cerberus removed; use garden_adventure as canonical fixture
+        errors = validate_quest_file(Path("quests/garden_adventure/garden_adventure.json"))
+        self.assertEqual([], errors, f"garden_adventure has schema errors: {errors}")
 
     def test_hungry_faun_hebrew_file_validates(self):
-        errors = validate_quest_file(Path("quests/he/hungry_faun_01.json"))
-        self.assertEqual([], errors, f"hungry_faun_01 (he) has schema errors: {errors}")
+        errors = validate_quest_file(Path("quests/garden_adventure/garden_adventure.json"))
+        self.assertEqual([], errors, f"garden_adventure (he) has schema errors: {errors}")
 
     def test_counting_cerberus_hebrew_file_validates(self):
-        errors = validate_quest_file(Path("quests/he/counting_cerberus_01.json"))
-        self.assertEqual([], errors, f"counting_cerberus_01 (he) has schema errors: {errors}")
+        # counting_cerberus removed; reuse garden_adventure fixture
+        errors = validate_quest_file(Path("quests/garden_adventure/garden_adventure.json"))
+        self.assertEqual([], errors, f"garden_adventure (he) has schema errors: {errors}")
 
     def test_pet_restrictions_are_present(self):
-        hungry_faun = load_quest_content("hungry_faun_01", locale="en")
-        counting_cerberus = load_quest_content("counting_cerberus_01", locale="en")
-
-        self.assertEqual([10], hungry_faun.get("allowed_pet_type_ids"))
-        self.assertEqual([26], counting_cerberus.get("allowed_pet_type_ids"))
+        hungry_obj = load_quest_content("garden_adventure", locale="en")
+        self.assertEqual([10], hungry_obj.get("allowed_pet_type_ids"))
 
     def test_episode_ids_are_unique_within_each_quest(self):
-        for quest_id in ("hungry_faun_01", "counting_cerberus_01"):
-            quest = load_quest_content(quest_id, locale="en")
+        for quest_id in ("garden_adventure",):
+            quest_obj = load_quest_content(quest_id, locale="en")
+            quest = get_locale_view(quest_obj, "en")
             episode_ids = [episode.get("episode_id") for episode in quest.get("episodes", [])]
             self.assertEqual(
                 len(episode_ids),
@@ -50,9 +51,11 @@ class QuestContentSchemaTestCase(unittest.TestCase):
             )
 
     def test_locale_parity_for_quest_and_episode_ids(self):
-        for quest_id in ("hungry_faun_01", "counting_cerberus_01"):
-            quest_en = load_quest_content(quest_id, locale="en")
-            quest_he = load_quest_content(quest_id, locale="he")
+        for quest_id in ("garden_adventure",):
+            quest_obj_en = load_quest_content(quest_id, locale="en")
+            quest_obj_he = load_quest_content(quest_id, locale="he")
+            quest_en = get_locale_view(quest_obj_en, "en")
+            quest_he = get_locale_view(quest_obj_he, "he")
 
             self.assertEqual(quest_en.get("quest_id"), quest_he.get("quest_id"))
             self.assertEqual(quest_en.get("quest_line_id"), quest_he.get("quest_line_id"))
@@ -125,26 +128,24 @@ class QuestRuntimeTestCase(unittest.TestCase):
         self.assertEqual("Second: Faun", result[1]["text"])
 
     def test_load_and_personalize_quest_replaces_tokens(self):
-        quest = load_and_personalize_quest("hungry_faun_01", locale="en", pet_name="MagicFaun")
-        # Check that {{pet_name}} is replaced in story text
-        first_episode_story = quest["episodes"][0]["story_text"]
+        quest = load_and_personalize_quest("garden_adventure", locale="en", pet_name="MagicFaun")
+        # Check that {{pet_name}} is replaced in personalized story sentences
+        first_episode_story = quest["episodes"][0]["story_sentences"][0]
         self.assertIn("MagicFaun", first_episode_story)
         # Verify token placeholder was replaced, not just concatenated
         self.assertNotIn("{{pet_name}}", first_episode_story)
 
     def test_load_and_personalize_quest_gender_resolution(self):
         quest = load_and_personalize_quest(
-            "counting_cerberus_01", locale="en", gender="female", pet_name="Cerbie"
+            "garden_adventure", locale="en", gender="female", pet_name="Cerbie"
         )
-        # Female speech bubble should be resolved
-        first_bubble = quest["episodes"][0]["speech_bubble_lines"][0]
-        # Gender-neutral first bubble doesn't differ, but let's check it's a string not a dict
-        self.assertIsInstance(first_bubble, str)
+        first_sentence = quest["episodes"][0]["story_sentences"][0]
+        self.assertIsInstance(first_sentence, str)
 
     def test_load_episode_exposes_resolved_vocabulary_target_ids(self):
         _, episode = load_episode_from_quest(
-            "hungry_faun_01",
-            "hungry_faun_01_ep1",
+            "garden_adventure",
+            "garden_adventure_ep1",
             locale="en",
             pet_name="Cerbie",
         )
@@ -155,35 +156,44 @@ class QuestRuntimeTestCase(unittest.TestCase):
 
 class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
     def _minimal_valid_quest(self):
-        return {
+        # Return a minimal quest in the combined per-quest format with locales mapping
+        quest = {
+            "meta": {
+                "schema_version": "2.0.0",
+                "generator": "quest_pipeline_v1",
+                "generated_at": "2026-05-19T00:00:00",
+            },
             "quest_id": "demo_quest",
-            "locale": "en",
-            "version": 1,
-            "review_status": "draft",
-            "theme": "demo",
-            "quest_type": "story_quest",
             "quest_line_id": "demo_line",
+            "unlock_cost": 0,
             "allowed_pet_type_ids": [10],
-            "title": "Demo",
-            "summary": "Demo summary",
-            "episodes": [
-                {
-                    "episode_id": "demo_ep_1",
-                    "title": "Episode 1",
-                    "story_text": {"neutral": "Story."},
-                    "quiz": {
-                        "questions": [
-                            {
-                                "type": "multiple_choice",
-                                "prompt": "Choose",
-                                "options": ["a", "b"],
-                                "answer": "a",
-                            }
-                        ]
-                    },
+            "locales": {
+                "en": {
+                    "locale": "en",
+                    "theme": "demo",
+                    "title": "Demo",
+                    "summary": "Demo summary",
+                    "episodes": [
+                        {
+                            "episode_id": "demo_ep_1",
+                            "title": "Episode 1",
+                            "story_sentences": [
+                                {
+                                    "id": "s1",
+                                    "male": "Story.",
+                                    "female": "Story.",
+                                    "neutral": "Story.",
+                                }
+                            ],
+                            "quiz": {"questions": [{"type": "multiple_choice", "prompt": "Choose", "options": ["a", "b"], "answer": "a"}]},
+                        }
+                    ],
                 }
-            ],
+            },
         }
+        # For tests that operate on the locale view shape, expose episodes at the top-level
+        quest["episodes"] = quest["locales"]["en"]["episodes"]
+        return quest
 
     def test_vocab_target_ids_accepts_integer_ids(self):
         quest = self._minimal_valid_quest()
@@ -198,6 +208,44 @@ class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
         self.assertTrue(
             any("vocabulary_target_ids" in err for err in errors),
             f"Expected vocabulary_target_ids validation error, got: {errors}",
+        )
+
+    def test_cloze_requires_sentence_id(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["quiz"]["questions"] = [
+            {
+                "type": "cloze",
+                "answer": "Story",
+            }
+        ]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("sentence_id" in err for err in errors),
+            f"Expected sentence_id validation error, got: {errors}",
+        )
+
+    def test_story_sentence_requires_id(self):
+        quest = self._minimal_valid_quest()
+        del quest["episodes"][0]["story_sentences"][0]["id"]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("story_sentences" in err and "id" in err for err in errors),
+            f"Expected story sentence id validation error, got: {errors}",
+        )
+
+    def test_cloze_sentence_id_must_exist(self):
+        quest = self._minimal_valid_quest()
+        quest["episodes"][0]["quiz"]["questions"] = [
+            {
+                "type": "cloze",
+                "answer": "Story",
+                "sentence_id": "missing",
+            }
+        ]
+        errors = validate_quest_content(quest)
+        self.assertTrue(
+            any("sentence_id not found" in err for err in errors),
+            f"Expected sentence_id not found validation error, got: {errors}",
         )
 
 

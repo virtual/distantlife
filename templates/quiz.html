@@ -6,247 +6,273 @@
 
 {% block main %}
 <article class="quiz-container card">
+  <form method="post" action="{{ url_for('quiz_episode_submit', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}" class="quiz-close-form" onsubmit="return confirm('Leave quiz? Your progress will be lost.');" aria-label="Leave quiz">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit" name="action" value="forfeit" class="quiz-close btn btn-icon" aria-label="Close quiz"><span class="fa fa-solid fa-times-circle" aria-hidden="true"></span></button>
+  </form>
   <div class="quiz-header">
     <p class="eyebrow">{{ _('ui.quests.quiz') }}</p>
     <h2>{{ quest_metadata.title }}</h2>
-    <div class="quiz-episode-info">
-      <span>{{ _('ui.quests.episode') }} {{ episode.episode_number }} {{ _('ui.quests.of') }} {{ episode.total_episodes }}</span>
-    </div>
+    <p class="quiz-episode-info">
+      <span>{{ episode.title }}</span>
+    </p>
   </div>
 
-  {% if quiz_result %}
-    <section class="quiz-result card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
-      <h3>Quiz results</h3>
-      <p>{{ quiz_result.correct }} / {{ quiz_result.total }} {{ _('ui.quests.question') }}{% if quiz_result.total != 1 %}s{% endif %} correct</p>
-    </section>
-  {% endif %}
-
-  <!-- Episode Summary -->
-  <section class="quiz-summary card-accent" dir="{{ session.language.learning_charcode | to_direction }}">
-    <h3>{{ episode.title }}</h3>
-    {% if episode.story_text %}
-      <p>{% if episode.story_text is string %}{{ episode.story_text }}{% else %}{{ episode.story_text.neutral or episode.story_text.male or episode.story_text.female or "" }}{% endif %}</p>
-    {% endif %}
-  </section>
-
-  <!-- Vocabulary Reference -->
-  {% if vocabulary_with_translations or episode.vocabulary_targets %}
-    <section class="quiz-vocabulary-reference">
-      <h4>{{ _('ui.quests.vocabulary_targets') }}</h4>
-      {% if vocabulary_with_translations %}
-        <table class="vocabulary-table">
-          <thead>
-            <tr>
-              <th dir="{{ session.language.learning_charcode | to_direction }}">{{ quest_metadata.locale.upper() }}</th>
-              <th>{{ session.language.charcode.upper() if session.language else 'EN' }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for vocab in vocabulary_with_translations %}
-              <tr>
-                <td class="vocab-word" dir="{{ session.language.learning_charcode | to_direction }}">{{ vocab.word }}</td>
-                <td class="vocab-translation">{{ vocab.translation }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>{{ episode.vocabulary_targets | join(', ') }}</p>
-      {% endif %}
-    </section>
-  {% endif %}
-
-  <!-- Quiz Questions -->
-  <section class="quiz-questions">
-    <form id="quizForm" method="POST" action="/quiz/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}/submit">
-      {% if questions and questions is iterable %}
-        {% for question in questions %}
-          {% set question_index = loop.index0 %}
-          <div class="quiz-question card" data-question-index="{{ loop.index0 }}" data-question-type="{{ question.type | string }}" dir="{{ session.language.learning_charcode | to_direction }}">
-            <div class="question-number">
-              <span>{{ _('ui.quests.question') }} {{ loop.index }} {{ _('ui.quests.of') }} {{ questions | length }}</span>
+  {% if quiz_state.finished %}
+    <section class="quiz-summary card-accent" dir="{{ language_dir() }}">
+      <h3>Quiz complete</h3>
+      <p>{{ quiz_state.score }} / {{ quiz_state.total_steps }} points</p>
+      <div class="quiz-summary-list">
+        {% for item in quiz_results %}
+          <article class="quiz-summary-item {{ 'is-correct' if item.earned_point else 'is-incorrect' }}">
+            <div class="quiz-summary-status">
+              <span class="quiz-summary-icon" aria-hidden="true">{{ '✓' if item.earned_point else '✕' }}</span>
+              <strong>{{ item.status_text }}</strong>
             </div>
-            
-            <div class="question-content">
-              {% set prompt = question.prompt %}
-              {% if prompt is string and prompt | length %}
-                <p class="question-prompt">{{ prompt }}</p>
-              {% elif prompt is mapping %}
-                {% if prompt.neutral and prompt.neutral | length %}
-                  <p class="question-prompt">{{ prompt.neutral }}</p>
-                {% elif prompt.male and prompt.male | length %}
-                  <p class="question-prompt">{{ prompt.male }}</p>
-                {% elif prompt.female and prompt.female | length %}
-                  <p class="question-prompt">{{ prompt.female }}</p>
-                {% endif %}
-              {% endif %}
-
-              {% if question.type == 'cloze' %}
-                <div class="question-cloze">
-                  <input 
-                    type="text" 
-                    name="answer_{{ loop.index0 }}" 
-                    class="cloze-input"
-                    placeholder="{{ _('ui.quests.type_answer') }}"
-                    aria-label="Answer for question {{ loop.index }}"
-                    required
-                  />
-                </div>
-
-              {% elif question.type == 'multiple_choice' %}
-                <div class="question-multiple-choice">
-                  {% if question.options and question.options is iterable and question.options is not string %}
-                    {% for option in question.options %}
-                      {% set opt_text = option if option is string else (option.neutral or option.male or option.female or option | string) %}
-                      {% if opt_text and opt_text | length %}
-                        <label class="choice-label">
-                          <input 
-                            type="radio" 
-                            name="answer_{{ question_index }}" 
-                            value="{{ opt_text }}"
-                            class="choice-input"
-                            required
-                          />
-                          <span class="choice-text">{{ opt_text }}</span>
-                        </label>
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
-                </div>
-
-              {% elif question.type == 'count_sequence' %}
-                <div class="question-count-sequence">
-                  <p class="sequence-instruction">{{ _('ui.quests.select_correct_order') }}</p>
-                  <div class="sequence-options">
-                    {% if question.options and question.options is iterable and question.options is not string %}
-                      {% for option in question.options %}
-                        {% if option is iterable and option is not string %}
-                          <label class="sequence-label">
-                            <input 
-                              type="radio" 
-                              name="answer_{{ question_index }}" 
-                              value="{{ loop.index0 }}"
-                              class="sequence-input"
-                              required
-                            />
-                            <span class="sequence-text">
-                              {% for item in option %}
-                                {% if item is string %}{{ item }}{% else %}{{ item | string }}{% endif %}{% if not loop.last %}, {% endif %}
-                              {% endfor %}
-                            </span>
-                          </label>
-                        {% endif %}
-                      {% endfor %}
-                    {% endif %}
-                  </div>
-                </div>
-
-              {% elif question.type == 'reorder' %}
-                <div class="question-reorder">
-                  <p class="reorder-instruction">{{ _('ui.quests.drag_to_reorder') }}</p>
-                  {% set reorder_items = question.get('items') %}
-                  {% if reorder_items and reorder_items is iterable and reorder_items is not string %}
-                    <ol class="reorder-list" data-question-index="{{ loop.index0 }}">
-                      {% for item in reorder_items %}
-                        {% set item_text = item if item is string else (item | string) %}
-                        {% if item_text and item_text | length %}
-                          <li class="reorder-item" draggable="true" data-item-index="{{ loop.index0 + 1 }}">{{ item_text }}</li>
-                        {% endif %}
-                      {% endfor %}
-                    </ol>
-                  {% endif %}
-                </div>
-              {% endif %}
-            </div>
-          </div>
+            <p>{{ item.prompt }}</p>
+            <p><strong>Submitted:</strong> {{ item.submitted_answer or '—' }}</p>
+            <p><strong>Correct:</strong> {{ item.correct_answer or '—' }}</p>
+          </article>
         {% endfor %}
-      {% endif %}
-
-      <div class="quiz-actions">
-        <button type="submit" class="btn btn-primary btn-lg">{{ _('ui.quests.submit_quiz') }}</button>
-        <a href="/quest/{{ quest_metadata.quest_id }}/{{ episode.episode_id }}" class="btn btn-secondary">{{ _('ui.quests.back_to_story') }}</a>
       </div>
-    </form>
-  </section>
+      <div class="quiz-actions">
+        {% if next_episode_url %}
+          <a class="btn btn-primary btn-lg" href="{{ next_episode_url }}">{{ _('ui.quests.next_episode_continue') or 'Continue to next episode' }}</a>
+        {% endif %}
+        <form method="get" action="{{ url_for('quiz_episode', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}" style="display:inline;">
+          <input type="hidden" name="restart" value="1" />
+          <button role="button" type="submit" class="btn btn-secondary">Restart quiz</button>
+        </form>
+      </div>
+    </section>
+  {% else %}
+    <section class="quiz-progress" aria-label="Quiz progress">
+      <div class="quiz-progress-row">
+        <span>Step {{ quiz_step.step_number }} of {{ quiz_state.total_steps }}</span>
+        <span>{{ quiz_state.score }} point{% if quiz_state.score != 1 %}s{% endif %}</span>
+      </div>
+      <div class="quiz-progress-track" role="progressbar" aria-valuenow="{{ quiz_step.step_number }}" aria-valuemin="1" aria-valuemax="{{ quiz_state.total_steps }}" aria-valuetext="{{ quiz_step.step_number }} of {{ quiz_state.total_steps }}">
+        {% set progress_width = ((quiz_step.step_number - 1) / quiz_state.total_steps * 100) if quiz_state.total_steps else 0 %}
+        <div class="quiz-progress-fill" style="width: {{ progress_width }}%;"></div>
+      </div>
+    </section>
+
+    <section class="quiz-step card card-slim" dir="{{ language_dir() }}">
+      <div class="quiz-step-header">
+        <h3>{{ _('ui.quests.question') }} {{ quiz_step.step_number }}: {% if quiz_step.kind == 'sentence' %}Sentence building{% else %}Quiz question{% endif %}</h3>
+      </div>
+
+      {% if quiz_step.completed and quiz_step.show_correct_feedback %}
+        <section id="quiz-feedback" class="quiz-hint card-accent" aria-live="polite" tabindex="-1">
+          <h4>Correct</h4>
+          <p class="quiz-hint-story">{{ quiz_step.correct_answer }}</p>
+          <p><strong>Translation:</strong> {{ quiz_step.correct_answer_translation or '—' }}</p>
+          <form class="quiz-actions" method="post" action="{{ url_for('quiz_episode_submit', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" name="action" value="next" class="btn btn-primary btn-lg">{% if quiz_step.step_number < quiz_state.total_steps %}Next question{% else %}Finish quiz{% endif %}</button>
+          </form>
+        </section>
+      {% elif quiz_step.hint_revealed %}
+        <section class="quiz-hint card-accent" aria-live="polite">
+          <h4>Review Context</h4>
+          <p class="quiz-hint-story">{{ quiz_step.source_sentence or quiz_step.correct_answer }}</p>
+          <p><strong>Your answer:</strong> {{ quiz_step.submitted_answer or '—' }}</p>
+          <p><strong>Correct answer:</strong> {{ quiz_step.correct_answer }}</p>
+          <form class="quiz-actions" method="post" action="{{ url_for('quiz_episode_submit', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" name="action" value="retry" class="btn btn-primary btn-lg">Retry</button>
+          </form>
+        </section>
+      {% else %}
+        <form class="quiz-step-form" method="post" action="{{ url_for('quiz_episode_submit', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          {% if quiz_step.kind == 'quiz' %}
+            <div class="quiz-step-prompt">
+              {% if quiz_step.prompt %}
+                <p>{{ quiz_step.prompt }}</p>
+              {% endif %}
+            </div>
+
+            {% if quiz_step.step_type == 'cloze' %}
+              <label class="quiz-answer-field">
+                <span class="sr-only">Answer</span>
+                <input type="text" name="answer" class="cloze-input" autocomplete="off" {% if quiz_step.awaiting_review %}disabled{% endif %} required />
+              </label>
+            {% elif quiz_step.step_type == 'multiple_choice' %}
+              <fieldset class="quiz-choice-fieldset">
+                {% if quiz_step.prompt %}
+                  <legend class="sr-only">{{ quiz_step.prompt }}</legend>
+                {% else %}
+                  <legend class="sr-only">{{ _('ui.quests.choose_answer') or 'Choose an answer' }}</legend>
+                {% endif %}
+                <div class="quiz-choice-group" role="radiogroup" aria-labelledby="">
+                  {% for option in quiz_step.question.options or [] %}
+                    <label class="quiz-choice-label">
+                      <input type="radio" name="answer" value="{{ option }}" {% if quiz_step.awaiting_review %}disabled{% endif %} required />
+                      <span>{{ option }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% elif quiz_step.step_type == 'count_sequence' %}
+              <fieldset class="quiz-choice-fieldset">
+                <legend class="sr-only">{{ _('ui.quests.choose_sequence') or 'Choose a sequence' }}</legend>
+                <div class="quiz-choice-group" role="radiogroup" aria-labelledby="">
+                  {% for option in quiz_step.question.options or [] %}
+                    {% if option is iterable and option is not string %}
+                      <label class="quiz-choice-label">
+                        <input type="radio" name="answer" value="{{ loop.index0 }}" {% if quiz_step.awaiting_review %}disabled{% endif %} required />
+                        <span>{% for item in option %}{{ item }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                      </label>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% elif quiz_step.step_type == 'reorder' %}
+              <p class="section-instruction">Drag or tap the tags into the correct order.</p>
+              <div class="quiz-order-builder" data-order-builder>
+                <div class="quiz-order-bank" data-order-bank>
+                  {% for item in quiz_step.question.get('items') or [] %}
+                    <button type="button" class="speech-word-tag btn btn-secondary btn-sm" data-order-token data-token-index="{{ loop.index0 }}"{% if quiz_step.awaiting_review %} disabled{% endif %}>{{ item }}</button>
+                  {% endfor %}
+                </div>
+                <div class="quiz-order-answer" data-order-sentence aria-label="Built order"></div>
+              </div>
+              <input type="hidden" name="answer_order" data-order-input />
+            {% endif %}
+
+            {% if quiz_step.awaiting_review %}
+              <div class="quiz-actions">
+                <button type="submit" name="action" value="hint" class="btn btn-primary btn-lg">Review Context</button>
+              </div>
+            {% else %}
+              <div class="quiz-actions">
+                <button type="submit" name="action" value="submit" class="btn btn-primary btn-lg">Submit</button>
+              </div>
+            {% endif %}
+          {% else %}
+            <p class="section-instruction">Build the sentence by tapping the tags in order.</p>
+            <div class="quiz-order-builder" data-order-builder>
+              <div class="quiz-order-bank" data-order-bank>
+                {% for token in quiz_step.shuffled_tokens %}
+                  <button type="button" class="speech-word-tag btn btn-secondary btn-sm" data-order-token data-token-index="{{ token.index }}"{% if quiz_step.awaiting_review %} disabled{% endif %}>{{ token.text }}</button>
+                {% endfor %}
+              </div>
+              <div class="quiz-order-answer" data-order-sentence aria-label="Built sentence"></div>
+            </div>
+            <input type="hidden" name="answer_order" data-order-input />
+
+            {% if quiz_step.awaiting_review %}
+              <div class="quiz-actions">
+                <button type="submit" name="action" value="hint" class="btn btn-primary btn-lg">Review Context</button>
+              </div>
+            {% else %}
+              <div class="quiz-actions">
+                <button type="submit" name="action" value="submit" class="btn btn-primary btn-lg">Submit</button>
+              </div>
+            {% endif %}
+          {% endif %}
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
 </article>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const quizForm = document.getElementById('quizForm');
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('[data-order-builder]').forEach(function (builder) {
+    var bank = builder.querySelector('[data-order-bank]');
+    var sentenceBox = builder.querySelector('[data-order-sentence]');
+    var form = builder.closest('form');
+    var hiddenInput = form ? form.querySelector('[data-order-input]') : null;
 
-  // Handle reorder questions
-  document.querySelectorAll('.reorder-list').forEach(list => {
-    const items = Array.from(list.querySelectorAll('.reorder-item'));
-    let draggedElement = null;
+    if (!bank || !sentenceBox || !hiddenInput) {
+      return;
+    }
 
-    items.forEach(item => {
-      item.addEventListener('dragstart', function() {
-        draggedElement = this;
-        this.classList.add('dragging');
-      });
+    var tokens = Array.from(bank.querySelectorAll('[data-order-token]'));
 
-      item.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-        items.forEach(i => i.classList.remove('drag-over'));
-        draggedElement = null;
-      });
+    function createSentenceClone(sourceButton) {
+      var clone = sourceButton.cloneNode(true);
+      clone.type = 'button';
+      clone.disabled = false;
+      clone.classList.remove('btn-secondary');
+      clone.classList.add('btn-outline-secondary');
+      clone.dataset.cloneForTokenIndex = sourceButton.dataset.tokenIndex;
+      return clone;
+    }
 
-      item.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        if (draggedElement && draggedElement !== this) {
-          this.classList.add('drag-over');
+    function refreshAnswerInput() {
+      hiddenInput.value = Array.from(sentenceBox.querySelectorAll('[data-order-token]')).map(function (button) {
+        return button.dataset.cloneForTokenIndex || button.dataset.tokenIndex;
+      }).join(',');
+    }
+
+    tokens.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (button.disabled) {
+          return;
         }
+        var clone = createSentenceClone(button);
+        clone.addEventListener('click', function (event) {
+          event.stopPropagation();
+          clone.remove();
+          button.disabled = false;
+          button.classList.remove('is-used');
+          button.setAttribute('aria-disabled', 'false');
+          refreshAnswerInput();
+        });
+        sentenceBox.appendChild(clone);
+        button.disabled = true;
+        button.classList.add('is-used');
+        button.setAttribute('aria-disabled', 'true');
+        refreshAnswerInput();
       });
 
-      item.addEventListener('dragleave', function() {
-        this.classList.remove('drag-over');
-      });
-
-      item.addEventListener('drop', function(e) {
-        e.preventDefault();
-        if (draggedElement && draggedElement !== this) {
-          const allItems = Array.from(list.querySelectorAll('.reorder-item'));
-          const draggedIndex = allItems.indexOf(draggedElement);
-          const targetIndex = allItems.indexOf(this);
-
-          if (draggedIndex < targetIndex) {
-            this.parentNode.insertBefore(draggedElement, this.nextSibling);
-          } else {
-            this.parentNode.insertBefore(draggedElement, this);
-          }
+      button.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          button.click();
         }
       });
     });
-  });
 
-  if (quizForm) {
-    quizForm.addEventListener('submit', function() {
-      this.querySelectorAll('input[type="hidden"][data-generated-reorder-answer="true"]').forEach(input => input.remove());
-
-      document.querySelectorAll('.reorder-list').forEach(list => {
-        const questionIndex = list.dataset.questionIndex;
-        const currentOrder = Array.from(list.querySelectorAll('.reorder-item')).map(item => item.dataset.itemIndex);
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = `answer_${questionIndex}`;
-        hiddenInput.value = currentOrder.join(',');
-        hiddenInput.dataset.generatedReorderAnswer = 'true';
-        this.appendChild(hiddenInput);
-      });
-    });
-  }
-
-  // Update selected styling for multiple choice
-  document.querySelectorAll('.choice-input').forEach(input => {
-    input.addEventListener('change', function() {
-      const parent = this.closest('.choice-label');
-      const allLabels = parent.parentElement.querySelectorAll('.choice-label');
-      allLabels.forEach(label => label.classList.remove('selected'));
-      if (this.checked) {
-        parent.classList.add('selected');
+    sentenceBox.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-order-token]');
+      if (!button || button.disabled) {
+        return;
       }
+      var sourceTokenIndex = button.dataset.cloneForTokenIndex || button.dataset.tokenIndex;
+      var sourceButton = bank.querySelector('[data-token-index="' + sourceTokenIndex + '"]');
+      if (sourceButton) {
+        sourceButton.disabled = false;
+        sourceButton.classList.remove('is-used');
+        sourceButton.setAttribute('aria-disabled', 'false');
+      }
+      button.remove();
+      refreshAnswerInput();
     });
+
+    form.addEventListener('submit', function () {
+      refreshAnswerInput();
+    });
+
+    refreshAnswerInput();
   });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var feedback = document.getElementById('quiz-feedback');
+  if (feedback) {
+    var focusTarget = feedback.querySelector('button, [href], input, select, textarea');
+    try {
+      (focusTarget || feedback).focus({preventScroll: true});
+    } catch (e) {
+      (focusTarget || feedback).focus();
+    }
+  }
 });
 </script>
 {% endblock %}

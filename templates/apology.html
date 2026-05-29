@@ -5,15 +5,10 @@
 {% endblock %}
 
 {% block main %}
-<script>
-function goBack() {
-  window.history.back();
-}
-</script>
     <p class="text-center">
       <span class=" fad fa-transporter-empty icon-xxl"></span>
       <span class="sr-only">transporter-empty</span>
     </p>
     <p class="text-center lead"><strong>{{ _('ui.error.title') }} {{ code }}</strong><br/> {{ message }}</p>
-    <p class="text-center mt-5"><a class="btn btn-primary" onclick="goBack()">{{ _('ui.go_back') }}</a></p>
+    <p class="text-center mt-5"><a class="btn btn-primary" data-action="go-back">{{ _('ui.go_back') }}</a></p>
 {% endblock %}

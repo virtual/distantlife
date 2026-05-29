@@ -22,15 +22,14 @@ thead, tbody {
 }
 thead {
   th {
-    background-color: $theme-primary;
+    background-color: rgba($theme-primary, 0.05);
     font-size: 1rem;
   }
 }
 tbody {
   tr {
     td {
-      background-color: rgba($theme-primary, 0.05);
-      
+      background-color: rgba($theme-primary, 0.05);      
     }
   }
   tr:nth-child(2n + 1) {
@@ -75,3 +74,37 @@ tbody {
     }
   }
 }
+
+
+// .vocabulary-table {
+//   width: 100%;
+//   border-collapse: collapse;
+//   background: white;
+//   border: 1px solid var(--color-border);
+//   border-radius: 6px;
+//   overflow: hidden;
+// }
+
+// .vocabulary-table thead {
+//   background: var(--color-primary);
+//   color: white;
+// }
+
+// .vocabulary-table th {
+//   padding: 0.75rem;
+//   text-align: left;
+//   font-weight: 600;
+// }
+
+// .vocabulary-table td {
+//   padding: 0.75rem;
+//   border-bottom: 1px solid var(--color-border);
+// }
+
+// .vocabulary-table tbody tr:last-child td {
+//   border-bottom: none;
+// }
+
+// .vocabulary-table tbody tr:hover {
+//   background: var(--color-bg-hover);
+// }

@@ -13,7 +13,7 @@
       {{ pet_summary(pet, active_pet_id=pet.active_pet_id, show_created=true) }}
     </div>
 
-        {% if (pet.exp) >= 100 %}
+        {% if (pet.exp | get_level) >= 2 %}
         <form class="mx-auto centered" action="/pets/edit/" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <fieldset>
@@ -32,7 +32,7 @@
               {% if pet.id != pet.active_pet_id %}
               <li><a href="/activate/?id={{pet.id}}">{{ _('ui.make_active_pet') }}</a></li>
               {% endif %}
-              <li><a onclick="return confirm('Are you sure you wish to remove your pet?')" href="/abandon/?id={{pet.id}}">{{ _('ui.abandon') }}</a></li>
+              <li><a data-confirm="{{ _('Are you sure you wish to remove your pet?') }}" href="/abandon/?id={{pet.id}}">{{ _('ui.abandon') }}</a></li>
             </ul> 
 
     {% endfor %}

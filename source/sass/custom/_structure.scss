@@ -204,6 +204,9 @@ $columns: 24;
     .secondary-main {
       margin: 0 auto;
       max-width: 600px;
+      &.secondary-wide {
+        max-width: 100%;
+      }
     }
   }
 
