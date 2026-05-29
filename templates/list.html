@@ -24,7 +24,13 @@
             {{ _('ui.options') }}
           </button>
             <ul class="dropdown" aria-label="submenu">
-              <li><a href="/activate/?id={{pet.id}}">{{ _('ui.make_active_pet') }}</a></li>
+              <li>
+                <form action="/activate/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="id" value="{{ pet.id }}" />
+                  <button type="submit">{{ _('ui.make_active_pet') }}</button>
+                </form>
+              </li>
               {% if (pet.exp | get_level) < 2 %}
                 <li><a class="disabled" href="#">{{ _('ui.rename') }}
                   <span title="Pet renaming is available at level 2" class="fad fa-info-circle"></span>
@@ -33,7 +39,13 @@
               {% else %}
                 <li><a href="/pets/edit/?id={{pet.id}}">{{ _('ui.rename') }}</a></li>
               {% endif %}
-              <li><a data-confirm="{{ _('Are you sure you wish to remove your pet?') }}" href="/abandon/?id={{pet.id}}">{{ _('ui.abandon') }}</a></li>
+              <li>
+                <form action="/abandon/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="id" value="{{ pet.id }}" />
+                  <button type="submit" onclick="return confirm({{ _('Are you sure you wish to remove your pet?')|tojson }})">{{ _('ui.abandon') }}</button>
+                </form>
+              </li>
             </ul>
           </li>
         </ul>

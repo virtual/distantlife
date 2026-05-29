@@ -30,9 +30,21 @@
 
             <ul class="mt-5 dropdown" aria-label="submenu">
               {% if pet.id != pet.active_pet_id %}
-              <li><a href="/activate/?id={{pet.id}}">{{ _('ui.make_active_pet') }}</a></li>
+              <li>
+                <form action="/activate/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="id" value="{{ pet.id }}" />
+                  <button type="submit">{{ _('ui.make_active_pet') }}</button>
+                </form>
+              </li>
               {% endif %}
-              <li><a data-confirm="{{ _('Are you sure you wish to remove your pet?') }}" href="/abandon/?id={{pet.id}}">{{ _('ui.abandon') }}</a></li>
+              <li>
+                <form action="/abandon/" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="id" value="{{ pet.id }}" />
+                  <button type="submit" onclick="return confirm({{ _('Are you sure you wish to remove your pet?')|tojson }})">{{ _('ui.abandon') }}</button>
+                </form>
+              </li>
             </ul> 
 
     {% endfor %}

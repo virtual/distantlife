@@ -33,7 +33,12 @@
             </a>
               <ul class="dropdown" aria-label="submenu">
                 <li><a href="/profile">{{ _('ui.profile') }}</a></li>
-                <li><a href="/logout">{{ _('ui.nav.logout') }}</a></li>
+                <li>
+                  <form action="/logout" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit">{{ _('ui.nav.logout') }}</button>
+                  </form>
+                </li>
               </ul>
             </li>
           {% else %}

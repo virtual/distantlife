@@ -37,10 +37,6 @@ LANGUAGES = {
 }
 app.config['LANGUAGES'] = LANGUAGES
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
-
-
 def get_locale():
     """Set localization for text keys"""
     if has_request_context() and session.get("language") is not None:
@@ -1907,7 +1903,7 @@ def admin_upload():
     return render_template("admin/upload.html", sets=sets)
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     """Log user out"""
     session.clear()
@@ -2222,11 +2218,14 @@ def adopt():
         return render_template("adopt.html", pet_types=rows)
 
 
-@app.route("/abandon/")
+@app.route("/abandon/", methods=["POST"])
 @login_required
 def abandon():
     """Allows a user to remove a pet from their account"""
-    pet_id = int(request.args.get('id'))
+    try:
+        pet_id = int(request.form.get('id'))
+    except (TypeError, ValueError):
+        return apology("invalid pet id", 400)
     user_id = session_get_int("user_id")
 
     active_pet_row = db.execute(
@@ -2270,11 +2269,22 @@ def abandon():
     return redirect('/pets')
 
 
-@app.route("/activate/")
+@app.route("/activate/", methods=["POST"])
 @login_required
 def activate():
     """Allows a user to change their active pet"""
-    pet_id = int(request.args.get('id'))
+    try:
+        pet_id = int(request.form.get('id'))
+    except (TypeError, ValueError):
+        return apology("invalid pet id", 400)
+
+    owned_pet = db.execute(
+        "SELECT 1 FROM owners WHERE owner_id = ? AND pet_id = ?",
+        (session_get_int("user_id"), pet_id),
+    ).fetchone()
+    if owned_pet is None:
+        return apology("Error activating pet", 403)
+
     db.execute("UPDATE users SET active_pet_id = ? WHERE id = ?",
                (pet_id, session_get_int("user_id"), ))
     con.commit()
@@ -2291,3 +2301,7 @@ def errorhandler(e):
 
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
