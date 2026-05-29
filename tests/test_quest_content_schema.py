@@ -157,7 +157,7 @@ class QuestRuntimeTestCase(unittest.TestCase):
 class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
     def _minimal_valid_quest(self):
         # Return a minimal quest in the combined per-quest format with locales mapping
-        return {
+        quest = {
             "meta": {
                 "schema_version": "2.0.0",
                 "generator": "quest_pipeline_v1",
@@ -191,6 +191,9 @@ class QuestVocabularyReferenceSchemaTestCase(unittest.TestCase):
                 }
             },
         }
+        # For tests that operate on the locale view shape, expose episodes at the top-level
+        quest["episodes"] = quest["locales"]["en"]["episodes"]
+        return quest
 
     def test_vocab_target_ids_accepts_integer_ids(self):
         quest = self._minimal_valid_quest()

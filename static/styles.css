@@ -1445,7 +1445,7 @@ h1 .badge {
 
 .card {
   padding: 48px;
-  padding-top: 64px;
+  margin-top: 64px;
   background: #fff;
   position: relative;
   margin-bottom: 64px;
@@ -1460,6 +1460,9 @@ h1 .badge {
   .card:last-child {
     margin-bottom: 0;
   }
+}
+.card:last-child {
+  margin-bottom: 0;
 }
 .card .card-slim {
   padding: 16px;
@@ -1638,13 +1641,14 @@ button .btn-lg, .btn .btn-lg {
 
 .btn-icon {
   padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: 1rem;
   background: var(--color-primary-light);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   color: var(--color-primary);
   transition: all 0.2s ease;
+  min-width: 44px;
 }
 
 .btn-icon:hover {
@@ -2891,6 +2895,42 @@ figure .figure-img {
   font-family: "Karla", "Noto Sans Hebrew", sans-serif;
   background: #fff;
   border: 1px solid #dddddd;
+}
+
+.quiz-progress-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.quiz-summary-item.is-correct {
+  border-color: #2f855a;
+}
+
+.quiz-summary-item.is-incorrect {
+  border-color: #c53030;
+}
+
+.quiz-close-form {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem;
+}
+
+.quiz-order-bank,
+.quiz-order-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quiz-order-answer {
+  margin-top: 16px;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .quest-episode-detail {

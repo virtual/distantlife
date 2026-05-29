@@ -2,7 +2,9 @@ import os
 import random
 import re
 import sqlite3
-from datetime import datetime
+import secrets
+import unicodedata
+from datetime import datetime, timezone
 from urllib.parse import urlencode
 
 from flask import Flask, flash, redirect, render_template, request, session, has_request_context
@@ -502,10 +504,284 @@ def _grade_quiz_submission(questions, form_data):
     }
 
 
+QUIZ_MAX_STEPS = 7
+QUIZ_SESSION_PREFIX = "quiz_wizard"
+
+
+def _quiz_state_key(quest_id, episode_id):
+    return f"{QUIZ_SESSION_PREFIX}:{quest_id}:{episode_id}"
+
+
+def _tokenize_sentence_text(sentence_text):
+    """ 
+    Tokenize sentence text for sentence-building quiz steps.
+    This function removes punctuation and splits on whitespace, 
+    while preserving the original tokens for display.
+    """
+    if not sentence_text:
+        return []
+    cleaned_chars = []
+    for char in str(sentence_text).strip():
+        if unicodedata.category(char)[0] in {"P", "S"}:
+            cleaned_chars.append(" ")
+        else:
+            cleaned_chars.append(char)
+    cleaned_text = "".join(cleaned_chars)
+    return [token for token in re.split(r"\s+", cleaned_text) if token]
+
+
+def _build_quiz_step_pool(episode, seed, translation_episode=None, vocabulary_translation_map=None):
+    """
+    Build a randomized pool of quiz steps for the episode, 
+    combining quiz questions and sentence-building tasks.
+    """
+    rng = random.Random(seed)
+
+    raw_questions = []
+    if isinstance(episode.get("quiz"), dict):
+        candidate_questions = episode["quiz"].get("questions", [])
+        if isinstance(candidate_questions, list):
+            raw_questions = [question for question in candidate_questions if isinstance(question, dict)]
+
+    sentence_refs = [
+        sentence
+        for sentence in episode.get("story_sentence_refs", [])
+        if isinstance(sentence, dict)
+        and isinstance(sentence.get("id"), str)
+        and sentence.get("id").strip()
+        and isinstance(sentence.get("text"), str)
+        and sentence.get("text").strip()
+    ]
+
+    translation_sentence_refs = {}
+    if isinstance(translation_episode, dict):
+        for sentence in translation_episode.get("story_sentence_refs", []):
+            if not isinstance(sentence, dict):
+                continue
+            sentence_id = sentence.get("id")
+            sentence_text = sentence.get("text")
+            if isinstance(sentence_id, str) and sentence_id.strip() and isinstance(sentence_text, str) and sentence_text.strip():
+                translation_sentence_refs[sentence_id] = sentence_text
+
+    vocabulary_translation_map = vocabulary_translation_map or {}
+
+    total_available = len(raw_questions) + len(sentence_refs)
+    total_target = min(QUIZ_MAX_STEPS, total_available)
+    if total_target <= 0:
+        return []
+
+    # Aim for a balanced mix of question types, 
+    # but allow flexibility based on availability
+    quiz_target = min((QUIZ_MAX_STEPS + 1) // 2, len(raw_questions))
+    sentence_target = min(total_target - quiz_target, len(sentence_refs))
+
+    remaining = total_target - (quiz_target + sentence_target)
+    if remaining > 0:
+        extra_quiz = min(remaining, len(raw_questions) - quiz_target)
+        quiz_target += extra_quiz
+        remaining -= extra_quiz
+        if remaining > 0:
+            sentence_target += min(remaining, len(sentence_refs) - sentence_target)
+
+    question_indices = list(range(len(raw_questions)))
+    sentence_indices = list(range(len(sentence_refs)))
+    rng.shuffle(question_indices)
+    rng.shuffle(sentence_indices)
+
+    selected_question_indices = question_indices[:quiz_target]
+    selected_sentence_indices = sentence_indices[:sentence_target]
+
+    # Build a pool of step data dicts that can be rendered in the quiz wizard,
+    # randomized but with all necessary context for grading and feedback 
+    # stored in the step data.
+    step_pool = []
+
+    for source_index in selected_question_indices:
+        question = raw_questions[source_index]
+        sentence_text = None
+        sentence_id = question.get("sentence_id")
+        answer_text = question.get("answer") or ""
+
+        # First try to get translation from the vocabulary map, 
+        # then fall back to sentence-level translation if 
+        # it's linked to a sentence
+        answer_translation = vocabulary_translation_map.get(answer_text, "")
+        if isinstance(sentence_id, str) and sentence_id.strip():
+            for ref in sentence_refs:
+                if ref.get("id") == sentence_id:
+                    sentence_text = ref.get("text")
+                    break
+
+        if not answer_translation and isinstance(sentence_id, str) and sentence_id.strip():
+            answer_translation = translation_sentence_refs.get(sentence_id, "")
+
+        step_pool.append({
+            "kind": "quiz",
+            "source_index": source_index,
+            "step_type": question.get("type"),
+            "question": question,
+            "prompt": question.get("prompt"),
+            "source_sentence": sentence_text,
+            "correct_answer": answer_text,
+            "correct_answer_translation": answer_translation,
+            "summary_prompt": question.get("prompt") or sentence_text or question.get("answer") or "Quiz question",
+        })
+
+    for source_index in selected_sentence_indices:
+        sentence_ref = sentence_refs[source_index]
+        sentence_text = sentence_ref.get("text") or ""
+        token_entries = [
+            {"index": idx, "text": token}
+            for idx, token in enumerate(_tokenize_sentence_text(sentence_text))
+        ]
+        shuffled_tokens = token_entries[:]
+        rng.shuffle(shuffled_tokens)
+
+        step_pool.append({
+            "kind": "sentence",
+            "source_index": source_index,
+            "sentence_id": sentence_ref.get("id"),
+            "sentence_text": sentence_text,
+            "correct_answer_translation": translation_sentence_refs.get(sentence_ref.get("id"), ""),
+            "sentence_tokens": token_entries,
+            "shuffled_tokens": shuffled_tokens,
+            "summary_prompt": sentence_text or "Sentence building",
+            "correct_answer": sentence_text,
+        })
+
+    rng.shuffle(step_pool)
+
+    for step_number, step in enumerate(step_pool, start=1):
+        step["step_number"] = step_number
+        step["attempts"] = 0
+        step["awaiting_review"] = False
+        step["hint_revealed"] = False
+        step["completed"] = False
+        step["first_try_correct"] = False
+        step["earned_point"] = False
+        step["submitted_answer"] = ""
+
+    return step_pool
+
+
+def _create_quiz_state(quest_id, episode_id, episode, translation_episode=None, vocabulary_translation_map=None):
+    seed = secrets.randbits(32)
+    step_pool = _build_quiz_step_pool(episode, seed, translation_episode=translation_episode, vocabulary_translation_map=vocabulary_translation_map)
+    if not step_pool:
+        return None
+
+    return {
+        "quest_id": quest_id,
+        "episode_id": episode_id,
+        "seed": seed,
+        "current_step": 0,
+        "score": 0,
+        "finished": False,
+        "recorded_completion": False,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "steps": step_pool,
+    }
+
+
+def _grade_quiz_step(step, form_data):
+    submitted_answer = ""
+    correct_answer = step.get("correct_answer") or ""
+    is_correct = False
+
+    if step.get("kind") == "sentence":
+        submitted_order = _parse_reorder_submission(form_data.get("answer_order"))
+        expected_order = [token.get("index") for token in step.get("sentence_tokens", [])]
+        submitted_tokens = []
+        for token_index in submitted_order:
+            try:
+                token = step.get("sentence_tokens", [])[int(token_index)]
+            except (IndexError, TypeError, ValueError):
+                token = None
+            if token is not None:
+                submitted_tokens.append(token.get("text", ""))
+        submitted_answer = " ".join(token for token in submitted_tokens if token)
+        is_correct = submitted_order == expected_order
+
+    else:
+        question = step.get("question") if isinstance(step.get("question"), dict) else {}
+        q_type = step.get("step_type")
+        submitted_value = form_data.get("answer", "")
+        submitted_answer = submitted_value
+
+        if q_type == "cloze":
+            accepted_answers = question.get("accepted_answers")
+            if not isinstance(accepted_answers, list) or not accepted_answers:
+                accepted_answers = [question.get("answer")]
+            normalized_submission = _normalize_quiz_text(submitted_value)
+            is_correct = any(
+                normalized_submission == _normalize_quiz_text(answer)
+                for answer in accepted_answers
+                if answer is not None
+            )
+            if is_correct and accepted_answers:
+                correct_answer = accepted_answers[0] or ""
+
+        elif q_type == "multiple_choice":
+            correct_answer = question.get("answer") or ""
+            is_correct = _normalize_quiz_text(submitted_value) == _normalize_quiz_text(correct_answer)
+
+        elif q_type == "count_sequence":
+            selected_index = None
+            try:
+                selected_index = int(submitted_value)
+            except (TypeError, ValueError):
+                selected_index = None
+
+            options = question.get("options")
+            answer = question.get("answer")
+            if isinstance(options, list) and isinstance(answer, list) and selected_index is not None:
+                if 0 <= selected_index < len(options):
+                    selected_option = options[selected_index]
+                    if isinstance(selected_option, list):
+                        is_correct = [str(item) for item in selected_option] == [str(item) for item in answer]
+                        if is_correct:
+                            correct_answer = ", ".join(str(item) for item in answer)
+
+        elif q_type == "reorder":
+            correct_order = question.get("correct_order")
+            submitted_order = _parse_reorder_submission(submitted_value)
+            if isinstance(correct_order, list):
+                try:
+                    expected_order = [int(item) for item in correct_order]
+                except (TypeError, ValueError):
+                    expected_order = []
+                is_correct = submitted_order == expected_order
+                if is_correct:
+                    correct_answer = ",".join(str(item) for item in expected_order)
+
+    return {
+        "correct": is_correct,
+        "submitted_answer": submitted_answer,
+        "correct_answer": correct_answer,
+    }
+
+
+def _build_quiz_results(state):
+    results = []
+    for step in state.get("steps", []):
+        results.append({
+            "step_number": step.get("step_number"),
+            "kind": step.get("kind"),
+            "prompt": step.get("summary_prompt") or step.get("source_sentence") or step.get("correct_answer") or "",
+            "earned_point": bool(step.get("earned_point")),
+            "status_text": "Correct" if step.get("earned_point") else "Incorrect",
+            "submitted_answer": step.get("submitted_answer") or "",
+            "correct_answer": step.get("correct_answer") or "",
+            "correct_answer_translation": step.get("correct_answer_translation") or "",
+            "first_try_correct": bool(step.get("first_try_correct")),
+        })
+    return results
+
+
 @app.route("/quiz/<quest_id>/<episode_id>")
 @adopted_pet_required
 def quiz_episode(quest_id, episode_id):
-    """Quiz page for a specific episode - focuses on quiz questions."""
+    """Quiz page for a specific episode - now rendered as a sequential wizard."""
     user_id = session_get_int("user_id")
     locale = get_learning_language_charcode(user_id)
 
@@ -531,108 +807,20 @@ def quiz_episode(quest_id, episode_id):
         flash(str(e))
         return redirect(f"/quest/{quest_id}")
 
-    # Enforce sequential episode access for quizzes as well
-    prev_ep = episode.get("previous_episode_id")
-    if prev_ep and not has_completed_episode(session_get_int("user_id"), quest_id, prev_ep):
-        flash("This episode is locked. Complete the previous episode to unlock.")
-        return redirect(f"/quest/{quest_id}/{prev_ep}")
-
-    # Extract quiz from episode
-    quiz = episode.get("quiz", {})
-    if not isinstance(quiz, dict):
-        flash("Quiz data is malformed.")
-        return redirect(f"/quest/{quest_id}/{episode_id}")
-    
-    questions = quiz.get("questions", [])
-    if not isinstance(questions, list):
-        flash("Quiz questions are malformed.")
-        return redirect(f"/quest/{quest_id}/{episode_id}")
-    
-    if not questions:
-        flash("No quiz questions found for this episode.")
-        return redirect(f"/quest/{quest_id}/{episode_id}")
-    
-    # Get vocabulary with translations
-    vocabulary_with_translations = []
-    episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")
-    if episode_targets:
-        learning_lang_id = session.get("language", {}).get("learning")
-        preferred_lang_id = session.get("language", {}).get("preferred")
-        if learning_lang_id and preferred_lang_id:
-            vocabulary_with_translations = get_vocabulary_with_translations(
-                episode_targets,
-                learning_lang_id,
-                preferred_lang_id
+    translation_episode = None
+    vocabulary_translation_map = {}
+    if locale != "en":
+        try:
+            _, translation_episode = load_episode_from_quest(
+                quest_id,
+                episode_id,
+                locale="en",
+                gender=active_pet.get("gender", "neutral") or "neutral",
+                pet_name=active_pet.get("name"),
             )
+        except ValueError:
+            translation_episode = None
 
-    return render_template(
-        "quiz.html",
-        quest_metadata=quest_metadata,
-        episode=episode,
-        quiz=quiz,
-        questions=questions,
-        active_pet=active_pet,
-        vocabulary_with_translations=vocabulary_with_translations
-    )
-
-
-@app.route("/quiz/<quest_id>/<episode_id>/submit", methods=["POST"])
-@adopted_pet_required
-def quiz_episode_submit(quest_id, episode_id):
-    """Validate a quiz submission for a quest episode."""
-    user_id = session_get_int("user_id")
-    locale = get_learning_language_charcode(user_id)
-
-    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
-    if not can_access:
-        if reason == "no_active_pet":
-            flash("Adopt a pet first to start quests.")
-            return redirect("/adopt")
-        flash("That quest is locked for your current pet.")
-        return redirect("/quests")
-
-    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
-
-    try:
-        quest_metadata, episode = load_episode_from_quest(
-            quest_id,
-            episode_id,
-            locale=locale,
-            gender=active_pet.get("gender", "neutral") or "neutral",
-            pet_name=active_pet.get("name"),
-        )
-    except ValueError as e:
-        flash(str(e))
-        return redirect(f"/quest/{quest_id}")
-
-    quiz = episode.get("quiz", {})
-    questions = quiz.get("questions", []) if isinstance(quiz, dict) else []
-    if not isinstance(questions, list) or not questions:
-        flash("No quiz questions found for this episode.")
-        return redirect(f"/quiz/{quest_id}/{episode_id}")
-
-    # Ensure the user submitted at least one answer field
-    has_answer = any(k.startswith("answer_") for k in request.form.keys())
-    if not has_answer:
-        flash("No answers submitted. Please answer the questions before submitting.")
-        return redirect(f"/quiz/{quest_id}/{episode_id}")
-
-    submission = _grade_quiz_submission(questions, request.form)
-    flash(f"You got {submission['correct']} of {submission['total']} correct.")
-
-    next_episode_url = None
-    # If user got everything correct, record completion and award experience once
-    if submission.get('total') and submission.get('correct') == submission.get('total'):
-        first_time = record_episode_completed(session_get_int('user_id'), quest_id, episode_id)
-        if first_time:
-            # Award experience equal to number of questions (simple rule)
-            awarded = update_experience(submission['total'])
-            flash(f"Gained {submission['total']} experience for completing the quiz!")
-            # If there is a next episode, build its URL so the template can show a link/button
-            if episode.get('has_next') and episode.get('next_episode_id'):
-                next_episode_url = f"/quest/{quest_id}/{episode.get('next_episode_id')}"
-
-    vocabulary_with_translations = []
     episode_targets = episode.get("resolved_vocabulary_target_ids") or episode.get("vocabulary_target_ids") or episode.get("vocabulary_targets")
     if episode_targets:
         learning_lang_id = session.get("language", {}).get("learning")
@@ -643,17 +831,209 @@ def quiz_episode_submit(quest_id, episode_id):
                 learning_lang_id,
                 preferred_lang_id,
             )
+            for vocab in vocabulary_with_translations:
+                word = vocab.get("word")
+                translation = vocab.get("translation")
+                if word and translation:
+                    vocabulary_translation_map[word] = translation
+
+    # Enforce sequential episode access for quizzes as well
+    prev_ep = episode.get("previous_episode_id")
+    if prev_ep and not has_completed_episode(session_get_int("user_id"), quest_id, prev_ep):
+        flash("This episode is locked. Complete the previous episode to unlock.")
+        return redirect(f"/quest/{quest_id}/{prev_ep}")
+
+    state_key = _quiz_state_key(quest_id, episode_id)
+    restart_requested = request.args.get("restart") == "1"
+    state = session.get(state_key)
+    if restart_requested or not isinstance(state, dict) or state.get("quest_id") != quest_id or state.get("episode_id") != episode_id:
+        state = _create_quiz_state(
+            quest_id,
+            episode_id,
+            episode,
+            translation_episode=translation_episode,
+            vocabulary_translation_map=vocabulary_translation_map,
+        )
+        if state is None:
+            flash("No quiz steps found for this episode.")
+            return redirect(f"/quest/{quest_id}/{episode_id}")
+        # Ensure any missing step translations are populated from the English translation episode
+        if isinstance(state, dict) and isinstance(translation_episode, dict):
+            try:
+                trans_map = {
+                    s.get("id"): s.get("text")
+                    for s in translation_episode.get("story_sentence_refs", [])
+                    if isinstance(s, dict) and s.get("id")
+                }
+                for step in state.get("steps", []):
+                    if not step.get("correct_answer_translation"):
+                        sid = None
+                        if step.get("kind") == "sentence":
+                            sid = step.get("sentence_id")
+                        else:
+                            q = step.get("question") or {}
+                            sid = q.get("sentence_id") if isinstance(q, dict) else None
+                        if sid and sid in trans_map:
+                            step["correct_answer_translation"] = trans_map.get(sid)
+            except Exception:
+                # Best-effort only; do not break quiz initialization on unexpected errors
+                pass
+        session[state_key] = state
+
+    steps = state.get("steps", []) if isinstance(state, dict) else []
+    if not isinstance(steps, list) or not steps:
+        flash("No quiz steps found for this episode.")
+        return redirect(f"/quest/{quest_id}/{episode_id}")
+
+    current_step_index = int(state.get("current_step", 0) or 0)
+    if current_step_index < 0:
+        current_step_index = 0
+    if current_step_index >= len(steps):
+        state["finished"] = True
+        session[state_key] = state
+
+    next_episode_url = None
+    if state.get("finished") and episode.get("has_next") and episode.get("next_episode_id"):
+        next_episode_url = f"/quest/{quest_id}/{episode.get('next_episode_id')}"
+
+    quiz_results = _build_quiz_results(state)
+    quiz_step = None
+    if not state.get("finished"):
+        quiz_step = steps[current_step_index]
+        if not quiz_step.get("completed"):
+            quiz_step["show_correct_feedback"] = False
 
     return render_template(
         "quiz.html",
         quest_metadata=quest_metadata,
         episode=episode,
-        quiz=quiz,
-        questions=questions,
         active_pet=active_pet,
-        vocabulary_with_translations=vocabulary_with_translations,
-        quiz_result=submission,
+        quiz_state={
+            "current_step": current_step_index,
+            "total_steps": len(steps),
+            "score": state.get("score", 0),
+            "finished": bool(state.get("finished")),
+        },
+        quiz_step=quiz_step,
+        quiz_results=quiz_results,
+        next_episode_url=next_episode_url,
     )
+
+
+@app.route("/quiz/<quest_id>/<episode_id>/submit", methods=["POST"])
+@adopted_pet_required
+def quiz_episode_submit(quest_id, episode_id):
+    """Advance or review a single quiz step in the quiz wizard."""
+    user_id = session_get_int("user_id")
+    locale = get_learning_language_charcode(user_id)
+
+    can_access, reason = can_user_access_quest(user_id, quest_id, locale=locale)
+    if not can_access:
+        if reason == "no_active_pet":
+            flash("Adopt a pet first to start quests.")
+            return redirect("/adopt")
+        flash("That quest is locked for your current pet.")
+        return redirect("/quests")
+
+    active_pet = session.get("active_pet") or get_active_pet_for_user(user_id) or {}
+
+    try:
+        quest_metadata, episode = load_episode_from_quest(
+            quest_id,
+            episode_id,
+            locale=locale,
+            gender=active_pet.get("gender", "neutral") or "neutral",
+            pet_name=active_pet.get("name"),
+        )
+    except ValueError as e:
+        flash(str(e))
+        return redirect(f"/quest/{quest_id}")
+
+    state_key = _quiz_state_key(quest_id, episode_id)
+    state = session.get(state_key)
+    if not isinstance(state, dict) or state.get("quest_id") != quest_id or state.get("episode_id") != episode_id:
+        state = _create_quiz_state(quest_id, episode_id, episode)
+        if state is None:
+            flash("No quiz steps found for this episode.")
+            return redirect(f"/quiz/{quest_id}/{episode_id}")
+        session[state_key] = state
+
+    steps = state.get("steps", [])
+    if not isinstance(steps, list) or not steps:
+        flash("No quiz steps found for this episode.")
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    current_step_index = int(state.get("current_step", 0) or 0)
+    if current_step_index < 0 or current_step_index >= len(steps):
+        state["finished"] = True
+        session[state_key] = state
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    current_step = steps[current_step_index]
+    action = request.form.get("action", "submit")
+
+    if action == "next":
+        if current_step.get("completed"):
+            current_step["show_correct_feedback"] = False
+            current_step["pending_next"] = False
+            current_step["hint_revealed"] = False
+            current_step["awaiting_review"] = False
+            state["current_step"] = current_step_index + 1
+            if state["current_step"] >= len(steps):
+                state["finished"] = True
+                if not state.get("recorded_completion"):
+                    first_time = record_episode_completed(user_id, quest_id, episode_id)
+                    if first_time and state.get("score", 0) > 0:
+                        update_experience(state["score"])
+                    state["recorded_completion"] = True
+            session[state_key] = state
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    if action == "hint":
+        current_step["hint_revealed"] = True
+        current_step["awaiting_review"] = True
+        session[state_key] = state
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    if action == "retry":
+        current_step["hint_revealed"] = False
+        current_step["awaiting_review"] = False
+        session[state_key] = state
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    if action == "forfeit":
+        session.pop(state_key, None)
+        return redirect(f"/quest/{quest_id}")
+
+    if current_step.get("awaiting_review") and not current_step.get("hint_revealed"):
+        flash("Review the context before retrying this step.")
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    submission = _grade_quiz_step(current_step, request.form)
+    current_step["submitted_answer"] = submission["submitted_answer"]
+    current_step["correct_answer"] = submission["correct_answer"] or current_step.get("correct_answer") or ""
+
+    if submission["correct"]:
+        first_try = int(current_step.get("attempts", 0) or 0) == 0
+        current_step["completed"] = True
+        current_step["first_try_correct"] = first_try
+        current_step["earned_point"] = first_try
+        current_step["awaiting_review"] = False
+        current_step["hint_revealed"] = False
+        current_step["show_correct_feedback"] = True
+        current_step["pending_next"] = True
+        if first_try:
+            state["score"] = int(state.get("score", 0) or 0) + 1
+        session[state_key] = state
+        return redirect(f"/quiz/{quest_id}/{episode_id}")
+
+    current_step["attempts"] = int(current_step.get("attempts", 0) or 0) + 1
+    current_step["first_try_correct"] = False if current_step["attempts"] == 1 else current_step.get("first_try_correct", False)
+    current_step["earned_point"] = False
+    current_step["awaiting_review"] = True
+    current_step["hint_revealed"] = False
+    session[state_key] = state
+    return redirect(f"/quiz/{quest_id}/{episode_id}")
 
 
 @app.route("/pets")

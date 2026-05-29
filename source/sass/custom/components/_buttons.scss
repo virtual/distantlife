@@ -96,13 +96,14 @@ button, .btn {
 
 .btn-icon {
   padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: 1rem;
   background: var(--color-primary-light);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   color: var(--color-primary);
   transition: all 0.2s ease;
+  min-width: 44px;
 }
 
 .btn-icon:hover {

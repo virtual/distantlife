@@ -267,3 +267,127 @@
   background: $color-white;
   border: 1px solid $color-gray-light;
 }
+
+.quiz-progress-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+// .quiz-container { position: relative; }
+// .quiz-progress {
+//   margin-bottom: 1rem;
+// }
+
+// .quiz-progress-track {
+//   height: 0.75rem;
+//   overflow: hidden;
+//   border-radius: 999px;
+//   background: rgba(0, 0, 0, 0.08);
+// }
+
+// .quiz-progress-fill {
+//   height: 100%;
+//   border-radius: inherit;
+//   background: #2f855a;
+//   transition: width 0.2s ease;
+// }
+
+// .quiz-summary-list {
+//   display: grid;
+//   gap: 0.75rem;
+//   margin-top: 1rem;
+// }
+
+// .quiz-summary-item {
+//   padding: 1rem;
+//   border-radius: 0.75rem;
+//   border: 1px solid rgba(0, 0, 0, 0.1); 
+// }
+
+.quiz-summary-item.is-correct {
+  border-color: #2f855a;
+}
+
+.quiz-summary-item.is-incorrect {
+  border-color: #c53030;
+}
+
+.quiz-close-form {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem;
+}
+
+// .quiz-summary-status {
+//   display: flex;
+//   align-items: center;
+//   gap: 0.5rem;
+//   margin-bottom: 0.5rem;
+// }
+
+// .quiz-summary-icon {
+//   font-size: 1.15rem;
+//   line-height: 1;
+// }
+
+.quiz-order-bank,
+.quiz-order-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quiz-order-answer {
+  margin-top: $gutter;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+// .quiz-hint {
+//   margin-top: 1rem;
+//   padding: 1rem;
+//   border-radius: 0.75rem;
+// }
+
+// .quiz-hint-story {
+//   font-weight: 600;
+//   margin-bottom: 0.75rem;
+// }
+
+// .quiz-choice-group {
+//   display: grid;
+//   gap: 0.75rem;
+//   margin: 1rem 0;
+// }
+
+// .quiz-choice-label {
+//   display: flex;
+//   align-items: center;
+//   gap: 0.75rem;
+//   padding: 0.75rem 1rem;
+//   border-radius: 0.75rem;
+//   border: 1px solid rgba(0, 0, 0, 0.12);
+//   background: #fff;
+// }
+// .quiz-close {
+//   position: absolute;
+//   top: 0.5rem;
+//   right: 0.5rem;
+//   display: inline-flex;
+//   align-items: center;
+//   justify-content: center;
+//   width: 2rem;
+//   height: 2rem;
+//   border-radius: 0.5rem;
+//   text-decoration: none;
+//   color: inherit;
+//   background: transparent;
+//   font-size: 1.25rem;
+//   line-height: 1;
+//   border: 1px solid rgba(0,0,0,0.08);
+// }
+// .quiz-close:hover { background: rgba(0,0,0,0.04); }

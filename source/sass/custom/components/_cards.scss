@@ -14,7 +14,7 @@
 }
 .card {
   padding: $gutter * 3;
-  padding-top: $gutter * 4;
+  margin-top: $gutter * 4;
   background: $color-white;
   position: relative;
   margin-bottom: $gutter * 4;
@@ -28,6 +28,10 @@
     }
   }
 
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
   .card-slim {
     padding: $gutter * 1;
   }

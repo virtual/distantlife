@@ -545,6 +545,12 @@ def validate_quest_content(quest):
                         if sentence_id not in story_sentence_ids:
                             errors.append(f"cloze sentence_id not found in episode '{episode_id}', question {q_index}: {sentence_id} (locale '{locale_code}')")
 
+            # Validate vocabulary_target_ids if provided: must be a list of integers
+            vocab_ids = episode.get("vocabulary_target_ids")
+            if vocab_ids is not None:
+                if not isinstance(vocab_ids, list) or not all(isinstance(v, int) for v in vocab_ids):
+                    errors.append(f"vocabulary_target_ids must be a list of integers in episode '{episode_id}' (locale '{locale_code}')")
+
     return errors
 
 
