@@ -14,9 +14,9 @@
       "story_sentences": [
         {
           "id": "s1",
-          "male": "Faun had a big hunger.",
-          "female": "Faun had a big hunger.",
-          "neutral": "Faun had a big hunger."
+          "male": "{{pet_name}} had a big hunger.",
+          "female": "{{pet_name}} had a big hunger.",
+          "neutral": "{{pet_name}} had a big hunger."
         },
         {
           "id": "s2",
@@ -50,9 +50,9 @@
         },
         {
           "id": "s7",
-          "male": "Faun pulled out a big carrot.",
+          "male": "{{pet_name}} pulled out a big carrot.",
           "female": "She pulled out a big carrot.",
-          "neutral": "Faun pulled out a big carrot."
+          "neutral": "{{pet_name}} pulled out a big carrot."
         }
       ],
       "quiz": {
@@ -64,7 +64,8 @@
         "גן",
         "זרע",
         "גזר"
-      ]
+      ],
+      "vocabulary_target_ids": [136, 138, 140, 142, 150]
     },
     "he": {
       "episode_id": "garden_adventure_ep1",

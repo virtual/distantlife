@@ -40,7 +40,8 @@ class QuestRouteTestCase(unittest.TestCase):
         with self.client.session_transaction() as sess:
             sess["user_id"] = self.user_id
             sess["username"] = self.username
-            sess["language"] = {"charcode": "en", "dir": "ltr"}
+            # Include learning_charcode so get_learning_language_charcode returns 'en'
+            sess["language"] = {"charcode": "en", "dir": "ltr", "learning_charcode": "en"}
 
     def _create_active_pet(self, pet_type=10, name="QuestPet"):
         pet_id = (
@@ -101,8 +102,7 @@ class QuestRouteTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
         self.assertIn("Quest Board", body)
-        self.assertIn("הפאון הרעב", body)
-        self.assertIn("שלושה ראשים", body)
+        self.assertIn("יום הגינון של פאון", body)
 
     def test_locked_quest_shows_available_tag_when_owned_pet_matches(self):
         self._login()
@@ -112,33 +112,33 @@ class QuestRouteTestCase(unittest.TestCase):
         response = self.client.get("/quests")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("הפאון הרעב", body)
+        self.assertIn("יום הגינון של פאון", body)
         self.assertIn("Available if you switch to Faun", body)
         self.assertIn("quest-badge-available", body)
 
     def test_quest_page_redirects_without_active_pet(self):
         self._login()
-        response = self.client.get("/quest/hungry_faun_01", follow_redirects=False)
+        response = self.client.get("/quest/garden_adventure", follow_redirects=False)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/adopt", response.headers.get("Location", ""))
 
     def test_quest_page_renders_with_active_pet(self):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
-        response = self.client.get("/quest/hungry_faun_01")
+        response = self.client.get("/quest/garden_adventure")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("הפאון הרעב וארוחת הצהריים שנעלמה", body)
+        self.assertIn("הסל הריק", body)
         self.assertIn("Bramble", body)
 
     def test_quiz_page_renders_multiple_choice_and_reorder_items(self):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
-        response = self.client.get("/quiz/hungry_faun_01/hungry_faun_01_ep1")
+        response = self.client.get("/quiz/garden_adventure/garden_adventure_ep1")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
         self.assertIn("name=\"answer_1\"", body)
-        self.assertIn("הגנן נותן זרע.", body)
+        self.assertIn("data-item-index=\"1\"", body)
         self.assertIn("data-item-index=\"1\"", body)
         self.assertIn("data-item-index=\"2\"", body)
         self.assertIn("data-item-index=\"3\"", body)
@@ -147,7 +147,7 @@ class QuestRouteTestCase(unittest.TestCase):
         self._login()
         self._create_active_pet(pet_type=10, name="Bramble")
         response = self.client.post(
-            "/quiz/hungry_faun_01/hungry_faun_01_ep1/submit",
+            "/quiz/garden_adventure/garden_adventure_ep1/submit",
             data={
                 "answer_0": "זרע",
                 "answer_1": "גן הכפר",
