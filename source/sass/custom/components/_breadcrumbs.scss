@@ -7,7 +7,12 @@
   line-height: 1.5;
   color: $color-white;
   margin-top: 0;
-  margin-bottom: $gutter * 3;
+  margin-bottom: $gutter;
+
+  @media (min-width: $screen-md) {
+    margin-bottom: $gutter * 3;
+  }
+
   ol {
     list-style: none;
     padding: 0;

@@ -7,7 +7,7 @@
   --color-warning: #EDDE43;
   --color-white: #fff;
   --color-card-accent: #99b6cb;
-  --color-card-border: #FFFD82;
+  --color-card-border: rgba(0, 0, 0, 0.1);
   --color-card-surface: rgba(255, 255, 255, 0.05);
   --color-text-secondary: #99b6cb;
 }
@@ -19,7 +19,12 @@
   line-height: 1.5;
   color: #fff;
   margin-top: 0;
-  margin-bottom: 48px;
+  margin-bottom: 16px;
+}
+@media (min-width: 768px) {
+  .breadcrumb {
+    margin-bottom: 48px;
+  }
 }
 .breadcrumb ol {
   list-style: none;
@@ -1406,6 +1411,15 @@ h1 .badge {
   color: rgba(255, 255, 255, 0.5);
 }
 
+dt, dd, dl {
+  padding: 0;
+  margin: 0;
+}
+
+dd + dt {
+  margin-top: 9px;
+}
+
 .card-container {
   margin: 64px 0 32px 0;
   background: linear-gradient(to right, transparent 0 49%, #050517 49% 51%, transparent 51%);
@@ -1444,11 +1458,11 @@ h1 .badge {
 }
 
 .card {
-  padding: 48px;
-  margin-top: 64px;
+  padding: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
   background: #fff;
   position: relative;
-  margin-bottom: 64px;
   line-height: 1.7;
   border-radius: 8px;
   flex-basis: 33.3333333333%;
@@ -1457,8 +1471,18 @@ h1 .badge {
   .card {
     flex-basis: 100%;
   }
+  .card:first-child {
+    margin-top: 0;
+  }
   .card:last-child {
     margin-bottom: 0;
+  }
+}
+@media (min-width: 768px) {
+  .card {
+    padding: 48px;
+    margin-top: 64px;
+    margin-bottom: 64px;
   }
 }
 .card:last-child {
@@ -1521,8 +1545,6 @@ h1 .badge {
 
 .layout-secondary .card {
   background-color: var(--color-card-surface);
-  padding-top: 20px;
-  padding-bottom: 20px;
 }
 .layout-secondary .card h3 {
   color: var(--color-white);
@@ -2902,19 +2924,47 @@ figure .figure-img {
   justify-content: space-between;
 }
 
+.quiz-progress-track {
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #2f855a;
+  transition: width 0.2s ease;
+}
+
+.quiz-summary-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.quiz-summary-item {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .quiz-summary-item.is-correct {
-  border-color: #2f855a;
+  border-color: var(--color-success);
 }
 
 .quiz-summary-item.is-incorrect {
-  border-color: #c53030;
+  border-color: var(--color-danger);
 }
 
 .quiz-close-form {
   position: absolute;
   top: 0;
   right: 0;
+  left: auto;
+  bottom: auto;
   padding: 0.5rem;
+  width: auto;
 }
 
 .quiz-order-bank,

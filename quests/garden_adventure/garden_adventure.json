@@ -15,7 +15,7 @@
       "locale": "en",
       "theme": "vegetables",
       "title": "Faun's Gardening Day",
-      "summary": "Faun has a strong רָעָב (hunger) for a sweet, crunchy treat. He decides to become a gardener for a day, taking a סַל (basket) of tools out to the sunny גַּן (garden). He carefully buries a small זֶרַע (seed) in the dirt, waters it, and proudly harvests his very first home-grown גֶּזֶר (carrot).",
+      "summary": "Faun is hungry for asweet, crunchy treat. He decides to become a gardener for a day, taking a basket of tools out to the sunny garden. He carefully buries a small seed in the dirt, waters it, and proudly harvests his very first home-grown carrot.",
       "episodes": [
         {
           "episode_id": "garden_adventure_ep1",
@@ -23,9 +23,9 @@
           "story_sentences": [
             {
               "id": "s1",
-              "male": "{{pet_name}} had a big hunger.",
-              "female": "{{pet_name}} had a big hunger.",
-              "neutral": "{{pet_name}} had a big hunger."
+              "male": "{{pet_name}} was very hungry.",
+              "female": "{{pet_name}} was very hungry.",
+              "neutral": "{{pet_name}} was very hungry."
             },
             {
               "id": "s2",
@@ -90,45 +90,45 @@
           "story_sentences": [
             {
               "id": "s1",
-              "male": "הפאון היה רעב מאוד.",
-              "female": "הפאון היה רעב מאוד.",
-              "neutral": "הפאון היה רעב מאוד."
+              "male": "הוא היה רעב מאוד.",
+              "female": "היא היה רעב מאוד.",
+              "neutral": "הוא היה רעב מאוד."
             },
             {
               "id": "s2",
-              "male": "לקח סל של כלים.",
+              "male": "הוא לקח סל של כלים.",
               "female": "היא לקחה סל של כלי.",
-              "neutral": "לקח סל של כלים."
+              "neutral": "הוא לקח סל של כלים."
             },
             {
               "id": "s3",
-              "male": "הפאון חפר בור קטן.",
-              "female": "חפרה בור קטן.",
-              "neutral": "הפאון חפר בור קטן."
+              "male": "הוא חפר בור קטן.",
+              "female": "היא חפרה בור קטן.",
+              "neutral": "הוא חפר בור קטן."
             },
             {
               "id": "s4",
-              "male": "השתיל את הזרע באדמה.",
+              "male": "הוא השתיל את הזרע באדמה.",
               "female": "היא הכניסה את הזרע לאדמה.",
-              "neutral": "השתיל את הזרע באדמה."
+              "neutral": "הוא השתיל את הזרע באדמה."
             },
             {
               "id": "s5",
-              "male": "הפאון השתיל את הזרע.",
+              "male": "הוא השתיל את הזרע.",
               "female": "היא השקתה את הזרע.",
-              "neutral": "הפאון השתיל את הזרע."
+              "neutral": "הוא השתיל את הזרע."
             },
             {
               "id": "s6",
-              "male": "החכיר לקרניות לצמוח.",
+              "male": "הוא החכיר לקרניות לצמוח.",
               "female": "היא המתינה לגדלת השורק.",
-              "neutral": "החכיר לקרניות לצמוח."
+              "neutral": "הוא החכיר לקרניות לצמוח."
             },
             {
               "id": "s7",
-              "male": "הפאון הוציא קרנבל בגודל גדול.",
-              "female": "היא הוצאה גזר משמעותי.",
-              "neutral": "הפאון הוציא קרנבל בגודל גדול."
+              "male": "הוא הוציא גזר גדול.",
+              "female": "היא הוצאה גזר גדול.",
+              "neutral": "הוא הוציא גזר גדול."
             }
           ],
           "quiz": {

@@ -13,19 +13,30 @@
   gap: ($gutter * 2);
 }
 .card {
-  padding: $gutter * 3;
-  margin-top: $gutter * 4;
+  padding: $gutter;
+  margin-top: $gutter;
+  margin-bottom: $gutter;
   background: $color-white;
   position: relative;
-  margin-bottom: $gutter * 4;
   line-height: 1.7;
   border-radius: 8px;
   flex-basis: calc(100% / 3);
   @media (max-width: $screen-sm-max) {
     flex-basis: 100%;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
     &:last-child {
       margin-bottom: 0;
     }
+  }
+
+  @media (min-width: $screen-md) {
+    padding: $gutter * 3;
+    margin-top: $gutter * 4;
+    margin-bottom: $gutter * 4;
   }
 
   &:last-child {
@@ -82,8 +93,6 @@
 .layout-secondary {
   .card {
     background-color: var(--color-card-surface);
-    padding-top: 20px;
-    padding-bottom: 20px;
   }
   .card h3 {
     color: var(--color-white);

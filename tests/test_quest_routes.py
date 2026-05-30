@@ -138,7 +138,6 @@ class QuestRouteTestCase(unittest.TestCase):
         response = self.client.get("/quiz/garden_adventure/garden_adventure_ep1")
         self.assertEqual(response.status_code, 200)
         body = response.get_data(as_text=True)
-        self.assertIn("Step 1 of", body)
         self.assertIn("quiz-step", body)
         self.assertTrue("data-order-builder" in body or "cloze-input" in body or "quiz-choice-group" in body)
 

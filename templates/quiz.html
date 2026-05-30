@@ -10,13 +10,6 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <button type="submit" name="action" value="forfeit" class="quiz-close btn btn-icon" aria-label="Close quiz"><span class="fa fa-solid fa-times-circle" aria-hidden="true"></span></button>
   </form>
-  <div class="quiz-header">
-    <p class="eyebrow">{{ _('ui.quests.quiz') }}</p>
-    <h2>{{ quest_metadata.title }}</h2>
-    <p class="quiz-episode-info">
-      <span>{{ episode.title }}</span>
-    </p>
-  </div>
 
   {% if quiz_state.finished %}
     <section class="quiz-summary card-accent" dir="{{ language_dir() }}">
@@ -48,20 +41,21 @@
   {% else %}
     <section class="quiz-progress" aria-label="Quiz progress">
       <div class="quiz-progress-row">
-        <span>Step {{ quiz_step.step_number }} of {{ quiz_state.total_steps }}</span>
-        <span>{{ quiz_state.score }} point{% if quiz_state.score != 1 %}s{% endif %}</span>
+        <h3>
+          {% if quiz_step.kind == 'sentence' %}<span class="fad fa-puzzle-piece" aria-hidden="false" aria-label="Sentence building" title="Sentence building"></span>  בנה את המשפט: Build the sentence <span class="d-none section-instruction">Build the sentence by tapping the tags in order.</span>
+          
+          {% elif quiz_step.kind == 'quiz' %}<span class="fad fa-book-open" aria-hidden="false" aria-label="Fill in the blank" title="Fill in the blank"></span> Fill in the blank 
+
+          {% else %}<span class="fad fa-ballot-check" aria-hidden="false" aria-label="Quiz question" title="Quiz question"></span> Select the right answer{% endif %}
+       </h3> 
       </div>
-      <div class="quiz-progress-track" role="progressbar" aria-valuenow="{{ quiz_step.step_number }}" aria-valuemin="1" aria-valuemax="{{ quiz_state.total_steps }}" aria-valuetext="{{ quiz_step.step_number }} of {{ quiz_state.total_steps }}">
+      <div class="quiz-progress-track" role="progressbar" aria-valuenow="{{ quiz_step.step_number }}" aria-valuemin="1" aria-valuemax="{{ quiz_state.total_steps }}" aria-valuetext="Quiz progress">
         {% set progress_width = ((quiz_step.step_number - 1) / quiz_state.total_steps * 100) if quiz_state.total_steps else 0 %}
         <div class="quiz-progress-fill" style="width: {{ progress_width }}%;"></div>
       </div>
     </section>
 
     <section class="quiz-step card card-slim" dir="{{ language_dir() }}">
-      <div class="quiz-step-header">
-        <h3>{{ _('ui.quests.question') }} {{ quiz_step.step_number }}: {% if quiz_step.kind == 'sentence' %}Sentence building{% else %}Quiz question{% endif %}</h3>
-      </div>
-
       {% if quiz_step.completed and quiz_step.show_correct_feedback %}
         <section id="quiz-feedback" class="quiz-hint card-accent" aria-live="polite" tabindex="-1">
           <h4>Correct</h4>
@@ -75,9 +69,13 @@
       {% elif quiz_step.hint_revealed %}
         <section class="quiz-hint card-accent" aria-live="polite">
           <h4>Review Context</h4>
-          <p class="quiz-hint-story">{{ quiz_step.source_sentence or quiz_step.correct_answer }}</p>
-          <p><strong>Your answer:</strong> {{ quiz_step.submitted_answer or '—' }}</p>
-          <p><strong>Correct answer:</strong> {{ quiz_step.correct_answer }}</p>
+          <p class="quiz-hint-story d-none">{{ quiz_step.source_sentence or quiz_step.correct_answer }}</p>
+          <dl>
+            <dt>Your answer:</dt>
+            <dd>{{ quiz_step.submitted_answer or '—' }}</dd>
+            <dt>Correct answer:</dt>
+            <dd>{{ quiz_step.correct_answer }}</dd>
+          </dl>
           <form class="quiz-actions" method="post" action="{{ url_for('quiz_episode_submit', quest_id=quest_metadata.quest_id, episode_id=episode.episode_id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <button type="submit" name="action" value="retry" class="btn btn-primary btn-lg">Retry</button>
@@ -152,7 +150,6 @@
               </div>
             {% endif %}
           {% else %}
-            <p class="section-instruction">Build the sentence by tapping the tags in order.</p>
             <div class="quiz-order-builder" data-order-builder>
               <div class="quiz-order-bank" data-order-bank>
                 {% for token in quiz_step.shuffled_tokens %}
