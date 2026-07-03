@@ -48,6 +48,29 @@ npm run watch:css # or run a watcher in development
 
 The admin dashboard (available at `/admin/` for users with admin role) provides comprehensive vocabulary and set management using the canonical lemma-based schema:
 
+#### Vocabulary Import Workflow
+
+Use `scripts/vocab_importer.py` to build and apply starter vocabulary imports:
+
+```bash
+python scripts/vocab_importer.py prepare --language he --limit 3000 --output starter_vocab_review.csv
+python scripts/vocab_importer.py apply --input starter_vocab_review.csv --db distantlife.db --word-set-id 1
+```
+
+Recommended review file columns:
+
+- `hebrew_primary`
+- `hebrew_vocalized`
+- `english`
+- `pos`
+- `relation_type`
+- `source`
+- `confidence`
+- `review_status`
+- `notes`
+
+The importer keeps Hebrew as the primary lemma form, stores vocalized Hebrew as a non-primary form, and links English through `sense_translation`.
+
 #### Admin Vocabulary Management
 
 At `/admin/vocabulary/`, admins can:
