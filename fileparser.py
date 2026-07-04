@@ -1,6 +1,6 @@
 import csv
 from connections import get_db_connection, get_redis_client
-from normalization import compute_search_key
+from normalization import compute_search_key, normalize_lemma_form_value
 con = get_db_connection()
 db = con
 
@@ -88,6 +88,9 @@ def save_words(csvf, word_set_id, orig_set_id=''):
         else:
             word_type_id = int(wt_row['id'])
 
+        orig_value = normalize_lemma_form_value(w[lang1], orig_lang_code)
+        trans_value = normalize_lemma_form_value(w[lang2], trans_lang_code)
+
         new_orig_lemma_id = db.execute(
             "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
             (orig_lang_id, word_type_id, w[lang1p], None),
@@ -99,8 +102,8 @@ def save_words(csvf, word_set_id, orig_set_id=''):
                 orig_lang_id,
                 'surface',
                 'Hebr' if orig_lang_code == 'he' else 'Latn',
-                w[lang1],
-                compute_search_key(w[lang1], orig_lang_code),
+                orig_value,
+                compute_search_key(orig_value, orig_lang_code),
                 1,
             ),
         )
@@ -120,8 +123,8 @@ def save_words(csvf, word_set_id, orig_set_id=''):
                 trans_lang_id,
                 'surface',
                 'Hebr' if trans_lang_code == 'he' else 'Latn',
-                w[lang2],
-                compute_search_key(w[lang2], trans_lang_code),
+                trans_value,
+                compute_search_key(trans_value, trans_lang_code),
                 1,
             ),
         )

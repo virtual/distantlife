@@ -247,6 +247,39 @@ class AdminRouteTestCase(unittest.TestCase):
             if lemma_id is not None:
                 self._delete_temp_lemma(lemma_id)
 
+    def test_admin_vocabulary_create_lowercases_english_primary(self):
+        self._login_as(self.admin_id, self.admin_username)
+
+        lemma_value = f"CamelCase-{self._suffix()}"
+        lemma_id = None
+        try:
+            response = self.client.post(
+                "/admin/vocabulary/create/",
+                data={
+                    "lemma_value": lemma_value,
+                    "vocalization": "",
+                    "definition": "",
+                    "language_id": "1",
+                    "pos_id": str(self._get_word_type_id("noun")),
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(response.status_code, 302)
+
+            location = response.headers.get("Location", "")
+            lemma_id = int(location.rstrip("/").split("/")[-1])
+
+            form_row = self.db.execute(
+                "SELECT value, search_key FROM lemma_form WHERE lemma_id = ? AND is_primary = 1",
+                (lemma_id,),
+            ).fetchone()
+            self.assertIsNotNone(form_row)
+            self.assertEqual(lemma_value.lower(), form_row["value"])
+            self.assertEqual(lemma_value.lower(), form_row["search_key"])
+        finally:
+            if lemma_id is not None:
+                self._delete_temp_lemma(lemma_id)
+
     def test_admin_vocabulary_edit_updates_vocalization_and_definition(self):
         self._login_as(self.admin_id, self.admin_username)
 

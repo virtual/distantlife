@@ -48,6 +48,29 @@ npm run watch:css # or run a watcher in development
 
 The admin dashboard (available at `/admin/` for users with admin role) provides comprehensive vocabulary and set management using the canonical lemma-based schema:
 
+#### Vocabulary Import Workflow
+
+Use `scripts/vocab_importer.py` to build and apply starter vocabulary imports:
+
+```bash
+python scripts/vocab_importer.py prepare --language he --limit 3000 --output starter_vocab_review.csv
+python scripts/vocab_importer.py apply --input starter_vocab_review.csv --db distantlife.db --word-set-id 1
+```
+
+Recommended review file columns:
+
+- `hebrew_primary`
+- `hebrew_vocalized`
+- `english`
+- `pos`
+- `relation_type`
+- `source`
+- `confidence`
+- `review_status`
+- `notes`
+
+The importer keeps Hebrew as the primary lemma form, stores vocalized Hebrew as a non-primary form, and links English through `sense_translation`.
+
 #### Admin Vocabulary Management
 
 At `/admin/vocabulary/`, admins can:
@@ -101,6 +124,21 @@ Optional extra columns are currently ignored by the importer, so you can include
 - Adverb (תֹּאַר הַפֹּעַל): A word that modifies a verb, adjective, or another adverb (often ending in "-ly" in English).
 - Pronoun (כִּנּוּי גּוּף): A word used in place of a noun (e.g., I, she, they).
 - Preposition (מִילַת יַחַס): Describes the relationship between a noun and another part of the sentence (e.g., in, on, at, from).
+
+POS values are stored in the `word_type` table and referenced by `lemma.pos_id` and `sense.part_of_speech`. The front end now resolves the display label from `word_type.type` for both new and existing vocabulary, so old entries and new imports use the same logic.
+
+Current POS rows in the database are:
+
+| ID | `word_type.type` |
+| --- | --- |
+| 1 | `noun` |
+| 2 | `adjective` |
+| 3 | `verb` |
+| 4 | `adv` |
+| 5 | `prep` |
+| 6 | `adj` |
+
+For new vocabulary imports, prefer the shorter labels already used by the starter CSV and UI: `noun`, `verb`, `adj`, `adv`, and `prep`. If a row has a POS ID with no matching label, the UI falls back to showing the numeric ID instead of breaking.
 
 ### 🪐 Localization and Internationalization
 
