@@ -21,6 +21,25 @@ def has_nikkud(text):
     return HEBREW_NIKKUD_RE.search(str(text)) is not None
 
 
+def normalize_lemma_form_value(text, language_code=""):
+    """Normalize a lemma form value for storage.
+
+    Hebrew values keep their shape but lose niqqud for storage/search.
+    English values are lowercased so display and matching stay stable.
+    """
+    if text is None:
+        return ""
+
+    value = unicodedata.normalize("NFC", str(text)).strip()
+    code = (language_code or "").strip().lower()
+    if code in {"he", "heb", "hebrew"}:
+        value = strip_nikkud(value)
+    elif code in {"en", "eng", "english"}:
+        value = value.lower()
+
+    return WHITESPACE_RE.sub(" ", value)
+
+
 def compute_search_key(text, language_code=""):
     """Build a normalized search key for indexed lookups."""
     if text is None:

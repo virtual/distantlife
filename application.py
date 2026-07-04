@@ -23,7 +23,7 @@ from quest_content import get_quest_board_entries, load_and_personalize_quest, c
 from helpers import apology, login_required, adopted_pet_required, admin_required, usd, set_active_pet_in_session, set_languages, get_sets, get_set_by_id, get_words_by_set_id, get_role, get_word_translation, update_experience, session_get_int, resolve_canonical_sense_id, record_set_learned, record_words_learned, get_learning_progress, initialize_user_pet_unlocks, can_user_adopt_pet_type, get_adoptable_pet_types_for_user, get_active_pet_for_user, table_columns, choose_pet_gender, get_pet_gender_label, get_pet_gender_icon_class, get_learning_language_charcode, is_admin, has_completed_episode, record_episode_completed, get_level_from_exp, PASSWORD_RULES
 import helpers
 from fileparser import save_words
-from normalization import compute_search_key, has_nikkud
+from normalization import compute_search_key, has_nikkud, normalize_lemma_form_value
 
 r = get_redis_client()
 
@@ -1399,11 +1399,12 @@ def admin_vocabulary():
                {translation_select},
                COALESCE(ll.charcode, '') AS lang_code,
                COALESCE(ll.name, '') AS language_name,
-               CASE l.pos_id WHEN 1 THEN 'noun' WHEN 2 THEN 'verb' WHEN 3 THEN 'adj' ELSE CAST(l.pos_id AS TEXT) END AS pos_label,
+               COALESCE(word_type.type, CAST(l.pos_id AS TEXT), '') AS pos_label,
                (SELECT COUNT(*) FROM set_item si JOIN sense s ON s.id = si.sense_id WHERE s.lemma_id = l.id) AS uses
         FROM lemma l
         JOIN lemma_form lf ON lf.lemma_id = l.id AND lf.is_primary = 1
         LEFT JOIN languages ll ON ll.id = l.language_id
+        LEFT JOIN word_type ON word_type.id = l.pos_id
     """
 
     params = [preferred_lang_id]
@@ -1639,6 +1640,9 @@ def admin_vocabulary_edit(lemma_id):
                 definition=lemma["definition"] or "",
             )
 
+        if (lemma["lang_code"] or "").lower() in {"en", "eng", "english"}:
+            new_value = normalize_lemma_form_value(new_value, lemma["lang_code"])
+
         db.execute("UPDATE lemma SET pos_id = ?, state = ? WHERE id = ?", (new_pos_id, new_state, lemma_id))
 
         if has_image:
@@ -1825,6 +1829,10 @@ def admin_vocabulary_create():
                 definition=definition,
             )
 
+        lang_code = (language_row["charcode"] or "")
+        if lang_code.lower() in {"en", "eng", "english"}:
+            lemma_value = normalize_lemma_form_value(lemma_value, lang_code)
+
         lemma_id = db.execute(
             "INSERT INTO lemma (language_id, pos_id, pronunciation, audiopath) VALUES (?, ?, ?, ?)",
             (language_id, pos_id, "", None),
@@ -1836,7 +1844,6 @@ def admin_vocabulary_create():
                 (image_path or None, lemma_id),
             )
 
-        lang_code = (language_row["charcode"] or "")
         db.execute(
             """
             INSERT INTO lemma_form (lemma_id, language_id, form_type, script, value, search_key, is_primary)

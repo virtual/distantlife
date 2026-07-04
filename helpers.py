@@ -555,7 +555,7 @@ def get_words_by_set_id(set_id):
         SELECT s.id AS id,
                lf.value AS wordstr,
                COALESCE(l.pronunciation, '') AS pronunciation,
-               COALESCE(word_type.type, '') AS type,
+             COALESCE(word_type.type, CAST(s.part_of_speech AS TEXT), '') AS type,
                l.audiopath AS audiosrc
         FROM set_item
         JOIN sense s ON s.id = set_item.sense_id

@@ -125,6 +125,21 @@ Optional extra columns are currently ignored by the importer, so you can include
 - Pronoun (כִּנּוּי גּוּף): A word used in place of a noun (e.g., I, she, they).
 - Preposition (מִילַת יַחַס): Describes the relationship between a noun and another part of the sentence (e.g., in, on, at, from).
 
+POS values are stored in the `word_type` table and referenced by `lemma.pos_id` and `sense.part_of_speech`. The front end now resolves the display label from `word_type.type` for both new and existing vocabulary, so old entries and new imports use the same logic.
+
+Current POS rows in the database are:
+
+| ID | `word_type.type` |
+| --- | --- |
+| 1 | `noun` |
+| 2 | `adjective` |
+| 3 | `verb` |
+| 4 | `adv` |
+| 5 | `prep` |
+| 6 | `adj` |
+
+For new vocabulary imports, prefer the shorter labels already used by the starter CSV and UI: `noun`, `verb`, `adj`, `adv`, and `prep`. If a row has a POS ID with no matching label, the UI falls back to showing the numeric ID instead of breaking.
+
 ### 🪐 Localization and Internationalization
 
 To better support users, the site supports language translation and internationalization. For languages that require a right-to-left (RTL) reading direction, the interface mirrors the normal reading direction. In addition, RTL includes small enhancements such as flipping the active pet image and general site layout.

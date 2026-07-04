@@ -28,7 +28,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from connections import get_db_connection
-from normalization import compute_search_key, has_nikkud, strip_nikkud
+from normalization import compute_search_key, has_nikkud, normalize_lemma_form_value, strip_nikkud
 
 
 DEFAULT_LANGUAGE_CODE = "he"
@@ -236,7 +236,7 @@ def prepare_rows(limit: int, language_code: str, translations_file: Optional[Pat
         primary = _normalize_hebrew_primary(hebrew)
         merged = translation_index.get(primary, {})
         vocalized = _normalize_text(merged.get("hebrew_vocalized"))
-        english = _normalize_text(merged.get("english"))
+        english = normalize_lemma_form_value(_normalize_text(merged.get("english")), "en")
         pos = _normalize_text(merged.get("pos")) or ""
         relation_type = _normalize_text(merged.get("relation_type")) or DEFAULT_RELATION_TYPE
         source = _normalize_text(merged.get("source")) or "wordfreq"
@@ -490,7 +490,7 @@ def import_rows(
         for entry in rows:
             primary = _normalize_hebrew_primary(entry.get("hebrew_primary") or entry.get("hebrew"))
             variant = _normalize_text(entry.get("hebrew_vocalized"))
-            english = _normalize_text(entry.get("english"))
+            english = normalize_lemma_form_value(_normalize_text(entry.get("english")), target_lang_code)
             pos_name = _normalize_text(entry.get("pos")) or default_pos
             relation_type = _normalize_text(entry.get("relation_type")) or DEFAULT_RELATION_TYPE
             pronunciation = _normalize_text(entry.get("pronunciation"))
