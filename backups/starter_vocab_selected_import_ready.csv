@@ -1,0 +1,162 @@
+﻿rank,hebrew_primary,hebrew_vocalized,english,pos,relation_type,source,confidence,review_status,notes
+300,משפט,מִשְׁפָּט,sentence,noun,exact,wordfreq,5.51,approved,import-ready
+308,בעיקר,בְּעִיקָּר,mainly,adv,exact,wordfreq,5.49,approved,import-ready
+329,באמצעות,בְּאֶמְצָעוּת,through,prep,exact,wordfreq,5.47,approved,import-ready
+348,להגיע,לְהַגִּיעַ,to arrive,verb,exact,wordfreq,5.46,approved,import-ready
+361,למצוא,לִמְצוֹא,to find,verb,exact,wordfreq,5.45,approved,import-ready
+380,במהלך,בְּמַהֲלַך,during,prep,exact,wordfreq,5.45,approved,import-ready
+382,דין,דִּין,law,noun,exact,wordfreq,5.45,approved,import-ready
+385,רוב,רוֹב,majority,noun,exact,wordfreq,5.44,approved,import-ready
+386,להגיד,לְהַגִּיד,to say,verb,exact,wordfreq,5.44,approved,import-ready
+392,כמובן,כַּמּוּבָן,of course,adv,exact,wordfreq,5.43,approved,import-ready
+400,לפחות,לְפָחוֹת,at least,adv,exact,wordfreq,5.42,approved,import-ready
+401,מספיק,מַסְפִּיק,enough,adj,exact,wordfreq,5.42,approved,import-ready
+408,משחק,מִשְׂחָק,game,noun,exact,wordfreq,5.41,approved,import-ready
+410,שעה,שָׁעָה,hour,noun,exact,wordfreq,5.41,approved,import-ready
+412,בכך,בְּכָךְ,thus,adv,exact,wordfreq,5.4,approved,import-ready
+414,כגון,כְּגוֹן,such as,prep,exact,wordfreq,5.4,approved,import-ready
+415,כוח,כּוֹחַ,power,noun,exact,wordfreq,5.4,approved,import-ready
+416,למעלה,לְמַעְלָה,above,adv,exact,wordfreq,5.4,approved,import-ready
+417,למעשה,לְמַעֲשֶׂה,actually,adv,exact,wordfreq,5.4,approved,import-ready
+421,משרד,מִשְׂרָד,office,noun,exact,wordfreq,5.39,approved,import-ready
+422,נוסף,נוֹסָף,additional,adj,exact,wordfreq,5.39,approved,import-ready
+430,לגמרי,לְגַמְרֵי,completely,adv,exact,wordfreq,5.38,approved,import-ready
+441,אור,אוֹר,light,noun,exact,wordfreq,5.37,approved,import-ready
+443,במיוחד,בִּמְיוּחָד,especially,adv,exact,wordfreq,5.37,approved,import-ready
+445,חוץ,חוּץ,outside,noun,exact,wordfreq,5.36,approved,import-ready
+448,מגיע,מַגִּיעַ,arrives,verb,exact,wordfreq,5.36,approved,import-ready
+451,עבר,עָבָר,past,noun,exact,wordfreq,5.36,approved,import-ready
+453,קרה,קָרָה,happened,verb,exact,wordfreq,5.35,approved,import-ready
+465,עולה,עוֹלֶה,rises,verb,exact,wordfreq,5.34,approved,import-ready
+474,ים,יָם,sea,noun,exact,wordfreq,5.33,approved,import-ready
+475,ככל,כְּכֹל,as much as,adv,exact,wordfreq,5.33,approved,import-ready
+476,למען,לְמַעַן,for,prep,exact,wordfreq,5.33,approved,import-ready
+489,פנים,פָּנִים,face,noun,exact,wordfreq,5.32,approved,import-ready
+502,רע,רַע,bad,adj,exact,wordfreq,5.3,approved,import-ready
+505,בצורה,בְּצוּרָה,in a way,adv,exact,wordfreq,5.3,approved,import-ready
+521,סוג,סוּג,type,noun,exact,wordfreq,5.29,approved,import-ready
+522,ספק,סָפֵק,doubt,noun,exact,wordfreq,5.28,approved,import-ready
+550,מדינת,מְדִינַת,state,noun,exact,wordfreq,5.26,approved,import-ready
+556,אסור,אָסוּר,forbidden,adj,exact,wordfreq,5.25,approved,import-ready
+558,דווקא,דַּוְקָא,specifically,adv,exact,wordfreq,5.25,approved,import-ready
+562,לשמוע,לִשְׁמֹעַ,to hear,verb,exact,wordfreq,5.25,approved,import-ready
+563,מהר,מַהֵר,quickly,adv,exact,wordfreq,5.25,approved,import-ready
+564,מחר,מָחָר,tomorrow,adv,exact,wordfreq,5.25,approved,import-ready
+577,מלך,מֶלֶךְ,king,noun,exact,wordfreq,5.23,approved,import-ready
+578,משפחה,מִשְׁפָּחָה,family,noun,exact,wordfreq,5.23,approved,import-ready
+579,פעולה,פְּעֻלָּה,action,noun,exact,wordfreq,5.23,approved,import-ready
+580,שאלה,שְׁאֵלָה,question,noun,exact,wordfreq,5.23,approved,import-ready
+587,גבר,גֶּבֶר,man,noun,exact,wordfreq,5.22,approved,import-ready
+594,מדוע,מַדּוּעַ,why,adv,exact,wordfreq,5.22,approved,import-ready
+595,פרק,פֶּרֶק,chapter,noun,exact,wordfreq,5.22,approved,import-ready
+613,מאוחר,מְאֻוחָר,late,adj,exact,wordfreq,5.2,approved,import-ready
+615,סיפור,סִפּוּר,story,noun,exact,wordfreq,5.2,approved,import-ready
+618,בוקר,בֹּקֶר,morning,noun,exact,wordfreq,5.19,approved,import-ready
+619,בעיה,בְּעָיָה,problem,noun,exact,wordfreq,5.19,approved,import-ready
+628,לאכול,לֶאֱכֹל,to eat,verb,exact,wordfreq,5.19,approved,import-ready
+629,לחשוב,לַחְשֹׁב,to think,verb,exact,wordfreq,5.19,approved,import-ready
+632,ערך,עֵרֶךְ,value,noun,exact,wordfreq,5.18,approved,import-ready
+642,לבוא,לָבוֹא,to come,verb,exact,wordfreq,5.17,approved,import-ready
+644,מקווה,מְקַוֶּה,hopes,verb,exact,wordfreq,5.17,approved,import-ready
+645,מרכז,מֶרְכָּז,center,noun,exact,wordfreq,5.17,approved,import-ready
+646,עונה,עוֹנֶה,answers,verb,exact,wordfreq,5.17,approved,import-ready
+647,עניין,עִנְיָן,matter,noun,exact,wordfreq,5.17,approved,import-ready
+655,לבן,לָבָן,white,adj,exact,wordfreq,5.16,approved,import-ready
+656,להשתמש,לְהִשְׁתַּמֵּשׁ,to use,verb,exact,wordfreq,5.16,approved,import-ready
+660,סתם,סְתָם,just,adv,exact,wordfreq,5.16,approved,import-ready
+661,עשר,עֶשֶׂר,ten,noun,exact,wordfreq,5.16,approved,import-ready
+663,שיר,שִׁיר,song,noun,exact,wordfreq,5.16,approved,import-ready
+667,אתמול,אֶתְמוֹל,yesterday,adv,exact,wordfreq,5.15,approved,import-ready
+672,חזק,חָזָק,strong,adj,exact,wordfreq,5.15,approved,import-ready
+675,מיוחד,מְיֻחָד,special,adj,exact,wordfreq,5.15,approved,import-ready
+680,צורך,צֹרֶךְ,need,noun,exact,wordfreq,5.14,approved,import-ready
+681,קרוב,קָרוֹב,close,adj,exact,wordfreq,5.14,approved,import-ready
+682,רוח,רוּחַ,wind,noun,exact,wordfreq,5.14,approved,import-ready
+684,בטח,בֶּטַח,surely,adv,exact,wordfreq,5.14,approved,import-ready
+688,להמשיך,לְהַמְשִׁיךְ,to continue,verb,exact,wordfreq,5.14,approved,import-ready
+689,לשמור,לִשְׁמֹר,to keep,verb,exact,wordfreq,5.14,approved,import-ready
+690,מתחת,מִתַּחַת,under,prep,exact,wordfreq,5.14,approved,import-ready
+691,צוות,צֶוֶות,team,noun,exact,wordfreq,5.14,approved,import-ready
+692,קצר,קָצָר,short,adj,exact,wordfreq,5.14,approved,import-ready
+703,הר,הַר,mountain,noun,exact,wordfreq,5.13,approved,import-ready
+704,חסר,חָסֵר,lacking,adj,exact,wordfreq,5.13,approved,import-ready
+722,לעבור,לַעֲבֹר,to pass,verb,exact,wordfreq,5.12,approved,import-ready
+723,מכיר,מַכִּיר,knows,verb,exact,wordfreq,5.11,approved,import-ready
+729,קיים,קַיָּים,exists,verb,exact,wordfreq,5.11,approved,import-ready
+732,שמח,שָׂמֵחַ,happy,adj,exact,wordfreq,5.11,approved,import-ready
+748,מזל,מַזָּל,luck,noun,exact,wordfreq,5.1,approved,import-ready
+750,מרגיש,מַרְגִּישׁ,feels,verb,exact,wordfreq,5.1,approved,import-ready
+752,סליחה,סְלִיחָה,sorry,noun,exact,wordfreq,5.1,approved,import-ready
+754,בך,בְּךָ,in you,prep,exact,wordfreq,5.09,approved,import-ready
+766,סרט,סֶרֶט,movie,noun,exact,wordfreq,5.08,approved,import-ready
+767,פרס,פְּרָס,prize,noun,exact,wordfreq,5.08,approved,import-ready
+768,"צה""ל","צָהַ""ל",IDF,noun,exact,wordfreq,5.08,approved,import-ready
+772,גבוה,גָּבֹהַּ,tall,adj,exact,wordfreq,5.08,approved,import-ready
+782,עיר,עִיר,city,noun,exact,wordfreq,5.07,approved,import-ready
+796,חמש,חָמֵשׁ,five,noun,exact,wordfreq,5.06,approved,import-ready
+797,לספר,לְסַפֵּר,to tell,verb,exact,wordfreq,5.06,approved,import-ready
+798,לעמוד,לַעֲמֹד,to stand,verb,exact,wordfreq,5.06,approved,import-ready
+801,קיבל,קִבֵּל,received,verb,exact,wordfreq,5.06,approved,import-ready
+802,שבוע,שָׁבוּעַ,week,noun,exact,wordfreq,5.06,approved,import-ready
+807,אמיתי,אֲמִתִּי,real,adj,exact,wordfreq,5.05,approved,import-ready
+818,חד,חַד,sharp,adj,exact,wordfreq,5.04,approved,import-ready
+823,מנהל,מְנַהֵל,manager,noun,exact,wordfreq,5.04,approved,import-ready
+830,שווה,שָׁווֶה,equal,adj,exact,wordfreq,5.04,approved,import-ready
+831,בהחלט,בְּהֶחְלֵט,definitely,adv,exact,wordfreq,5.04,approved,import-ready
+835,הולכת,הוֹלֶכֶת,goes,verb,exact,wordfreq,5.03,approved,import-ready
+841,מבינה,מְבִינָה,understands,verb,exact,wordfreq,5.03,approved,import-ready
+842,נורא,נוֹרָא,awful,adj,exact,wordfreq,5.03,approved,import-ready
+845,פתח,פָּתַח,opened,verb,exact,wordfreq,5.03,approved,import-ready
+849,גיל,גִּיל,age,noun,exact,wordfreq,5.02,approved,import-ready
+852,חודש,חֹדֶשׁ,month,noun,exact,wordfreq,5.02,approved,import-ready
+854,לחיות,לִחְיוֹת,to live,verb,exact,wordfreq,5.02,approved,import-ready
+855,לעזור,לַעֲזֹר,to help,verb,exact,wordfreq,5.02,approved,import-ready
+856,לצורך,לְצֹרֶךְ,for,prep,exact,wordfreq,5.02,approved,import-ready
+857,לקנות,לִקְנוֹת,to buy,verb,exact,wordfreq,5.02,approved,import-ready
+859,מוכן,מוּכָן,ready,adj,exact,wordfreq,5.01,approved,import-ready
+861,רכב,רֶכֶב,vehicle,noun,exact,wordfreq,5.01,approved,import-ready
+862,רמת,רָמַת,level,noun,exact,wordfreq,5.01,approved,import-ready
+863,רשת,רֶשֶׁת,network,noun,exact,wordfreq,5.01,approved,import-ready
+871,לבדוק,לִבְדֹּק,to check,verb,exact,wordfreq,5.01,approved,import-ready
+872,לשלם,לְשַׁלֵּם,to pay,verb,exact,wordfreq,5.01,approved,import-ready
+873,לשנות,לְשַׁנּוֹת,to change,verb,exact,wordfreq,5.01,approved,import-ready
+875,עץ,עֵץ,tree,noun,exact,wordfreq,5,approved,import-ready
+876,פעילות,פְּעִילוּת,activity,noun,exact,wordfreq,5,approved,import-ready
+877,קול,קוֹל,voice,noun,exact,wordfreq,5,approved,import-ready
+881,תקופה,תְּקוּפָה,period,noun,exact,wordfreq,5,approved,import-ready
+889,חג,חַג,holiday,noun,exact,wordfreq,4.99,approved,import-ready
+891,כדור,כַּדּוּר,ball,noun,exact,wordfreq,4.99,approved,import-ready
+892,להיכנס,לְהִכָּנֵס,to enter,verb,exact,wordfreq,4.99,approved,import-ready
+893,להתחיל,לְהַתְחִיל,to start,verb,exact,wordfreq,4.99,approved,import-ready
+894,לחלוטין,לַחֲלוּטִין,completely,adv,exact,wordfreq,4.99,approved,import-ready
+895,ליצור,לִיצוֹר,to create,verb,exact,wordfreq,4.99,approved,import-ready
+896,לשחק,לְשַׂחֵק,to play,verb,exact,wordfreq,4.99,approved,import-ready
+899,נושא,נוֹשֵׂא,topic,noun,exact,wordfreq,4.99,approved,import-ready
+900,סביב,סָבִיב,around,prep,exact,wordfreq,4.99,approved,import-ready
+901,סיבה,סִיבָּה,reason,noun,exact,wordfreq,4.99,approved,import-ready
+911,הלך,הָלַךְ,went,verb,exact,wordfreq,4.98,approved,import-ready
+914,לכתוב,לִכְתֹּב,to write,verb,exact,wordfreq,4.98,approved,import-ready
+917,עקב,עֵקֶב,due to,prep,exact,wordfreq,4.98,approved,import-ready
+918,קבוצת,קְבוּצַת,group,noun,exact,wordfreq,4.97,approved,import-ready
+926,ארגון,אִרְגּוּן,organization,noun,exact,wordfreq,4.97,approved,import-ready
+931,ברק,בָּרָק,lightning,noun,exact,wordfreq,4.96,approved,import-ready
+932,גן,גַּן,garden,noun,exact,wordfreq,4.96,approved,import-ready
+938,זוכר,זוֹכֵר,remembers,verb,exact,wordfreq,4.96,approved,import-ready
+940,חוסר,חוֹסֶר,lack,noun,exact,wordfreq,4.96,approved,import-ready
+941,חזר,חָזַר,returned,verb,exact,wordfreq,4.96,approved,import-ready
+942,חייו,חַיָּיו,his life,noun,exact,wordfreq,4.96,approved,import-ready
+945,כיוון,כִּיוּוּן,direction,noun,exact,wordfreq,4.95,approved,import-ready
+946,להשיג,לְהַשִּׂיג,to obtain,verb,exact,wordfreq,4.95,approved,import-ready
+951,מעניין,מְעַנְיֵין,interesting,adj,exact,wordfreq,4.95,approved,import-ready
+949,מתאים,מַתְאִים,suitable,adj,exact,wordfreq,4.95,approved,import-ready
+961,גוף,גּוּף,body,noun,exact,wordfreq,4.94,approved,import-ready
+967,חדר,חֶדֶר,room,noun,exact,wordfreq,4.94,approved,import-ready
+971,לבנות,לִבְנוֹת,to build,verb,exact,wordfreq,4.93,approved,import-ready
+973,למנוע,לִמְנוֹעַ,to prevent,verb,exact,wordfreq,4.93,approved,import-ready
+979,עבד,עָבַד,worked,verb,exact,wordfreq,4.93,approved,import-ready
+982,שקל,שֶׁקֶל,shekel,noun,exact,wordfreq,4.92,approved,import-ready
+986,דעת,דַּעַת,opinion,noun,exact,wordfreq,4.92,approved,import-ready
+989,חן,חֵן,grace,noun,exact,wordfreq,4.92,approved,import-ready
+993,לשים,לָשִׂים,to put,verb,exact,wordfreq,4.91,approved,import-ready
+994,מושג,מוּשָּׂג,concept,noun,exact,wordfreq,4.91,approved,import-ready
+997,נו,נוּ,well,adv,exact,wordfreq,4.91,approved,import-ready

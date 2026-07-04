@@ -266,7 +266,7 @@ def prepare_rows(limit: int, language_code: str, translations_file: Optional[Pat
 
 
 def write_rows_csv(path: Path, rows: Sequence[Dict[str, Any]]) -> None:
-    with path.open("w", encoding="utf-8", newline="") as file_obj:
+    with path.open("w", encoding="utf-8-sig", newline="") as file_obj:
         writer = csv.DictWriter(file_obj, fieldnames=DEFAULT_PREPARE_FIELDS)
         writer.writeheader()
         for row in rows:
